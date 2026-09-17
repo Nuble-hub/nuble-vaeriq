@@ -1,0 +1,2 @@
+import type { ApprovedIntent, Balance, ChainPage, ExecutionResult, PaymentIntent, SimulationResult, Transaction, WalletRef } from "../domain/index.js";
+export interface ChainAdapter { getBalance(wallet: WalletRef): Promise<Balance[]>; getTransactions(wallet: WalletRef, cursor?: string): Promise<ChainPage<Transaction>>; simulateIntent(intent: PaymentIntent): Promise<SimulationResult>; execute(intent: ApprovedIntent): Promise<ExecutionResult>; getTransaction(hash: string): Promise<Transaction>; }

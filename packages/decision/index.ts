@@ -1,0 +1,5 @@
+import { evaluatePolicy } from "../policy-engine/index.js";
+import { evaluateRisk } from "../risk-engine/index.js";
+import type { DecisionResult, PaymentContext, PaymentIntent, PolicySet } from "../domain/index.js";
+const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
+export function evaluateIntent(intent: PaymentIntent, policy: PolicySet, context: PaymentContext): DecisionResult { const policyResult = evaluatePolicy(intent, policy); const riskResult = evaluateRisk(intent, context); const riskReasons = riskResult.signals.map((signal) => signal.message); if (policyResult.hasBlock) return { decision: "BLOCK", reasons: unique([...policyResult.reasons, ...riskReasons]), policy: policyResult, risk: riskResult }; if (policyResult.requiresReview) return { decision: "REVIEW", reasons: unique([...policyResult.reasons, ...riskReasons]), policy: policyResult, risk: riskResult }; if (riskResult.signals.some((signal) => signal.severity === "HIGH")) return { decision: "REVIEW", reasons: unique(riskReasons), policy: policyResult, risk: riskResult }; return { decision: "APPROVE", reasons: [], policy: policyResult, risk: riskResult }; }
