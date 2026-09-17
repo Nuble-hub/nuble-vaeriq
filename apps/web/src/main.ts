@@ -1,0 +1,220 @@
+import { address, createClient } from "@solana/kit";
+import { solanaRpc } from "@solana/kit-plugin-rpc";
+import { walletSigner } from "@solana/kit-plugin-wallet";
+import { evaluatePayment } from "../../../packages/evaluation/index.js";
+import { authorizeExecution } from "../../../packages/decision/execution-guard.js";
+import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
+import type { PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
+import "./styles.css";
+
+const DEMO_DESTINATION = "HQVxiMVDoV9jzG4tpoxmDZsNfWvaHXm8DGGv93Gka75v";
+const BLOCK_DESTINATION = "11111111111111111111111111111111";
+const USDC_DECIMALS = 6;
+
+const client = createClient()
+  .use(walletSigner({ chain: "solana:devnet" }))
+  .use(solanaRpc({ rpcUrl: SOLANA_DEVNET_RPC }));
+
+const state = {
+  mode: "APPROVE" as "APPROVE" | "BLOCK",
+  intent: null as PaymentIntent | null,
+  result: null as ReturnType<typeof evaluatePayment> | null,
+  txSignature: "",
+  error: ""
+};
+
+function parseUsdcAtomic(value: string): string {
+  const normalized = value.trim();
+  if (!/^\d+(?:\.\d{1,6})?$/.test(normalized)) throw new Error("INVALID_USDC_AMOUNT");
+  const [whole, fraction = ""] = normalized.split(".");
+  const atomic = BigInt(whole) * 1_000_000n + BigInt((fraction + "000000").slice(0, USDC_DECIMALS));
+  if (atomic <= 0n) throw new Error("INVALID_USDC_AMOUNT");
+  return atomic.toString();
+}
+
+function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
+  const approvedDestination = mode === "APPROVE" ? recipient : DEMO_DESTINATION;
+  return {
+    id: "policy_demo_m01",
+    version: 1,
+    active: true,
+    defaultEffect: "ALLOW",
+    rules: [
+      { id: "asset-usdc-only", type: "ASSET", operator: "IN", value: ["USDC"], effect: "ALLOW", message: "USDC is approved." },
+      { id: "destination-allowlist", type: "DESTINATION", operator: "NOT_IN", value: [approvedDestination], effect: "BLOCK", message: "Destination is outside the approved treasury allowlist." },
+      { id: "large-agent-review", type: "AMOUNT", operator: "GT", value: "5000000000", effect: "REVIEW", message: "Agent payments above 5,000 USDC require treasury review." }
+    ]
+  };
+}
+
+function contextFor(mode: typeof state.mode, recipient: string): PaymentContext {
+  const known = mode === "APPROVE" ? [recipient] : [DEMO_DESTINATION];
+  return {
+    knownDestinations: known,
+    knownCounterparties: ["vendor_demo"],
+    approvedAssets: ["USDC"],
+    historicalMedianAtomic: "2000000000",
+    recentIntents: [],
+    invoiceRequiredAboveAtomic: "1000000000",
+    agentSinglePaymentLimitAtomic: "5000000000",
+    agentDailyLimitAtomic: "20000000000",
+    agentSpentTodayAtomic: "1000000000",
+    evidence: [{ id: "invoice:INV-001", type: "INVOICE", summary: "Demo invoice INV-001 is attached." }]
+  };
+}
+
+function buildIntent(): PaymentIntent {
+  const recipientInput = (document.querySelector<HTMLInputElement>("#recipient")?.value ?? "").trim();
+  const amountUsdc = (document.querySelector<HTMLInputElement>("#amount")?.value ?? "12").trim();
+  const invoiceRef = (document.querySelector<HTMLInputElement>("#invoice")?.value ?? "INV-001").trim();
+  const connected = client.wallet.getState().connected;
+  if (!connected) throw new Error("CONNECT_WALLET_FIRST");
+  if (!recipientInput) throw new Error("RECIPIENT_REQUIRED");
+  address(recipientInput);
+
+  return {
+    id: `pi_${crypto.randomUUID()}`,
+    organizationId: "demo_org",
+    requesterType: "human",
+    requesterId: connected.account.address,
+    recipient: recipientInput,
+    asset: "USDC",
+    amountAtomic: parseUsdcAtomic(amountUsdc),
+    amountDisplay: amountUsdc,
+    purpose: "Hackathon milestone payment",
+    counterpartyId: "vendor_demo",
+    invoiceRef: invoiceRef || undefined,
+    chain: "solana",
+    status: "SUBMITTED",
+    createdAt: new Date().toISOString()
+  };
+}
+
+function render() {
+  const connected = client.wallet.getState().connected;
+  const wallets = client.wallet.getState().wallets;
+  const app = document.querySelector<HTMLDivElement>("#app")!;
+  const decision = state.result?.result.decision;
+  const reasons = state.result?.result.reasons ?? [];
+  const signature = state.txSignature;
+
+  app.innerHTML = `
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">NUBLE / VAERIQ</div>
+          <h1>Control before value moves.</h1>
+          <p class="sub">Milestone 01 · Solana Devnet · Stablecoin payment control</p>
+        </div>
+        <div class="wallet-box">
+          <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
+          ${connected ? "" : `<button id="connect">Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}</button>`}
+        </div>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <div class="card-title">Payment Intent</div>
+          <label>Scenario</label>
+          <div class="scenario-row">
+            <button class="mode ${state.mode === "APPROVE" ? "active" : ""}" id="approve-mode">Compliant · APPROVE</button>
+            <button class="mode ${state.mode === "BLOCK" ? "active" : ""}" id="block-mode">Adversarial · BLOCK</button>
+          </div>
+
+          <label for="recipient">Recipient</label>
+          <input id="recipient" value="${state.intent?.recipient ?? (state.mode === "BLOCK" ? BLOCK_DESTINATION : DEMO_DESTINATION)}" />
+
+          <div class="two-col">
+            <div>
+              <label for="amount">Amount (USDC)</label>
+              <input id="amount" value="${state.intent?.amountDisplay ?? (state.mode === "BLOCK" ? "8500" : "12")}" inputmode="decimal" />
+            </div>
+            <div>
+              <label for="invoice">Invoice ref</label>
+              <input id="invoice" value="${state.intent?.invoiceRef ?? (state.mode === "BLOCK" ? "" : "INV-001")}" />
+            </div>
+          </div>
+
+          <button class="primary" id="evaluate">Evaluate payment</button>
+          <p class="hint">The decision is deterministic. The connected wallet is only asked to sign after an explicit APPROVE.</p>
+        </div>
+
+        <div class="card decision-card">
+          <div class="card-title">Decision Engine</div>
+          <div class="pipeline">
+            <span>Intent</span><b>→</b><span>Policy</span><b>→</b><span>Risk</span><b>→</b><strong class="decision ${(decision ?? "idle").toLowerCase()}">${decision ?? "WAITING"}</strong>
+          </div>
+          <div class="reason-box">
+            ${reasons.length ? reasons.map((x) => `<div>• ${x}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
+          </div>
+          <button class="execute" id="execute" ${decision === "APPROVE" ? "" : "disabled"}>Execute approved payment</button>
+          ${state.error ? `<div class="error">${state.error}</div>` : ""}
+          ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
+        </div>
+      </section>
+
+      <section class="audit card">
+        <div class="card-title">Audit Trail</div>
+        <div class="audit-row"><span>Network</span><strong>Solana Devnet</strong></div>
+        <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
+        <div class="audit-row"><span>Intent</span><code>${state.intent?.id ?? "—"}</code></div>
+        <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
+        <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
+      </section>
+    </main>
+  `;
+
+  document.querySelector<HTMLButtonElement>("#connect")?.addEventListener("click", async () => {
+    state.error = "";
+    try {
+      const available = client.wallet.getState().wallets;
+      if (!available.length) throw new Error("NO_WALLET_FOUND");
+      await client.wallet.connect(available[0]);
+      render();
+    } catch (error) {
+      state.error = error instanceof Error ? error.message : "WALLET_CONNECT_FAILED";
+      render();
+    }
+  });
+
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.error = ""; render(); });
+
+  document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
+    state.error = "";
+    state.txSignature = "";
+    try {
+      const intent = buildIntent();
+      state.intent = intent;
+      state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode, intent.recipient) });
+      render();
+    } catch (error) {
+      state.error = error instanceof Error ? error.message : "EVALUATION_FAILED";
+      render();
+    }
+  });
+
+  document.querySelector<HTMLButtonElement>("#execute")?.addEventListener("click", async () => {
+    state.error = "";
+    try {
+      if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
+      // Reuse the exact intent that produced the stored decision; users cannot
+      // change fields between evaluation and signing without re-evaluating.
+      const approvedIntent = authorizeExecution(state.intent, state.result.result);
+      const connectedSigner = client.wallet.getState().connected?.signer;
+      if (!connectedSigner) throw new Error("WALLET_SIGNER_NOT_AVAILABLE");
+      const adapter = new SolanaAdapter({}, connectedSigner);
+      const simulation = await adapter.simulateIntent(approvedIntent);
+      if (!simulation.ok) throw new Error(simulation.message);
+      const result = await adapter.execute(approvedIntent);
+      state.txSignature = result.txHash;
+      render();
+    } catch (error) {
+      state.error = error instanceof Error ? error.message : "EXECUTION_FAILED";
+      render();
+    }
+  });
+}
+
+client.wallet.subscribe(render);
+render();
