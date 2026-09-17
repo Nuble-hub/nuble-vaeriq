@@ -9,10 +9,26 @@ VAERIQ is entered in the Build & Submit phase of the Colosseum Crypto World's Fa
 - **Project:** VAERIQ
 - **Master brand:** NUBLE
 - **Category:** Payments & Remittance
-- **Primary chain for the submission:** Tempo
-- **Planned expansion:** Solana and other chains through adapters
+- **Primary chain for the submission:** Solana
+- **Initial network:** Solana Devnet
+- **Planned expansion:** Additional chains through adapters
 - **Primary user:** Web3 treasury operator
 - **Secondary actor:** Autonomous AI agent
+
+## Milestone 01 — Chain-connected control loop
+
+The first engineering milestone is intentionally narrow: prove that VAERIQ can evaluate one stablecoin payment intent and enforce the decision boundary before a real Solana Devnet transaction.
+
+### Acceptance criteria
+
+1. Payment intent is represented with exact monetary values.
+2. Deterministic policy evaluation returns a reproducible result.
+3. Risk signals are evaluated separately from policy.
+4. Decision engine returns `APPROVE`, `REVIEW`, or `BLOCK`.
+5. `REVIEW` and `BLOCK` cannot reach signing/execution.
+6. An `APPROVE` intent can build and submit a Solana Devnet stablecoin transfer through the chain adapter.
+7. The resulting transaction signature is linked back to the payment intent and audit event.
+8. No credentials, seed phrases, or private keys are committed to the repository.
 
 ## Demo thesis
 
@@ -30,9 +46,9 @@ Payment Intent
 
 The minimum compelling demonstration contains:
 
-1. A compliant payment that is approved and executed.
+1. A compliant payment that is approved and executed on Solana Devnet.
 2. A payment with a policy/risk violation that is blocked before execution.
-3. A clear audit link from intent to decision and transaction hash.
+3. A clear audit link from intent to decision and transaction signature.
 
 ## Submission discipline
 
