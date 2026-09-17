@@ -3,6 +3,7 @@ import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { walletSigner } from "@solana/kit-plugin-wallet";
 import { evaluatePayment } from "../../../packages/evaluation/index.js";
 import { authorizeExecution } from "../../../packages/decision/execution-guard.js";
+import { createExecutionAuditEvents } from "../../../packages/audit/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
 import type { PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
 import "./styles.css";
@@ -20,6 +21,7 @@ const state = {
   intent: null as PaymentIntent | null,
   result: null as ReturnType<typeof evaluatePayment> | null,
   txSignature: "",
+  auditExecutionEvents: [] as ReturnType<typeof createExecutionAuditEvents>,
   error: ""
 };
 
@@ -47,8 +49,8 @@ function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
   };
 }
 
-function contextFor(mode: typeof state.mode, recipient: string): PaymentContext {
-  const known = mode === "APPROVE" ? [recipient] : [DEMO_DESTINATION];
+function contextFor(mode: typeof state.mode): PaymentContext {
+  const known = mode === "APPROVE" ? [state.intent?.recipient ?? DEMO_DESTINATION] : [DEMO_DESTINATION];
   return {
     knownDestinations: known,
     knownCounterparties: ["vendor_demo"],
@@ -97,6 +99,7 @@ function render() {
   const decision = state.result?.result.decision;
   const reasons = state.result?.result.reasons ?? [];
   const signature = state.txSignature;
+  const auditEvents = state.auditExecutionEvents;
 
   app.innerHTML = `
     <main class="shell">
@@ -160,6 +163,7 @@ function render() {
         <div class="audit-row"><span>Intent</span><code>${state.intent?.id ?? "—"}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
+        <div class="audit-row"><span>Execution events</span><code>${auditEvents.length ? auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ") : "—"}</code></div>
       </section>
     </main>
   `;
@@ -177,16 +181,17 @@ function render() {
     }
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditExecutionEvents = []; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditExecutionEvents = []; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
     state.txSignature = "";
+    state.auditExecutionEvents = [];
     try {
       const intent = buildIntent();
       state.intent = intent;
-      state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode, intent.recipient) });
+      state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode) });
       render();
     } catch (error) {
       state.error = error instanceof Error ? error.message : "EVALUATION_FAILED";
@@ -198,8 +203,6 @@ function render() {
     state.error = "";
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
-      // Reuse the exact intent that produced the stored decision; users cannot
-      // change fields between evaluation and signing without re-evaluating.
       const approvedIntent = authorizeExecution(state.intent, state.result.result);
       const connectedSigner = client.wallet.getState().connected?.signer;
       if (!connectedSigner) throw new Error("WALLET_SIGNER_NOT_AVAILABLE");
@@ -208,6 +211,7 @@ function render() {
       if (!simulation.ok) throw new Error(simulation.message);
       const result = await adapter.execute(approvedIntent);
       state.txSignature = result.txHash;
+      state.auditExecutionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash });
       render();
     } catch (error) {
       state.error = error instanceof Error ? error.message : "EXECUTION_FAILED";
