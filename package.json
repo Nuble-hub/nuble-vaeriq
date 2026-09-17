@@ -9,16 +9,20 @@
     "test": "npm run build && node tests/run-tests.mjs",
     "check": "npm run typecheck && npm test",
     "demo": "npm run build && node scripts/demo-server.mjs",
-    "solana:probe": "node scripts/solana-devnet-probe.mjs"
+    "solana:probe": "node scripts/solana-devnet-probe.mjs",
+    "web:dev": "vite --config vite.config.ts",
+    "web:build": "vite build --config vite.config.ts"
   },
   "dependencies": {
     "@solana/kit": "8.3.0",
     "@solana/kit-plugin-rpc": "0.19.0",
     "@solana/kit-plugin-signer": "0.13.0",
+    "@solana/kit-plugin-wallet": "0.20.0",
     "@solana-program/token": "0.16.1"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "8.3.0"
   },
   "type": "module"
 }
