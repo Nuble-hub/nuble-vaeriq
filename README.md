@@ -5,8 +5,9 @@
 > **VAERIQ decides whether value should move before it moves.**
 
 **Category:** Payments & Remittance  
-**Primary chain:** Tempo  
-**Expansion path:** Solana and additional chains through adapters  
+**Primary chain:** Solana  
+**Initial network:** Solana Devnet  
+**Expansion path:** Additional chains through adapters  
 **Master brand:** NUBLE  
 **Product:** VAERIQ  
 **Status:** Colosseum Crypto World's Fair — Build & Submit
@@ -35,7 +36,7 @@ AI is used for contextual reasoning and explanation. Financial enforcement remai
 
 This repository is the active development source for VAERIQ during the hackathon. It is intentionally private during development. The repository history is part of the project's development record.
 
-The initial repository foundation is being established before the first production-like on-chain execution path is wired.
+The current engineering focus is Milestone 01: a narrow, chain-connected payment-control loop on Solana Devnet.
 
 ## Core team
 
@@ -63,12 +64,12 @@ No external human builder is part of the core VAERIQ team. External community co
              |                   |
           APPROVE          REVIEW / BLOCK
              |
+        Execution Guard
+             |
         Chain Adapter
              |
-      +------+------+
-      |             |
-    Tempo        Solana
-    Phase 1      Expansion
+          Solana
+          Devnet
 ```
 
 ## Development principles
@@ -89,10 +90,13 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Builder Specification v0.1
 - [x] Hackathon Execution Board v0.1
 - [x] Repository foundation
+- [x] Solana-first architecture decision
 - [ ] Core decision engine in repository
-- [ ] Tempo testnet read path
-- [ ] Tempo testnet execution path
+- [ ] Solana Devnet stablecoin read path
+- [ ] Solana Devnet stablecoin execution path
+- [ ] Execution guard tests for `APPROVE` / `REVIEW` / `BLOCK`
 - [ ] Persistent audit trail
+- [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Live demo
 - [ ] Final Colosseum submission
@@ -103,6 +107,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `CONTRIBUTING.md` — repository and engineering conventions
 - `docs/ARCHITECTURE.md` — system boundaries and technical decisions
 - `docs/HACKATHON.md` — Colosseum scope, demo and submission notes
+- `docs/MILESTONE_01.md` — concrete acceptance criteria for the first chain-connected milestone
 
 ## License
 
