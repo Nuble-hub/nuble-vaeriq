@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds / framework output
+dist/
+build/
+.next/
+.nuxt/
+.output/
+coverage/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.seed
+secrets/
+
+# Local databases / state
+*.sqlite
+*.sqlite3
+.wrangler/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local exports and artifacts
+artifacts/
+.tmp/
+tmp/
+*.zip
+*.tar.gz
+
+# Test / generated data that may contain sensitive information
+test-output/
+local-data/
