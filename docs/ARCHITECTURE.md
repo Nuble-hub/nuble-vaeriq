@@ -1,4 +1,4 @@
-# VAERIQ Architecture v0.1
+# VAERIQ Architecture v0.2
 
 ## Product boundary
 
@@ -27,9 +27,9 @@ Policy Engine        Risk Engine
   Execution Guard
         |
    Chain Adapter
-      /      \
-     v        v
-  Tempo    Solana
+        |
+      Solana
+      Devnet
 ```
 
 ## Core invariants
@@ -71,26 +71,33 @@ The initial domain vocabulary is:
 
 ## Chain abstraction
 
-Chain-specific code lives behind a common adapter interface. The first live target is Tempo. Solana remains an expansion adapter until a real integration exists and is disclosed as such.
+Chain-specific code lives behind a common adapter interface. The first live target for the hackathon is Solana Devnet. Additional networks can be added later through adapters without changing the control engine.
 
 ```text
                  chain-interface
                        |
-             +---------+---------+
-             |                   |
-        tempo-adapter       solana-adapter
+                    Solana
+                     Devnet
+                       |
+              future adapters
 ```
 
 ## Data placement
 
 Off-chain application state may include invoices, budgets, vendor metadata, historical behavior, policy configuration, and AI reasoning. On-chain state includes the actual transaction and network-level execution evidence.
 
-The bridge between them is the intent ID, policy version, decision record, and transaction hash.
+The bridge between them is the intent ID, policy version, decision record, and transaction signature.
 
 ## Security posture
 
 - No private keys in the repository.
 - No secrets committed to source control.
-- Testnet credentials must be isolated from production credentials.
+- Devnet credentials must be isolated from production credentials.
 - Monetary arithmetic must be integer-safe or represented as exact strings.
 - The system should fail closed at the execution boundary when approval evidence is missing or invalid.
+
+## Solana implementation direction
+
+The initial implementation uses the current Solana TypeScript stack centered on `@solana/kit`. Wallet-connected execution is preferred for the demo so the user's wallet remains the signer and VAERIQ remains the control/orchestration layer.
+
+For stablecoin movement, the first adapter targets standard SPL token transfer primitives. Token amounts are represented in base units using integers/strings, not floating-point numbers.
