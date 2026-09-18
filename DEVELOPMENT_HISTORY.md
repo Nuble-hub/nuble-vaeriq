@@ -114,3 +114,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The web demo can restore the latest decision, transaction signature, reconciliation status, failure message, and intent-scoped audit events from the persistent audit store.
 - This keeps the visible audit summary aligned with persisted evidence instead of relying only on in-memory page state.
 - Runtime verification of the rehydrated summary remains open.
+
+
+## 2026-09-19 — Audit rehydration runtime verified
+
+- Founder refresh testing confirmed persisted audit history survives page reload.
+- The latest persisted intent can be restored with its decision and execution-failure state.
+- The UI was refined to distinguish the latest persisted intent from the last reconciled transaction, preventing two different payment intents from being visually conflated after refresh.
+- The latest reconciled transaction remains available from persisted reconciliation evidence.
