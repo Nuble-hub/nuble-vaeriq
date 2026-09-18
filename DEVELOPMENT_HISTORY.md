@@ -106,3 +106,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Refresh testing confirmed the TRANSACTION_RECONCILED event remained in persisted audit history.
 - A separate BLOCK test recorded only policy/risk/decision events for intent pi_391c9422-6082-4b53-853e-d34de8862149; no submission, confirmation, or reconciliation events were created.
 - Transaction lookup and reconciliation are therefore runtime-verified for the current Solana Devnet demo path.
+
+
+## 2026-09-19 — Persisted audit summary rehydration implemented
+
+- Added browser-refresh rehydration for the latest persisted audit intent.
+- The web demo can restore the latest decision, transaction signature, reconciliation status, failure message, and intent-scoped audit events from the persistent audit store.
+- This keeps the visible audit summary aligned with persisted evidence instead of relying only on in-memory page state.
+- Runtime verification of the rehydrated summary remains open.
