@@ -121,6 +121,8 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
+- `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
+- `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
 
 ## License
 
