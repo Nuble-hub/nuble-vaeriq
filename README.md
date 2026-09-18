@@ -98,7 +98,8 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Execution audit events
 - [x] VAERIQ Direction Audit v2
 - [x] Founder-Market-Fit Thesis v1.0
-- [ ] Persistent audit storage
+- [x] Persistent demo audit storage (browser-local, replaceable backend)
+- [ ] Durable server-side audit storage
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
@@ -113,6 +114,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/MILESTONE_01.md` — acceptance criteria and runtime evidence for the first chain-connected milestone
 - `docs/DIRECTION_AUDIT_V2.md` — post-Milestone-01 strategic direction audit and Milestone 02 direction
 - `docs/FOUNDER_MARKET_FIT.md` — founder journey, founder-market-fit thesis, evidence boundaries, and narrative draft
+- `docs/MILESTONE_02.md` — control-layer hardening, persistent audit evidence, validation, and demo-proof plan
 
 ## License
 
