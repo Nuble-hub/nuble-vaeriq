@@ -122,3 +122,13 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The latest persisted intent can be restored with its decision and execution-failure state.
 - The UI was refined to distinguish the latest persisted intent from the last reconciled transaction, preventing two different payment intents from being visually conflated after refresh.
 - The latest reconciled transaction remains available from persisted reconciliation evidence.
+
+
+## 2026-09-19 — Full current reconciliation verification completed
+
+- Founder completed the new-transaction verification after audit rehydration changes.
+- Approved intent `pi_8e09d2a4-c2dc-40ae-bfe2-f308c00f4fc8` produced Devnet transaction `nh97Q3Vw9nEVYRmthSZTefr8NJbCK4xdDGMRGPHcWLJ8sPRUS7hyGLgdTmm6kCv1JNPVMHaTDWU9zjteTEQnmFN`.
+- VAERIQ reported `MATCHED` reconciliation.
+- The same intent and signature appeared across `TRANSACTION_SUBMITTED`, `TRANSACTION_CONFIRMED`, and `TRANSACTION_RECONCILED` persisted evidence after refresh.
+- BLOCK verification remained isolated: no submission, confirmation, or reconciliation events were produced for the blocked intent.
+- The current audit, lookup, reconciliation, and rehydration slices are runtime-verified for the demo path.
