@@ -37,7 +37,7 @@ This is intentionally a demo-grade persistence layer, not a production treasury 
 ## Workstream B — Product hardening
 
 - [ ] Expand automated tests around evaluation and execution boundaries.
-- [x] Add execution failure handling and evidence (runtime verification pending).
+- [x] Add execution failure handling and evidence.
 - [ ] Add transaction lookup/reconciliation.
 - [ ] Improve demo reliability and recovery states.
 
@@ -58,7 +58,7 @@ No customer-validation claim should be made until evidence is collected.
 
 ## Acceptance criteria
 
-The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented; runtime verification is still pending. The remaining Milestone 02 acceptance criteria are still open.
+The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. The remaining Milestone 02 acceptance criteria are still open.
 
 
 1. A payment evaluation creates a persistent audit record.
