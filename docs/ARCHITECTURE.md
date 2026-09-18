@@ -107,3 +107,12 @@ For stablecoin movement, the first adapter targets standard SPL token transfer p
 The control engine emits audit events for policy evaluation, risk evaluation, decision, and execution. The web demo persists these events through a replaceable `AuditEventStore` implementation using browser-local storage.
 
 This persistence layer is intentionally demo-grade. It demonstrates that decision evidence survives a page refresh without coupling the control engine to a browser-specific storage API. A production implementation can replace the store with durable server-side storage while preserving the same event contract and intent-to-transaction traceability.
+
+
+## Transaction lookup and reconciliation
+
+Once an approved execution returns a transaction signature, the Solana adapter can query the transaction back from the network using `getTransaction` at confirmed commitment. The adapter reads the parsed SPL token transfer and maps the token-account balances back to their owners so VAERIQ can compare the chain-observed sender, recipient, asset, and exact atomic amount with the original `PaymentIntent`.
+
+Reconciliation is kept outside the decision engine. A transaction can therefore be evaluated and authorized first, executed second, and independently verified against chain state afterward.
+
+The first implementation supports the Solana transaction versions exposed by the current SDK/RPC configuration and passes an explicit maximum supported transaction version when querying.
