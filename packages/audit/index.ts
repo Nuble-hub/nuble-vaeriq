@@ -23,3 +23,17 @@ export function createExecutionAuditEvents(args: { intent: PaymentIntent; actor:
     createAuditEvent({ ...base, id: `${args.intent.id}:confirmed`, type: "TRANSACTION_CONFIRMED" })
   ];
 }
+
+
+export function createExecutionFailureAuditEvent(args: { intent: PaymentIntent; actor: string; error: string; now?: string }): AuditEvent {
+  const now = args.now ?? new Date().toISOString();
+  return createAuditEvent({
+    id: `${args.intent.id}:execution-failed:${now}`,
+    type: "EXECUTION_FAILED",
+    actor: args.actor,
+    intentId: args.intent.id,
+    organizationId: args.intent.organizationId,
+    now,
+    payloadRef: `error:${args.error.slice(0, 160)}`
+  });
+}
