@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "test": "npm run build && node tests/run-tests.mjs && node tests/audit-store.mjs",
+    "test": "npm run build && node tests/run-tests.mjs && node tests/audit-store.mjs && node tests/reconciliation.mjs",
     "check": "npm run typecheck && npm test",
     "demo": "npm run build && node scripts/demo-server.mjs",
     "solana:probe": "node scripts/solana-devnet-probe.mjs",
