@@ -76,3 +76,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - VAERIQ now records `EXECUTION_STARTED` before simulation/transaction work and persists an `EXECUTION_FAILED` event when an authorized execution attempt fails.
 - Failure evidence remains attached to the same payment intent and is stored through the replaceable audit store.
 - Runtime verification of the failure path remains open.
+
+
+## 2026-09-19 — Execution-failure path runtime verified
+
+- Founder runtime testing triggered an approved payment execution failure with `INSUFFICIENT_USDC_BALANCE`.
+- The audit trail recorded `EXECUTION_STARTED` followed by `EXECUTION_FAILED` for the same payment intent.
+- No `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED` event was recorded for the failed execution attempt.
+- Milestone 02 execution-failure evidence is therefore runtime-verified for the demo.
