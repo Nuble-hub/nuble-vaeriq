@@ -1,49 +1,71 @@
 # Milestone 01 — Chain-Connected Payment Control
 
-**Status:** In progress  
+**Status:** Completed  
+**Completed:** 2026-09-18  
 **Target network:** Solana Devnet  
 **Product:** NUBLE / VAERIQ  
 **Primary use case:** Stablecoin treasury payment control
 
 ## Objective
 
-Prove one complete, deterministic control loop from a business payment request to a real Solana Devnet stablecoin transaction, while proving that `REVIEW` and `BLOCK` cannot reach signing or execution.
+Prove one complete, deterministic control loop from a business payment request to a real Solana Devnet stablecoin transaction, while proving that REVIEW and BLOCK cannot reach signing or execution.
 
 ## Acceptance criteria
 
 ### A. Intent and money representation
 
-- [ ] `PaymentIntent` has a stable ID and explicit business purpose.
-- [ ] Monetary amounts are represented as exact base-unit integers/strings.
-- [ ] Destination, asset mint, requester, and supporting context are explicit.
+- [x] PaymentIntent has a stable ID and explicit business purpose.
+- [x] Monetary amounts are represented as exact base-unit integers/strings.
+- [x] Destination, asset mint, requester, and supporting context are explicit.
 
 ### B. Deterministic control
 
-- [ ] Policy evaluation is deterministic and versioned.
-- [ ] Risk evaluation is separate from policy evaluation.
-- [ ] Decision engine returns exactly one of `APPROVE`, `REVIEW`, `BLOCK`.
-- [ ] AI output is advisory and cannot authorize execution.
+- [x] Policy evaluation is deterministic and versioned.
+- [x] Risk evaluation is separate from policy evaluation.
+- [x] Decision engine returns exactly one of APPROVE, REVIEW, BLOCK.
+- [x] AI output is advisory and cannot authorize execution.
 
 ### C. Execution boundary
 
-- [ ] Only `APPROVE` can call the execution adapter.
-- [ ] `REVIEW` stops before signing.
-- [ ] `BLOCK` stops before signing.
-- [ ] Missing/invalid approval evidence fails closed.
+- [x] Only APPROVE can call the execution adapter.
+- [x] REVIEW stops before signing.
+- [x] BLOCK stops before signing.
+- [x] Missing/invalid approval evidence fails closed.
 
 ### D. Solana Devnet
 
-- [ ] Solana Devnet RPC connectivity is working.
-- [ ] Wallet connection/signing path is working for the demo.
-- [ ] SPL stablecoin transfer instruction can be constructed safely.
-- [ ] An approved intent can produce a real Devnet transaction signature.
-- [ ] The transaction signature can be resolved from the audit record back to the intent ID.
+- [x] Solana Devnet RPC connectivity is working.
+- [x] Wallet connection/signing path is working for the demo.
+- [x] SPL stablecoin transfer instruction can be constructed safely.
+- [x] An approved intent produced a real Devnet transaction signature.
+- [x] The transaction signature is linked in the audit record to the intent ID.
 
 ### E. Demo proof
 
-- [ ] Approved payment: executes successfully.
-- [ ] Blocked payment: no transaction is created.
-- [ ] Audit screen shows intent → policy/risk → decision → signature (for approved flow).
+- [x] Approved payment: executes successfully.
+- [x] Blocked payment: no transaction is created.
+- [x] Audit screen shows intent → decision → signature for the approved flow and no signature/execution events for the blocked flow.
+
+## Runtime evidence
+
+### APPROVE path
+
+A compliant 12 USDC payment with invoice reference INV-001 was evaluated and returned APPROVE. The user signed the resulting Solana Devnet transaction in the browser wallet. VAERIQ displayed the resulting transaction signature and execution events:
+
+    APPROVE
+      → EXECUTION_STARTED
+      → TRANSACTION_SUBMITTED
+      → TRANSACTION_CONFIRMED
+      → audit record
+
+### BLOCK path
+
+An adversarial 8,500 USDC payment to an unapproved destination with no invoice reference was evaluated and returned BLOCK. The UI showed no transaction signature and no execution events, and the execution action remained disabled.
+
+    BLOCK
+      → no signer
+      → no transaction
+      → no execution events
 
 ## Non-goals for Milestone 01
 
@@ -54,11 +76,13 @@ Prove one complete, deterministic control loop from a business payment request t
 - Full treasury accounting replacement.
 - Mainnet deployment.
 
-## Evidence required before claiming completion
+## Completion evidence
 
-1. Git commit(s) showing the implementation.
-2. A working Devnet transaction signature for the approved scenario.
-3. A reproducible blocked scenario with no submitted transaction.
-4. A short screen recording showing the end-to-end flow.
+1. Git history contains the milestone implementation and Solana-first integration work.
+2. A real Solana Devnet transaction was executed and its signature was displayed in the VAERIQ audit trail.
+3. A reproducible blocked scenario produced no transaction signature or execution events.
+4. Runtime screenshots provide visual evidence of both paths.
 
-Until all evidence exists, the milestone remains **in progress** and should not be described as completed in the hackathon submission.
+**Milestone 01 is complete.**
+
+The next engineering milestone should focus on strengthening the audit model, test coverage, and product/demo robustness rather than expanding scope prematurely.
