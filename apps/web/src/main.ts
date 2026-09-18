@@ -29,6 +29,8 @@ const state = {
   auditEvents: [] as AuditEvent[],
   reconciliation: null as TransactionReconciliation | null,
   decision: null as "APPROVE" | "REVIEW" | "BLOCK" | null,
+  persistedLatestIntentId: "",
+  lastReconciledTxSignature: "",
   error: ""
 };
 
@@ -106,6 +108,9 @@ function restoreLatestAuditState(): void {
   const latestIntentId = events[events.length - 1]?.intentId;
   if (!latestIntentId) return;
 
+  state.persistedLatestIntentId = latestIntentId;
+  state.lastReconciledTxSignature = findLastReconciledSignature(events);
+
   const latestEvents = events.filter((event) => event.intentId === latestIntentId);
   state.auditEvents = latestEvents;
 
@@ -141,6 +146,12 @@ function restoreLatestAuditState(): void {
   if (failureEvent?.payloadRef?.startsWith("error:")) {
     state.error = failureEvent.payloadRef.slice("error:".length);
   }
+}
+
+function findLastReconciledSignature(events: AuditEvent[]): string {
+  const event = [...events].reverse().find((item) => item.type === "TRANSACTION_RECONCILED");
+  const match = event?.payloadRef?.match(/^reconciliation:(?:MATCHED|MISMATCHED|NOT_FOUND):tx:(.+)$/);
+  return match?.[1] ?? "";
 }
 
 function render() {
@@ -217,9 +228,10 @@ function render() {
         <div class="card-title">Audit Trail</div>
         <div class="audit-row"><span>Network</span><strong>Solana Devnet</strong></div>
         <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
-        <div class="audit-row"><span>Intent</span><code>${state.intent?.id ?? "—"}</code></div>
+        <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId || "—"}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
+        <div class="audit-row"><span>Last reconciled transaction</span><code>${state.lastReconciledTxSignature || "—"}</code></div>
         <div class="audit-row"><span>Reconciliation</span><strong class="recon ${reconciliation?.status?.toLowerCase() ?? "idle"}">${reconciliation?.status ?? "—"}</strong></div>
         <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ") : "—"}</code></div>
         <div class="card-title recent-title">Recent persisted events</div>
@@ -264,7 +276,7 @@ function render() {
     render();
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.decision = null; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
   document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
