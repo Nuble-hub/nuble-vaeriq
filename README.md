@@ -101,7 +101,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Persistent demo audit storage (browser-local, replaceable backend)
 - [x] Execution failure handling and persisted failure evidence
 - [ ] Durable server-side audit storage
-- [x] Transaction lookup and intent reconciliation (runtime verification pending)
+- [x] Transaction lookup and intent reconciliation
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
