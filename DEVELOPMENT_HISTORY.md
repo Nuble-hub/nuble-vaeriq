@@ -33,6 +33,18 @@ This document records the development timeline of NUBLE / VAERIQ for product tra
 - Architecture and hackathon documentation were updated from the earlier chain plan to the Solana-first implementation path.
 - Milestone acceptance criteria were documented so claims about chain integration and execution are tied to demonstrable evidence.
 
+## 2026-09-18 — Milestone 01 completed
+
+- Local dependency installation completed successfully with zero reported vulnerabilities.
+- Solana Devnet connectivity probe returned status `ok` with the configured Devnet USDC mint and 6 decimals.
+- VAERIQ web application connected to a browser Solana wallet.
+- A compliant 12 USDC payment with invoice reference `INV-001` evaluated to `APPROVE`.
+- The approved intent crossed the execution guard, was signed by the browser wallet, and produced a real Solana Devnet transaction signature.
+- VAERIQ displayed execution audit events for the approved path: `EXECUTION_STARTED`, `TRANSACTION_SUBMITTED`, and `TRANSACTION_CONFIRMED`.
+- An adversarial 8,500 USDC payment to an unapproved destination with no invoice reference evaluated to `BLOCK`.
+- The blocked scenario showed no transaction signature and no execution events, and the execution action remained disabled.
+- Milestone 01 acceptance criteria are therefore marked complete in `docs/MILESTONE_01.md`.
+
 ## Disclosure principle
 
 Any meaningful development completed before a final submission will be described accurately in the submission materials. The repository should preserve enough history to distinguish early design/prototype work from subsequent hackathon development.
