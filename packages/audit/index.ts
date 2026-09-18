@@ -37,3 +37,22 @@ export function createExecutionFailureAuditEvent(args: { intent: PaymentIntent; 
     payloadRef: `error:${args.error.slice(0, 160)}`
   });
 }
+
+
+export function createTransactionReconciliationAuditEvent(args: {
+  intent: PaymentIntent;
+  actor: string;
+  txHash: string;
+  status: "MATCHED" | "MISMATCHED" | "NOT_FOUND";
+  now?: string;
+}): AuditEvent {
+  return createAuditEvent({
+    id: `${args.intent.id}:transaction-reconciled:${args.now ?? new Date().toISOString()}`,
+    type: "TRANSACTION_RECONCILED",
+    actor: args.actor,
+    intentId: args.intent.id,
+    organizationId: args.intent.organizationId,
+    now: args.now,
+    payloadRef: `reconciliation:${args.status}:tx:${args.txHash}`
+  });
+}
