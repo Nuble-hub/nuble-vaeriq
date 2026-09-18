@@ -38,7 +38,7 @@ This is intentionally a demo-grade persistence layer, not a production treasury 
 
 - [ ] Expand automated tests around evaluation and execution boundaries.
 - [x] Add execution failure handling and evidence.
-- [ ] Add transaction lookup/reconciliation.
+- [x] Add transaction lookup/reconciliation (runtime verification pending).
 - [ ] Improve demo reliability and recovery states.
 
 ## Workstream C — Customer validation
@@ -58,7 +58,7 @@ No customer-validation claim should be made until evidence is collected.
 
 ## Acceptance criteria
 
-The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. The remaining Milestone 02 acceptance criteria are still open.
+The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. Transaction lookup and reconciliation are implemented; runtime verification remains open. The remaining Milestone 02 acceptance criteria are still open.
 
 
 1. A payment evaluation creates a persistent audit record.
@@ -75,3 +75,25 @@ The persistent-audit slice is implemented and verified by the founder across bro
 - Full accounting replacement.
 - Multi-chain execution expansion during this milestone.
 - Claiming production-grade audit durability from browser-local storage.
+
+
+## Transaction reconciliation design
+
+After an approved payment returns a transaction signature, VAERIQ queries Solana at the `confirmed` commitment and inspects the transaction's parsed SPL token movement. The reconciliation layer compares the observed chain record with the original PaymentIntent:
+
+- chain
+- asset
+- exact atomic amount
+- sender
+- recipient
+- confirmation status
+
+Possible results:
+
+- `MATCHED` — observed transaction matches the intent and is confirmed.
+- `MISMATCHED` — a chain record exists but one or more intent fields do not match.
+- `NOT_FOUND` — the transaction cannot be located at the requested commitment.
+
+The reconciliation result is itself written to the audit trail as `TRANSACTION_RECONCILED`.
+
+The adapter uses Solana's current `getTransaction` RPC with explicit `confirmed` commitment and a transaction-version capability setting. The RPC returns a confirmed transaction by signature or `null` when it is not found at the requested commitment.
