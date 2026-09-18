@@ -95,3 +95,14 @@ The next open work remains execution failure handling, transaction reconciliatio
 - A `TRANSACTION_RECONCILED` audit event is persisted after a successful transaction lookup/reconciliation attempt.
 - Added automated coverage for matching, mismatch, and not-found reconciliation rules.
 - Runtime verification of the on-chain lookup/reconciliation path remains open.
+
+
+## 2026-09-19 — Transaction reconciliation runtime verified
+
+- Founder runtime testing executed a real approved Solana Devnet payment for intent pi_f707e37d-69f0-4a03-b842-b827c2425261.
+- The observed transaction signature was 2eeGYWa7noWMfdPbE5C9sPjVLNg3bYFe7kzhNNePHmbf7J7wiLt6Ld75ocBCcVumMn9byUZ2LwAPG61rGsKfjTAc.
+- VAERIQ reported Reconciliation: MATCHED.
+- The audit trail contained TRANSACTION_SUBMITTED, TRANSACTION_CONFIRMED, and TRANSACTION_RECONCILED, all referencing the same transaction signature.
+- Refresh testing confirmed the TRANSACTION_RECONCILED event remained in persisted audit history.
+- A separate BLOCK test recorded only policy/risk/decision events for intent pi_391c9422-6082-4b53-853e-d34de8862149; no submission, confirmation, or reconciliation events were created.
+- Transaction lookup and reconciliation are therefore runtime-verified for the current Solana Devnet demo path.
