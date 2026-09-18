@@ -96,6 +96,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Solana Devnet stablecoin execution path
 - [x] Execution guard behavior for `APPROVE` / `REVIEW` / `BLOCK`
 - [x] Execution audit events
+- [x] VAERIQ Direction Audit v2
 - [ ] Persistent audit storage
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
@@ -109,6 +110,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/ARCHITECTURE.md` — system boundaries and technical decisions
 - `docs/HACKATHON.md` — Colosseum scope, demo and submission notes
 - `docs/MILESTONE_01.md` — acceptance criteria and runtime evidence for the first chain-connected milestone
+- `docs/DIRECTION_AUDIT_V2.md` — post-Milestone-01 strategic direction audit and Milestone 02 direction
 
 ## License
 
