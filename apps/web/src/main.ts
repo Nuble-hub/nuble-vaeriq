@@ -228,7 +228,7 @@ function render() {
         <div class="card-title">Audit Trail</div>
         <div class="audit-row"><span>Network</span><strong>Solana Devnet</strong></div>
         <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
-        <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId || "—"}</code></div>
+        <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId ?? "—"}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
         <div class="audit-row"><span>Last reconciled transaction</span><code>${state.lastReconciledTxSignature || "—"}</code></div>
