@@ -28,6 +28,7 @@ const state = {
   txSignature: "",
   auditEvents: [] as AuditEvent[],
   reconciliation: null as TransactionReconciliation | null,
+  decision: null as "APPROVE" | "REVIEW" | "BLOCK" | null,
   error: ""
 };
 
@@ -98,13 +99,57 @@ function buildIntent(): PaymentIntent {
   };
 }
 
+function restoreLatestAuditState(): void {
+  const events = auditStore.list(200);
+  if (!events.length) return;
+
+  const latestIntentId = events[events.length - 1]?.intentId;
+  if (!latestIntentId) return;
+
+  const latestEvents = events.filter((event) => event.intentId === latestIntentId);
+  state.auditEvents = latestEvents;
+
+  const decisionEvent = [...latestEvents].reverse().find((event) => event.type === "DECISION_MADE");
+  if (decisionEvent?.payloadRef?.startsWith("decision:")) {
+    const value = decisionEvent.payloadRef.slice("decision:".length);
+    if (value === "APPROVE" || value === "REVIEW" || value === "BLOCK") state.decision = value;
+  }
+
+  const transactionEvent = [...latestEvents].reverse().find(
+    (event) => event.type === "TRANSACTION_CONFIRMED" || event.type === "TRANSACTION_SUBMITTED"
+  );
+  const transactionRef = transactionEvent?.payloadRef?.startsWith("tx:")
+    ? transactionEvent.payloadRef.slice("tx:".length)
+    : undefined;
+
+  const reconciliationEvent = [...latestEvents].reverse().find((event) => event.type === "TRANSACTION_RECONCILED");
+  const reconciliationRef = reconciliationEvent?.payloadRef;
+  const reconciliationMatch = reconciliationRef?.match(/^reconciliation:(MATCHED|MISMATCHED|NOT_FOUND):tx:(.+)$/);
+
+  if (reconciliationMatch) {
+    state.reconciliation = {
+      status: reconciliationMatch[1] as TransactionReconciliation["status"],
+      transaction: null,
+      mismatches: []
+    };
+    state.txSignature = transactionRef ?? reconciliationMatch[2];
+  } else if (transactionRef) {
+    state.txSignature = transactionRef;
+  }
+
+  const failureEvent = [...latestEvents].reverse().find((event) => event.type === "EXECUTION_FAILED");
+  if (failureEvent?.payloadRef?.startsWith("error:")) {
+    state.error = failureEvent.payloadRef.slice("error:".length);
+  }
+}
+
 function render() {
   const walletState = client.wallet.getState();
   const connected = walletState.connected;
   const wallets = walletState.wallets;
   const walletStatus = walletState.status;
   const app = document.querySelector<HTMLDivElement>("#app")!;
-  const decision = state.result?.result.decision;
+  const decision = state.result?.result.decision ?? state.decision;
   const reasons = state.result?.result.reasons ?? [];
   const signature = state.txSignature;
   const auditEvents = state.auditEvents;
@@ -219,7 +264,7 @@ function render() {
     render();
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.decision = null; state.error = ""; render(); });
   document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
@@ -227,10 +272,12 @@ function render() {
     state.txSignature = "";
     state.auditEvents = [];
     state.reconciliation = null;
+    state.decision = null;
     try {
       const intent = buildIntent();
       state.intent = intent;
       state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode) });
+      state.decision = state.result.result.decision;
       state.auditEvents = state.result.auditEvents;
       auditStore.append(state.result.auditEvents);
       render();
@@ -311,5 +358,6 @@ function render() {
   });
 }
 
+restoreLatestAuditState();
 client.wallet.subscribe(render);
 render();
