@@ -102,7 +102,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Execution failure handling and persisted failure evidence
 - [ ] Durable server-side audit storage
 - [x] Transaction lookup and intent reconciliation
-- [x] Restore latest persisted audit summary after refresh (runtime verification pending)
+- [x] Restore latest persisted audit summary after refresh
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
