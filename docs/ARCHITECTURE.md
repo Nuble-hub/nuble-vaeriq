@@ -101,3 +101,9 @@ The bridge between them is the intent ID, policy version, decision record, and t
 The initial implementation uses the current Solana TypeScript stack centered on `@solana/kit`. Wallet-connected execution is preferred for the demo so the user's wallet remains the signer and VAERIQ remains the control/orchestration layer.
 
 For stablecoin movement, the first adapter targets standard SPL token transfer primitives. Token amounts are represented in base units using integers/strings, not floating-point numbers.
+
+## Audit persistence
+
+The control engine emits audit events for policy evaluation, risk evaluation, decision, and execution. The web demo persists these events through a replaceable `AuditEventStore` implementation using browser-local storage.
+
+This persistence layer is intentionally demo-grade. It demonstrates that decision evidence survives a page refresh without coupling the control engine to a browser-specific storage API. A production implementation can replace the store with durable server-side storage while preserving the same event contract and intent-to-transaction traceability.
