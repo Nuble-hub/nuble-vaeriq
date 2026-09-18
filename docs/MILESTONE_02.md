@@ -59,7 +59,7 @@ No customer-validation claim should be made until evidence is collected.
 
 ## Acceptance criteria
 
-The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. Transaction lookup and reconciliation are implemented and runtime-verified on Solana Devnet: the founder observed MATCHED after a real approved payment and confirmed the TRANSACTION_RECONCILED event persisted across refresh. The BLOCK path produced no submission, confirmation, or reconciliation events. The remaining Milestone 02 acceptance criteria are still open.
+The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. Transaction lookup and reconciliation are implemented and runtime-verified on Solana Devnet: the founder observed MATCHED after a real approved payment, confirmed that the observed signature matched the PaymentIntent evidence, and confirmed the TRANSACTION_RECONCILED event persisted across refresh. The BLOCK path produced no submission, confirmation, or reconciliation events. The remaining Milestone 02 acceptance criteria are still open.
 
 
 1. A payment evaluation creates a persistent audit record.
@@ -98,3 +98,14 @@ Possible results:
 The reconciliation result is itself written to the audit trail as `TRANSACTION_RECONCILED`.
 
 The adapter uses Solana's current `getTransaction` RPC with explicit `confirmed` commitment and a transaction-version capability setting. The RPC returns a confirmed transaction by signature or `null` when it is not found at the requested commitment.
+
+
+## Verified runtime evidence
+
+The founder completed the current reconciliation runbook on 2026-09-19.
+
+Approved intent `pi_8e09d2a4-c2dc-40ae-bfe2-f308c00f4fc8` produced transaction `nh97Q3Vw9nEVYRmthSZTefr8NJbCK4xdDGMRGPHcWLJ8sPRUS7hyGLgdTmm6kCv1JNPVMHaTDWU9zjteTEQnmFN`. VAERIQ reported `Reconciliation: MATCHED`, and the persisted history contained `TRANSACTION_SUBMITTED`, `TRANSACTION_CONFIRMED`, and `TRANSACTION_RECONCILED` for the same intent and signature after refresh.
+
+A separate BLOCK intent produced only policy, risk, and decision events, with no submission, confirmation, or reconciliation events.
+
+The previously tested approved-but-unfunded flow also records `EXECUTION_STARTED` and `EXECUTION_FAILED:INSUFFICIENT_USDC_BALANCE` without submission or confirmation.
