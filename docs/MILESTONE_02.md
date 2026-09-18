@@ -65,7 +65,7 @@ The persistent-audit slice is implemented and verified by the founder across bro
 2. An APPROVE execution appends transaction events with the real transaction signature.
 3. A BLOCK evaluation persists the decision but produces no execution event or transaction signature.
 4. Refreshing the browser does not erase the audit history.
-5. Automated tests cover persistence behavior and the execution guard.
+5. Automated tests cover persistence behavior, the execution guard, and reconciliation rules.
 6. The demo can explain the control evidence without relying on hidden state.
 
 ## Explicit non-goals
