@@ -3,7 +3,7 @@ import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { walletSigner } from "@solana/kit-plugin-wallet";
 import { evaluatePayment } from "../../../packages/evaluation/index.js";
 import { authorizeExecution } from "../../../packages/decision/execution-guard.js";
-import { createExecutionAuditEvents } from "../../../packages/audit/index.js";
+import { createExecutionAuditEvents, createExecutionFailureAuditEvent, createAuditEvent } from "../../../packages/audit/index.js";
 import { JsonAuditEventStore } from "../../../packages/audit/store.js";
 import type { AuditEvent } from "../../../packages/domain/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
@@ -237,9 +237,24 @@ function render() {
 
   document.querySelector<HTMLButtonElement>("#execute")?.addEventListener("click", async () => {
     state.error = "";
+    let approvedIntent: PaymentIntent | null = null;
+    let executionStarted = false;
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
-      const approvedIntent = authorizeExecution(state.intent, state.result.result);
+      approvedIntent = authorizeExecution(state.intent, state.result.result);
+      const started = createAuditEvent({
+        id: `${approvedIntent.id}:execution-started`,
+        type: "EXECUTION_STARTED",
+        actor: approvedIntent.requesterId,
+        intentId: approvedIntent.id,
+        organizationId: approvedIntent.organizationId,
+        payloadRef: "execution:started"
+      });
+      executionStarted = true;
+      state.auditEvents = [...state.auditEvents, started];
+      auditStore.append([started]);
+      render();
+
       const connectedSigner = client.wallet.getState().connected?.signer;
       if (!connectedSigner) throw new Error("WALLET_SIGNER_NOT_AVAILABLE");
       const adapter = new SolanaAdapter({}, connectedSigner);
@@ -247,12 +262,18 @@ function render() {
       if (!simulation.ok) throw new Error(simulation.message);
       const result = await adapter.execute(approvedIntent);
       state.txSignature = result.txHash;
-      const executionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash });
+      const executionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash }).filter((event) => event.type !== "EXECUTION_STARTED");
       state.auditEvents = [...state.auditEvents, ...executionEvents];
       auditStore.append(executionEvents);
       render();
     } catch (error) {
-      state.error = error instanceof Error ? error.message : "EXECUTION_FAILED";
+      const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
+      state.error = message;
+      if (executionStarted && approvedIntent) {
+        const failure = createExecutionFailureAuditEvent({ intent: approvedIntent, actor: approvedIntent.requesterId, error: message });
+        state.auditEvents = [...state.auditEvents, failure];
+        auditStore.append([failure]);
+      }
       render();
     }
   });
