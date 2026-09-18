@@ -36,7 +36,7 @@ AI is used for contextual reasoning and explanation. Financial enforcement remai
 
 This repository is the active development source for VAERIQ during the hackathon. It is intentionally private during development. The repository history is part of the project's development record.
 
-The current engineering focus is Milestone 01: a narrow, chain-connected payment-control loop on Solana Devnet.
+**Milestone 01 is complete:** the Solana Devnet payment-control loop has been exercised end-to-end for both an approved payment and a blocked payment.
 
 ## Core team
 
@@ -91,14 +91,15 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Hackathon Execution Board v0.1
 - [x] Repository foundation
 - [x] Solana-first architecture decision
-- [ ] Core decision engine in repository
-- [ ] Solana Devnet stablecoin read path
-- [ ] Solana Devnet stablecoin execution path
-- [ ] Execution guard tests for `APPROVE` / `REVIEW` / `BLOCK`
-- [ ] Persistent audit trail
+- [x] Milestone 01 — chain-connected payment control
+- [x] Solana Devnet stablecoin read/validation path
+- [x] Solana Devnet stablecoin execution path
+- [x] Execution guard behavior for `APPROVE` / `REVIEW` / `BLOCK`
+- [x] Execution audit events
+- [ ] Persistent audit storage
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
-- [ ] Live demo
+- [ ] Final demo package
 - [ ] Final Colosseum submission
 
 ## Documentation
@@ -107,7 +108,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `CONTRIBUTING.md` — repository and engineering conventions
 - `docs/ARCHITECTURE.md` — system boundaries and technical decisions
 - `docs/HACKATHON.md` — Colosseum scope, demo and submission notes
-- `docs/MILESTONE_01.md` — concrete acceptance criteria for the first chain-connected milestone
+- `docs/MILESTONE_01.md` — acceptance criteria and runtime evidence for the first chain-connected milestone
 
 ## License
 
