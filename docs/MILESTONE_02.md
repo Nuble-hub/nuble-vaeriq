@@ -60,7 +60,6 @@ No customer-validation claim should be made until evidence is collected.
 
 The persistent-audit slice is implemented. The remaining Milestone 02 acceptance criteria are still open.
 
-## Acceptance criteria
 
 1. A payment evaluation creates a persistent audit record.
 2. An APPROVE execution appends transaction events with the real transaction signature.
