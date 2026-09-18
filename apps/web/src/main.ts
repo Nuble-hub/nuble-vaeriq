@@ -216,7 +216,7 @@ function render() {
   });
 
   document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
@@ -239,6 +239,7 @@ function render() {
     state.error = "";
     let approvedIntent: PaymentIntent | null = null;
     let executionStarted = false;
+    let transactionSubmitted = false;
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
       approvedIntent = authorizeExecution(state.intent, state.result.result);
@@ -261,6 +262,7 @@ function render() {
       const simulation = await adapter.simulateIntent(approvedIntent);
       if (!simulation.ok) throw new Error(simulation.message);
       const result = await adapter.execute(approvedIntent);
+      transactionSubmitted = true;
       state.txSignature = result.txHash;
       const executionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash }).filter((event) => event.type !== "EXECUTION_STARTED");
       state.auditEvents = [...state.auditEvents, ...executionEvents];
@@ -269,7 +271,7 @@ function render() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
       state.error = message;
-      if (executionStarted && approvedIntent) {
+      if (executionStarted && !transactionSubmitted && approvedIntent) {
         const failure = createExecutionFailureAuditEvent({ intent: approvedIntent, actor: approvedIntent.requesterId, error: message });
         state.auditEvents = [...state.auditEvents, failure];
         auditStore.append([failure]);
