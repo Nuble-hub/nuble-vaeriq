@@ -273,8 +273,21 @@ function render() {
       state.auditEvents = [...state.auditEvents, ...executionEvents];
       auditStore.append(executionEvents);
 
-      const chainTransaction = await adapter.getTransaction(result.txHash);
-      const reconciliation = reconcilePaymentTransaction(approvedIntent, chainTransaction);
+      let reconciliation: TransactionReconciliation;
+      try {
+        const chainTransaction = await adapter.getTransaction(result.txHash);
+        reconciliation = reconcilePaymentTransaction(approvedIntent, chainTransaction);
+      } catch (error) {
+        const lookupError = error instanceof Error ? error.message : "TRANSACTION_LOOKUP_FAILED";
+        if (lookupError !== "SOLANA_TRANSACTION_NOT_FOUND") throw error;
+        reconciliation = {
+          status: "NOT_FOUND",
+          transaction: null,
+          mismatches: ["TRANSACTION_NOT_FOUND"]
+        };
+        state.error = lookupError;
+      }
+
       state.reconciliation = reconciliation;
       const reconciliationEvent = createTransactionReconciliationAuditEvent({
         intent: approvedIntent,
