@@ -3,9 +3,10 @@ import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { walletSigner } from "@solana/kit-plugin-wallet";
 import { evaluatePayment } from "../../../packages/evaluation/index.js";
 import { authorizeExecution } from "../../../packages/decision/execution-guard.js";
-import { createExecutionAuditEvents, createExecutionFailureAuditEvent, createAuditEvent } from "../../../packages/audit/index.js";
+import { createExecutionAuditEvents, createExecutionFailureAuditEvent, createTransactionReconciliationAuditEvent, createAuditEvent } from "../../../packages/audit/index.js";
 import { JsonAuditEventStore } from "../../../packages/audit/store.js";
 import type { AuditEvent } from "../../../packages/domain/index.js";
+import { reconcilePaymentTransaction, type TransactionReconciliation } from "../../../packages/reconciliation/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
 import type { PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
 import "./styles.css";
@@ -26,6 +27,7 @@ const state = {
   result: null as ReturnType<typeof evaluatePayment> | null,
   txSignature: "",
   auditEvents: [] as AuditEvent[],
+  reconciliation: null as TransactionReconciliation | null,
   error: ""
 };
 
@@ -106,6 +108,7 @@ function render() {
   const reasons = state.result?.result.reasons ?? [];
   const signature = state.txSignature;
   const auditEvents = state.auditEvents;
+  const reconciliation = state.reconciliation;
 
   const connectInProgress = walletStatus === "pending" || walletStatus === "connecting" || walletStatus === "reconnecting";
   const connectLabel = connectInProgress ? "Connecting…" : `Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}`;
@@ -172,6 +175,7 @@ function render() {
         <div class="audit-row"><span>Intent</span><code>${state.intent?.id ?? "—"}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
+        <div class="audit-row"><span>Reconciliation</span><strong class="recon ${reconciliation?.status?.toLowerCase() ?? "idle"}">${reconciliation?.status ?? "—"}</strong></div>
         <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ") : "—"}</code></div>
         <div class="card-title recent-title">Recent persisted events</div>
         <div class="recent-events">
@@ -215,13 +219,14 @@ function render() {
     render();
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
   document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
     state.txSignature = "";
     state.auditEvents = [];
+    state.reconciliation = null;
     try {
       const intent = buildIntent();
       state.intent = intent;
@@ -267,6 +272,18 @@ function render() {
       const executionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash }).filter((event) => event.type !== "EXECUTION_STARTED");
       state.auditEvents = [...state.auditEvents, ...executionEvents];
       auditStore.append(executionEvents);
+
+      const chainTransaction = await adapter.getTransaction(result.txHash);
+      const reconciliation = reconcilePaymentTransaction(approvedIntent, chainTransaction);
+      state.reconciliation = reconciliation;
+      const reconciliationEvent = createTransactionReconciliationAuditEvent({
+        intent: approvedIntent,
+        actor: approvedIntent.requesterId,
+        txHash: result.txHash,
+        status: reconciliation.status
+      });
+      state.auditEvents = [...state.auditEvents, reconciliationEvent];
+      auditStore.append([reconciliationEvent]);
       render();
     } catch (error) {
       const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
