@@ -84,3 +84,14 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The audit trail recorded `EXECUTION_STARTED` followed by `EXECUTION_FAILED` for the same payment intent.
 - No `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED` event was recorded for the failed execution attempt.
 - Milestone 02 execution-failure evidence is therefore runtime-verified for the demo.
+
+
+## 2026-09-19 — Transaction lookup and reconciliation implementation
+
+- Added a replaceable reconciliation layer that compares an executed PaymentIntent with the chain-observed transaction.
+- Solana transaction lookup now uses the configured Devnet RPC and `getTransaction` with confirmed commitment.
+- The adapter inspects parsed SPL token movement and token-account ownership to derive the observed sender, recipient, asset, and exact atomic amount.
+- Reconciliation returns `MATCHED`, `MISMATCHED`, or `NOT_FOUND`.
+- A `TRANSACTION_RECONCILED` audit event is persisted after a successful transaction lookup/reconciliation attempt.
+- Added automated coverage for matching, mismatch, and not-found reconciliation rules.
+- Runtime verification of the on-chain lookup/reconciliation path remains open.
