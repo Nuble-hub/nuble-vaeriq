@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { JsonAuditEventStore } from "../dist/packages/audit/store.js";
-import { createExecutionFailureAuditEvent } from "../dist/packages/audit/index.js";
+import { createExecutionFailureAuditEvent, createTransactionReconciliationAuditEvent } from "../dist/packages/audit/index.js";
 
 const data = new Map();
 const storage = {
@@ -64,3 +64,30 @@ const failure = createExecutionFailureAuditEvent({
 
 assert.equal(failure.type, "EXECUTION_FAILED");
 assert.match(failure.payloadRef, /INSUFFICIENT_USDC_BALANCE/);
+
+
+const reconciliationEvent = createTransactionReconciliationAuditEvent({
+  intent: {
+    id: "pi_reconcile_audit",
+    organizationId: "org_test",
+    requesterType: "human",
+    requesterId: "Wallet111",
+    recipient: "Vendor222",
+    asset: "USDC",
+    amountAtomic: "12000000",
+    purpose: "test",
+    chain: "solana",
+    status: "APPROVED",
+    createdAt: "2026-09-19T00:00:00.000Z"
+  },
+  actor: "Wallet111",
+  txHash: "Sig333",
+  status: "MATCHED",
+  now: "2026-09-19T00:00:03.000Z"
+});
+
+assert.equal(reconciliationEvent.type, "TRANSACTION_RECONCILED");
+assert.equal(
+  reconciliationEvent.payloadRef,
+  "reconciliation:MATCHED:tx:Sig333"
+);
