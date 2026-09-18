@@ -46,7 +46,6 @@ This is intentionally a demo-grade persistence layer, not a production treasury 
 
 - [ ] Interview relevant treasury/finance operators.
 - [x] Define structured customer-validation protocol and interview log.
-- [x] Define structured customer-validation protocol and interview log.
 - [ ] Record recurring control failures and existing workflows.
 - [ ] Test whether the payment-intent model matches real operating practice.
 - [ ] Identify concrete design-partner candidates.
