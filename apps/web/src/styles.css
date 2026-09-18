@@ -49,3 +49,8 @@ code { overflow-wrap:anywhere; color:#c4ccdf; font-size:12px; }
 .recent-event strong { letter-spacing:.04em; font-size:11px; }
 .recent-event span { color:#8f98b2; overflow-wrap:anywhere; }
 @media (max-width: 560px) { .recent-event { grid-template-columns:1fr; gap:4px; } }
+
+.recon { font-size:12px; letter-spacing:.06em; }
+.recon.matched { color:#7ce0b5; }
+.recon.mismatched { color:#ffbf7d; }
+.recon.not_found { color:#ff9ba7; }
