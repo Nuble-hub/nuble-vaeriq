@@ -1,4 +1,4 @@
-import { address, createClient, type TransactionSigner } from "@solana/kit";
+import { address, createClient, signature, type TransactionSigner } from "@solana/kit";
 import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { signer } from "@solana/kit-plugin-signer";
 import {
@@ -109,7 +109,113 @@ export class SolanaAdapter implements ChainAdapter {
     return { txHash: result.context.signature, confirmed: true };
   }
 
-  async getTransaction(_hash: string): Promise<Transaction> {
-    throw new Error("SOLANA_TRANSACTION_LOOKUP_NOT_IMPLEMENTED");
+  async getTransaction(hash: string): Promise<Transaction> {
+    const client = this.readClient();
+    const rpcTransaction = await client.rpc.getTransaction(signature(hash), {
+      commitment: "confirmed",
+      encoding: "jsonParsed",
+      maxSupportedTransactionVersion: 1
+    }).send() as unknown as RpcTransactionSnapshot | null;
+
+    if (!rpcTransaction) throw new Error("SOLANA_TRANSACTION_NOT_FOUND");
+
+    const accountKeys = rpcTransaction.transaction?.message?.accountKeys ?? [];
+    const instructions = rpcTransaction.transaction?.message?.instructions ?? [];
+    const transfer = instructions
+      .map((instruction) => instruction.parsed)
+      .find((parsed) => {
+        if (!parsed || (parsed.type !== "transfer" && parsed.type !== "transferChecked")) return false;
+        const info = parsed.info;
+        return typeof info?.mint === "string" ? info.mint === this.usdcMint : true;
+      });
+
+    const sourceTokenAccount = typeof transfer?.info?.source === "string" ? transfer.info.source : "";
+    const destinationTokenAccount = typeof transfer?.info?.destination === "string" ? transfer.info.destination : "";
+    const from = findTokenOwner(sourceTokenAccount, accountKeys, rpcTransaction.meta);
+    const to = findTokenOwner(destinationTokenAccount, accountKeys, rpcTransaction.meta);
+
+    const amountAtomic =
+      transfer?.type === "transferChecked"
+        ? readString(transfer.info?.tokenAmount?.amount)
+        : readString(transfer?.info?.amount);
+
+    const metaError = rpcTransaction.meta?.err ?? null;
+    const blockTime = rpcTransaction.blockTime;
+    const timestamp = typeof blockTime === "number"
+      ? new Date(blockTime * 1000).toISOString()
+      : "unknown";
+
+    return {
+      hash,
+      chain: "solana",
+      asset: transfer ? "USDC" : "UNKNOWN",
+      amountAtomic: amountAtomic ?? "0",
+      from: from ?? "",
+      to: to ?? "",
+      timestamp,
+      status: metaError === null ? "CONFIRMED" : "FAILED",
+      slot: rpcTransaction.slot.toString(),
+      feeAtomic: readString(rpcTransaction.meta?.fee)
+    };
   }
+}
+
+
+type RpcTokenBalance = {
+  accountIndex: number;
+  mint: string;
+  owner?: string;
+  uiTokenAmount?: { amount?: string };
+};
+
+type RpcParsedInstruction = {
+  parsed?: {
+    type?: string;
+    info?: {
+      mint?: string;
+      source?: string;
+      destination?: string;
+      amount?: string;
+      tokenAmount?: { amount?: string };
+    };
+  };
+};
+
+type RpcTransactionSnapshot = {
+  blockTime?: number | null;
+  slot: bigint | number;
+  meta?: {
+    err?: unknown | null;
+    fee?: bigint | number | string | null;
+    preTokenBalances?: RpcTokenBalance[] | null;
+    postTokenBalances?: RpcTokenBalance[] | null;
+  } | null;
+  transaction: {
+    message: {
+      accountKeys: Array<{ pubkey?: string } | string>;
+      instructions: RpcParsedInstruction[];
+    };
+  };
+};
+
+function readString(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (typeof value === "bigint" || typeof value === "number") return value.toString();
+  return undefined;
+}
+
+function accountKeyAt(accountKeys: RpcTransactionSnapshot["transaction"]["message"]["accountKeys"], index: number): string {
+  const entry = accountKeys[index];
+  return typeof entry === "string" ? entry : entry?.pubkey ?? "";
+}
+
+function findTokenOwner(
+  tokenAccount: string,
+  accountKeys: RpcTransactionSnapshot["transaction"]["message"]["accountKeys"],
+  meta: RpcTransactionSnapshot["meta"]
+): string | undefined {
+  if (!tokenAccount || !meta) return undefined;
+  const balances = [...(meta.preTokenBalances ?? []), ...(meta.postTokenBalances ?? [])];
+  const match = balances.find((balance) => accountKeyAt(accountKeys, balance.accountIndex) === tokenAccount && typeof balance.owner === "string");
+  return match?.owner;
 }
