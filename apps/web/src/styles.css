@@ -42,3 +42,10 @@ code { overflow-wrap:anywhere; color:#c4ccdf; font-size:12px; }
 .muted { color:#646d83; }
 @media (max-width: 900px) { .topbar { flex-direction:column; align-items:flex-start; } .grid { grid-template-columns:1fr; } }
 @media (max-width: 560px) { .two-col, .scenario-row { grid-template-columns:1fr; } .audit-row { grid-template-columns:1fr; gap:4px; } }
+
+.recent-title { margin-top: 22px; margin-bottom: 10px; }
+.recent-events { display:grid; gap:8px; }
+.recent-event { display:grid; grid-template-columns: 170px 1fr; gap:10px; align-items:center; padding:10px 12px; border:1px solid rgba(255,255,255,.05); border-radius:10px; background:#080b12; font-size:12px; }
+.recent-event strong { letter-spacing:.04em; font-size:11px; }
+.recent-event span { color:#8f98b2; overflow-wrap:anywhere; }
+@media (max-width: 560px) { .recent-event { grid-template-columns:1fr; gap:4px; } }
