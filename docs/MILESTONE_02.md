@@ -27,6 +27,7 @@ Milestone 02 starts by making that decision evidence durable and inspectable.
 - [x] Reload persisted events after a browser refresh.
 - [x] Show recent audit events in the product UI.
 - [x] Preserve intent IDs so decision evidence can be traced to a transaction signature.
+- [x] Restore the latest persisted audit summary after browser refresh (runtime verification pending).
 
 ### Initial persistence boundary
 
