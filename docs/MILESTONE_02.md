@@ -21,16 +21,16 @@ Milestone 02 starts by making that decision evidence durable and inspectable.
 
 ## Workstream A — Persistent audit evidence
 
-- [ ] Define a small audit-store interface independent of browser storage.
-- [ ] Persist policy, risk, and decision audit events.
-- [ ] Persist execution events and transaction references.
-- [ ] Reload persisted events after a browser refresh.
-- [ ] Show recent audit events in the product UI.
-- [ ] Preserve intent IDs so decision evidence can be traced to a transaction signature.
+- [x] Define a small audit-store interface independent of browser storage.
+- [x] Persist policy, risk, and decision audit events.
+- [x] Persist execution events and transaction references.
+- [x] Reload persisted events after a browser refresh.
+- [x] Show recent audit events in the product UI.
+- [x] Preserve intent IDs so decision evidence can be traced to a transaction signature.
 
 ### Initial persistence boundary
 
-The first implementation uses browser-local persistent storage for the demo.
+The first implementation uses browser-local persistent storage for the demo. The store is intentionally isolated behind a small interface so the persistence backend can be replaced later.
 
 This is intentionally a demo-grade persistence layer, not a production treasury database. The storage interface should remain replaceable so a durable server-side store can be added later without changing the control engine.
 
@@ -58,7 +58,9 @@ No customer-validation claim should be made until evidence is collected.
 
 ## Acceptance criteria
 
-Milestone 02 can be marked complete when:
+The persistent-audit slice is implemented. The remaining Milestone 02 acceptance criteria are still open.
+
+## Acceptance criteria
 
 1. A payment evaluation creates a persistent audit record.
 2. An APPROVE execution appends transaction events with the real transaction signature.
