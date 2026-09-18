@@ -1,5 +1,6 @@
 import { strict as assert } from "node:assert";
 import { JsonAuditEventStore } from "../dist/packages/audit/store.js";
+import { createExecutionFailureAuditEvent } from "../dist/packages/audit/index.js";
 
 const data = new Map();
 const storage = {
@@ -40,3 +41,26 @@ reloaded.clear();
 assert.deepEqual(reloaded.list(), []);
 
 console.log("VAERIQ audit persistence test: PASS");
+
+
+const failure = createExecutionFailureAuditEvent({
+  intent: {
+    id: "pi_failure",
+    organizationId: "org_test",
+    requesterType: "agent",
+    requesterId: "agent_001",
+    recipient: "recipient",
+    asset: "USDC",
+    amountAtomic: "1000000",
+    purpose: "test",
+    chain: "solana",
+    status: "APPROVED",
+    createdAt: "2026-09-19T00:00:00.000Z"
+  },
+  actor: "agent_001",
+  error: "INSUFFICIENT_USDC_BALANCE",
+  now: "2026-09-19T00:00:02.000Z"
+});
+
+assert.equal(failure.type, "EXECUTION_FAILED");
+assert.match(failure.payloadRef, /INSUFFICIENT_USDC_BALANCE/);
