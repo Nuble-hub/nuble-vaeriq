@@ -132,3 +132,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The same intent and signature appeared across `TRANSACTION_SUBMITTED`, `TRANSACTION_CONFIRMED`, and `TRANSACTION_RECONCILED` persisted evidence after refresh.
 - BLOCK verification remained isolated: no submission, confirmation, or reconciliation events were produced for the blocked intent.
 - The current audit, lookup, reconciliation, and rehydration slices are runtime-verified for the demo path.
+
+
+## 2026-09-19 — Customer validation protocol prepared
+
+- Added a structured customer-validation protocol focused on real treasury/payment workflows rather than pitch confirmation.
+- Added an interview log template for concrete incidents, existing controls, business impact, objections, product fit, and workflow commitments.
+- Validation targets remain 5–10 relevant operators, recurring problem evidence, 2–3 serious design-partner candidates, and at least one concrete workflow commitment where possible.
+- No customer or product-market-fit claims are being made until interviews produce supporting evidence.
