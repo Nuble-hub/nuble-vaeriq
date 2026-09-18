@@ -93,13 +93,18 @@ function buildIntent(): PaymentIntent {
 }
 
 function render() {
-  const connected = client.wallet.getState().connected;
-  const wallets = client.wallet.getState().wallets;
+  const walletState = client.wallet.getState();
+  const connected = walletState.connected;
+  const wallets = walletState.wallets;
+  const walletStatus = walletState.status;
   const app = document.querySelector<HTMLDivElement>("#app")!;
   const decision = state.result?.result.decision;
   const reasons = state.result?.result.reasons ?? [];
   const signature = state.txSignature;
   const auditEvents = state.auditExecutionEvents;
+
+  const connectInProgress = walletStatus === "pending" || walletStatus === "connecting" || walletStatus === "reconnecting";
+  const connectLabel = connectInProgress ? "Connecting…" : `Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}`;
 
   app.innerHTML = `
     <main class="shell">
@@ -111,7 +116,7 @@ function render() {
         </div>
         <div class="wallet-box">
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
-          ${connected ? "" : `<button id="connect">Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}</button>`}
+          ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${connectLabel}</button>`}
         </div>
       </header>
 
@@ -170,15 +175,36 @@ function render() {
 
   document.querySelector<HTMLButtonElement>("#connect")?.addEventListener("click", async () => {
     state.error = "";
+    const current = client.wallet.getState();
+
+    // walletSigner may auto-connect in the browser. Do not start a second
+    // connection while discovery/reconnect is already in flight.
+    if (current.connected) {
+      render();
+      return;
+    }
+
+    if (current.status !== "disconnected") {
+      render();
+      return;
+    }
+
     try {
-      const available = client.wallet.getState().wallets;
+      const available = current.wallets;
       if (!available.length) throw new Error("NO_WALLET_FOUND");
       await client.wallet.connect(available[0]);
-      render();
+      state.error = "";
     } catch (error) {
-      state.error = error instanceof Error ? error.message : "WALLET_CONNECT_FAILED";
-      render();
+      // A concurrent auto-connect can win the race and still leave the wallet
+      // connected. Treat that state as success rather than surfacing a false
+      // error such as "superseded by a newer connect or sign-in".
+      if (client.wallet.getState().connected) {
+        state.error = "";
+      } else {
+        state.error = error instanceof Error ? error.message : "WALLET_CONNECT_FAILED";
+      }
     }
+    render();
   });
 
   document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditExecutionEvents = []; state.error = ""; render(); });
