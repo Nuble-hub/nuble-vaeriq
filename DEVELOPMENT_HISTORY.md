@@ -66,3 +66,13 @@ Implemented the first audit-persistence slice:
 - documented the boundary clearly as demo-grade browser-local persistence, not production treasury storage
 
 The next open work remains execution failure handling, transaction reconciliation, customer validation, and final demo evidence.
+
+
+## 2026-09-19 — Persistent audit verification and execution-failure hardening
+
+- Founder runtime testing confirmed that persisted audit events remain visible after browser refresh for both APPROVE and BLOCK flows.
+- The persistent audit slice is therefore treated as runtime-verified for the demo.
+- Execution failure handling was added at the post-authorization boundary.
+- VAERIQ now records `EXECUTION_STARTED` before simulation/transaction work and persists an `EXECUTION_FAILED` event when an authorized execution attempt fails.
+- Failure evidence remains attached to the same payment intent and is stored through the replaceable audit store.
+- Runtime verification of the failure path remains open.
