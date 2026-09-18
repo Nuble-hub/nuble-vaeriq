@@ -126,7 +126,7 @@ export class SolanaAdapter implements ChainAdapter {
       .find((parsed) => {
         if (!parsed || (parsed.type !== "transfer" && parsed.type !== "transferChecked")) return false;
         const info = parsed.info;
-        return typeof info?.mint === "string" ? info.mint === this.usdcMint : true;
+        return parsed.type === "transferChecked" && info?.mint === this.usdcMint;
       });
 
     const sourceTokenAccount = typeof transfer?.info?.source === "string" ? transfer.info.source : "";
@@ -143,7 +143,9 @@ export class SolanaAdapter implements ChainAdapter {
     const blockTime = rpcTransaction.blockTime;
     const timestamp = typeof blockTime === "number"
       ? new Date(blockTime * 1000).toISOString()
-      : "unknown";
+      : typeof blockTime === "bigint"
+        ? new Date(Number(blockTime) * 1000).toISOString()
+        : "unknown";
 
     return {
       hash,
@@ -182,7 +184,7 @@ type RpcParsedInstruction = {
 };
 
 type RpcTransactionSnapshot = {
-  blockTime?: number | null;
+  blockTime?: number | bigint | null;
   slot: bigint | number;
   meta?: {
     err?: unknown | null;
