@@ -52,3 +52,17 @@ Any meaningful development completed before a final submission will be described
 ## Team attribution
 
 The core project is solo-founder led. No external human builder is represented as a team member. AI-assisted research, design, coding, testing, and documentation are treated as part of the development workflow rather than as human teammates.
+
+
+## 2026-09-19 — Milestone 02 started: persistent audit evidence
+
+Milestone 02 was opened as a hardening/proof milestone rather than a scope expansion.
+
+Implemented the first audit-persistence slice:
+- added a replaceable `AuditEventStore` interface with a JSON-backed implementation
+- persisted decision audit events and execution/transaction events in browser-local storage for the demo
+- surfaced recent persisted audit events in the web UI
+- added automated coverage for audit-store persistence and reload behavior
+- documented the boundary clearly as demo-grade browser-local persistence, not production treasury storage
+
+The next open work remains execution failure handling, transaction reconciliation, customer validation, and final demo evidence.
