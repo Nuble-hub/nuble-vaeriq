@@ -147,3 +147,15 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Hardened the execution guard so it fails closed when approval evidence is bound to a different intent, the intent is not in the expected pre-execution state, policy evidence is not a clean pass, or risk is already classified as high.
 - Expanded the automated control-boundary gate to cover intent mismatch, tampered policy evidence, tampered high-risk evidence, invalid intent status, and existing REVIEW/BLOCK cases.
 - Reframed Milestone 02 so product hardening and demo proof remain the hackathon critical path; customer validation continues in parallel and does not block engineering progress.
+
+
+## 2026-09-21 — Execution recovery and idempotency hardening implemented
+
+- Added a persisted execution-attempt model separate from audit events.
+- Bound execution attempts to the PaymentIntent through an intent-scoped idempotency key.
+- Added explicit lifecycle states: STARTED, SUBMITTED, CONFIRMED, RECONCILED, FAILED_BEFORE_SUBMISSION, and UNKNOWN_AFTER_SUBMISSION.
+- Retry is permitted only when the system has explicit evidence that failure occurred before transaction submission.
+- Any error after entering the chain execution adapter is treated conservatively as UNKNOWN_AFTER_SUBMISSION unless it is a known pre-submission balance failure.
+- The web demo now restores the latest execution state after browser refresh and disables automatic retry for uncertain execution outcomes.
+- Added automated tests for persistence, retry gating, idempotency-key reuse, and unknown-execution locking.
+- Runtime verification of the new recovery behavior remains open.
