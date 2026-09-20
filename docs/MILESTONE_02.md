@@ -1,4 +1,4 @@
-# Milestone 02 — Prove the Control Layer
+# Milestone 02 — Prove & Harden the Control Layer
 
 **Status:** In progress  
 **Started:** 2026-09-19  
@@ -7,17 +7,17 @@
 
 ## Objective
 
-Strengthen the control layer after Milestone 01 by making decision evidence persistent and easier to inspect across a browser session, while keeping the product boundary narrow.
+Strengthen the control layer after Milestone 01 and make the working demo reliable, explainable, and repeatable without expanding the MVP.
 
-Milestone 02 is not a feature-expansion milestone. It is a proof-and-hardening milestone.
+Milestone 02 is a proof-and-hardening milestone, not a feature-expansion milestone.
 
 ## Core question
 
-> Does VAERIQ provide a reliable control record around programmable value movement?
+> Can VAERIQ reliably enforce and explain its control boundary around programmable value movement?
 
 Milestone 01 proved that VAERIQ can make an APPROVE decision that reaches a real Solana Devnet transaction while BLOCK stops before execution.
 
-Milestone 02 starts by making that decision evidence durable and inspectable.
+Milestone 02 focuses on making that boundary harder to misuse and easier to demonstrate.
 
 ## Workstream A — Persistent audit evidence
 
@@ -35,40 +35,56 @@ The first implementation uses browser-local persistent storage for the demo. The
 
 This is intentionally a demo-grade persistence layer, not a production treasury database. The storage interface should remain replaceable so a durable server-side store can be added later without changing the control engine.
 
-## Workstream B — Product hardening
+## Workstream B — Control-boundary hardening
 
-- [ ] Expand automated tests around evaluation and execution boundaries.
+- [x] Expand automated tests around decision and execution boundaries.
+- [x] Bind approval evidence to the evaluated PaymentIntent ID.
+- [x] Fail closed when the decision evidence is not policy-pass, is high risk, or the intent is in an invalid execution state.
 - [x] Add execution failure handling and evidence.
 - [x] Add transaction lookup/reconciliation.
 - [ ] Improve demo reliability and recovery states.
 
-## Workstream C — Customer validation
+The execution guard is defense-in-depth: APPROVE alone is not sufficient if the decision evidence is inconsistent with the intent or otherwise unsafe to execute.
 
-- [ ] Interview relevant treasury/finance operators.
+## Workstream C — Demo proof
+
+- [x] Approved payment path verified on Solana Devnet.
+- [x] Blocked payment path verified with no submitted transaction.
+- [x] Execution-failure path verified without submission/confirmation.
+- [x] Transaction lookup and reconciliation verified.
+- [x] Audit rehydration verified.
+- [ ] Run a repeatable final demo sequence without manual recovery.
+- [ ] Capture final evidence package for submission.
+
+## Workstream D — Customer discovery (parallel, not a release blocker)
+
+- [ ] Interview relevant treasury/finance operators when access is available.
 - [x] Define structured customer-validation protocol and interview log.
 - [ ] Record recurring control failures and existing workflows.
 - [ ] Test whether the payment-intent model matches real operating practice.
 - [ ] Identify concrete design-partner candidates.
 
-No customer-validation claim should be made until evidence is collected.
+Customer validation remains important market evidence, but it is not a dependency for completing the hackathon engineering path. No customer or product-market-fit claims should be made until evidence is collected.
 
-## Workstream D — Founder and ecosystem proof
+## Workstream E — Solana and founder narrative
 
 - [x] Founder-Market-Fit Thesis v1.0 captured factually.
 - [ ] Connect founder proof to the final pitch narrative without overclaiming.
-- [ ] Make Solana's role explicit in the causal story: programmable value movement → increased need for bounded control.
+- [ ] Make Solana's role explicit in the causal story: programmable value movement -> increased need for bounded control.
+- [ ] Prepare concise technical evidence showing why Solana is an integral first execution environment.
 
 ## Acceptance criteria
 
-The persistent-audit slice is implemented and verified by the founder across browser refresh for both APPROVE and BLOCK flows. Execution-failure handling is implemented and runtime-verified: an approved intent that fails with `INSUFFICIENT_USDC_BALANCE` records `EXECUTION_STARTED` and `EXECUTION_FAILED` without `TRANSACTION_SUBMITTED` or `TRANSACTION_CONFIRMED`. Transaction lookup and reconciliation are implemented and runtime-verified on Solana Devnet: the founder observed MATCHED after a real approved payment, confirmed that the observed signature matched the PaymentIntent evidence, and confirmed the TRANSACTION_RECONCILED event persisted across refresh. The BLOCK path produced no submission, confirmation, or reconciliation events. The remaining Milestone 02 acceptance criteria are still open.
-
-
-1. A payment evaluation creates a persistent audit record.
-2. An APPROVE execution appends transaction events with the real transaction signature.
-3. A BLOCK evaluation persists the decision but produces no execution event or transaction signature.
-4. Refreshing the browser does not erase the audit history.
-5. Automated tests cover persistence behavior, the execution guard, and reconciliation rules.
-6. The demo can explain the control evidence without relying on hidden state.
+1. A payment evaluation creates auditable decision evidence bound to the correct PaymentIntent.
+2. An APPROVE decision can cross the execution guard only when its intent binding, policy result, risk state, and intent status are valid.
+3. A BLOCK or REVIEW decision cannot cross the execution guard.
+4. A decision that is inconsistent with its PaymentIntent cannot be reused for another intent.
+5. A decision with failed/review policy evidence or HIGH risk cannot be promoted to execution.
+6. Completed execution appends transaction events with the real transaction signature.
+7. Failed execution records EXECUTION_STARTED and EXECUTION_FAILED without TRANSACTION_SUBMITTED or TRANSACTION_CONFIRMED.
+8. Reconciliation can return MATCHED, MISMATCHED, or NOT_FOUND.
+9. Refreshing the browser preserves the demo audit evidence.
+10. The final demo can explain the control boundary without relying on hidden state.
 
 ## Explicit non-goals
 
@@ -76,12 +92,11 @@ The persistent-audit slice is implemented and verified by the founder across bro
 - Autonomous AI signing.
 - Full accounting replacement.
 - Multi-chain execution expansion during this milestone.
-- Claiming production-grade audit durability from browser-local storage.
-
+- Production-grade audit durability from browser-local storage.
 
 ## Transaction reconciliation design
 
-After an approved payment returns a transaction signature, VAERIQ queries Solana at the `confirmed` commitment and inspects the transaction's parsed SPL token movement. The reconciliation layer compares the observed chain record with the original PaymentIntent:
+After an approved payment returns a transaction signature, VAERIQ queries Solana at the confirmed commitment and inspects the parsed SPL token movement. The reconciliation layer compares the observed chain record with the original PaymentIntent:
 
 - chain
 - asset
@@ -92,21 +107,20 @@ After an approved payment returns a transaction signature, VAERIQ queries Solana
 
 Possible results:
 
-- `MATCHED` — observed transaction matches the intent and is confirmed.
-- `MISMATCHED` — a chain record exists but one or more intent fields do not match.
-- `NOT_FOUND` — the transaction cannot be located at the requested commitment.
+- MATCHED — observed transaction matches the intent and is confirmed.
+- MISMATCHED — a chain record exists but one or more intent fields do not match.
+- NOT_FOUND — the transaction cannot be located at the requested commitment.
 
-The reconciliation result is itself written to the audit trail as `TRANSACTION_RECONCILED`.
+The reconciliation result is itself written to the audit trail as TRANSACTION_RECONCILED.
 
-The adapter uses Solana's current `getTransaction` RPC with explicit `confirmed` commitment and a transaction-version capability setting. The RPC returns a confirmed transaction by signature or `null` when it is not found at the requested commitment.
-
+The adapter uses Solana's current getTransaction RPC with explicit confirmed commitment and a transaction-version capability setting. The RPC returns a confirmed transaction by signature or null when it is not found at the requested commitment.
 
 ## Verified runtime evidence
 
 The founder completed the current reconciliation runbook on 2026-09-19.
 
-Approved intent `pi_8e09d2a4-c2dc-40ae-bfe2-f308c00f4fc8` produced transaction `nh97Q3Vw9nEVYRmthSZTefr8NJbCK4xdDGMRGPHcWLJ8sPRUS7hyGLgdTmm6kCv1JNPVMHaTDWU9zjteTEQnmFN`. VAERIQ reported `Reconciliation: MATCHED`, and the persisted history contained `TRANSACTION_SUBMITTED`, `TRANSACTION_CONFIRMED`, and `TRANSACTION_RECONCILED` for the same intent and signature after refresh.
+Approved intent pi_8e09d2a4-c2dc-40ae-bfe2-f308c00f4fc8 produced transaction nh97Q3Vw9nEVYRmthSZTefr8NJbCK4xdDGMRGPHcWLJ8sPRUS7hyGLgdTmm6kCv1JNPVMHaTDWU9zjteTEQnmFN. VAERIQ reported Reconciliation: MATCHED, and the persisted history contained TRANSACTION_SUBMITTED, TRANSACTION_CONFIRMED, and TRANSACTION_RECONCILED for the same intent and signature after refresh.
 
 A separate BLOCK intent produced only policy, risk, and decision events, with no submission, confirmation, or reconciliation events.
 
-The previously tested approved-but-unfunded flow also records `EXECUTION_STARTED` and `EXECUTION_FAILED:INSUFFICIENT_USDC_BALANCE` without submission or confirmation.
+The previously tested approved-but-unfunded flow also records EXECUTION_STARTED and EXECUTION_FAILED:INSUFFICIENT_USDC_BALANCE without submission or confirmation.

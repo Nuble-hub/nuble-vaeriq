@@ -140,3 +140,10 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added an interview log template for concrete incidents, existing controls, business impact, objections, product fit, and workflow commitments.
 - Validation targets remain 5–10 relevant operators, recurring problem evidence, 2–3 serious design-partner candidates, and at least one concrete workflow commitment where possible.
 - No customer or product-market-fit claims are being made until interviews produce supporting evidence.
+
+## 2026-09-20 — Control-boundary hardening
+
+- Reworked the decision result to bind an evaluation explicitly to its PaymentIntent ID.
+- Hardened the execution guard so it fails closed when approval evidence is bound to a different intent, the intent is not in the expected pre-execution state, policy evidence is not a clean pass, or risk is already classified as high.
+- Expanded the automated control-boundary gate to cover intent mismatch, tampered policy evidence, tampered high-risk evidence, invalid intent status, and existing REVIEW/BLOCK cases.
+- Reframed Milestone 02 so product hardening and demo proof remain the hackathon critical path; customer validation continues in parallel and does not block engineering progress.
