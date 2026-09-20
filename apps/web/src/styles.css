@@ -54,3 +54,15 @@ code { overflow-wrap:anywhere; color:#c4ccdf; font-size:12px; }
 .recon.matched { color:#7ce0b5; }
 .recon.mismatched { color:#ffbf7d; }
 .recon.not_found { color:#ff9ba7; }
+
+.execution-status { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding:11px 12px; border-radius:10px; background:#080b12; border:1px solid rgba(255,255,255,.06); font-size:12px; }
+.execution-status span { color:#747e97; }
+.execution-status strong { letter-spacing:.05em; }
+.execution-status.idle strong, .execution-status.started strong, .execution-status.submitted strong, .execution-status.confirmed strong { color:#c8cee0; }
+.execution-status.failed_before_submission strong, .execution-state-cell.failed_before_submission { color:#ffbf7d; }
+.execution-status.unknown_after_submission strong, .execution-state-cell.unknown_after_submission { color:#ff9ba7; }
+.execution-status.reconciled strong, .execution-state-cell.reconciled { color:#7ce0b5; }
+.execution-meta { margin-top:10px; color:#747e97; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+.recovery-note { margin-top:10px; color:#ffbf7d; font-size:12px; line-height:1.5; }
+.recovery-warning { margin-top:10px; padding:10px 12px; border-radius:10px; background:#211015; border:1px solid rgba(255,155,167,.14); color:#ffb1bb; font-size:12px; line-height:1.5; }
+.execution-state-cell { font-size:12px; letter-spacing:.05em; }
