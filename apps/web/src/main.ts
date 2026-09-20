@@ -3,10 +3,11 @@ import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { walletSigner } from "@solana/kit-plugin-wallet";
 import { evaluatePayment } from "../../../packages/evaluation/index.js";
 import { authorizeExecution } from "../../../packages/decision/execution-guard.js";
-import { createExecutionAuditEvents, createExecutionFailureAuditEvent, createTransactionReconciliationAuditEvent, createAuditEvent } from "../../../packages/audit/index.js";
+import { createExecutionAuditEvents, createExecutionFailureAuditEvent, createExecutionUnknownAuditEvent, createTransactionReconciliationAuditEvent, createAuditEvent } from "../../../packages/audit/index.js";
 import { JsonAuditEventStore } from "../../../packages/audit/store.js";
 import type { AuditEvent } from "../../../packages/domain/index.js";
 import { reconcilePaymentTransaction, type TransactionReconciliation } from "../../../packages/reconciliation/index.js";
+import { JsonExecutionAttemptStore, canStartExecution, createExecutionAttempt, nextExecutionAttemptState, type ExecutionAttempt } from "../../../packages/execution/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
 import type { PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
 import "./styles.css";
@@ -20,6 +21,7 @@ const client = createClient()
   .use(solanaRpc({ rpcUrl: SOLANA_DEVNET_RPC }));
 
 const auditStore = new JsonAuditEventStore(window.localStorage);
+const executionStore = new JsonExecutionAttemptStore(window.localStorage);
 
 const state = {
   mode: "APPROVE" as "APPROVE" | "BLOCK",
@@ -28,6 +30,7 @@ const state = {
   txSignature: "",
   auditEvents: [] as AuditEvent[],
   reconciliation: null as TransactionReconciliation | null,
+  executionAttempt: null as ExecutionAttempt | null,
   decision: null as "APPROVE" | "REVIEW" | "BLOCK" | null,
   persistedLatestIntentId: "",
   lastReconciledTxSignature: "",
@@ -110,6 +113,7 @@ function restoreLatestAuditState(): void {
 
   state.persistedLatestIntentId = latestIntentId;
   state.lastReconciledTxSignature = findLastReconciledSignature(events);
+  state.executionAttempt = executionStore.latest(latestIntentId);
 
   const latestEvents = events.filter((event) => event.intentId === latestIntentId);
   state.auditEvents = latestEvents;
@@ -143,8 +147,10 @@ function restoreLatestAuditState(): void {
   }
 
   const failureEvent = [...latestEvents].reverse().find((event) => event.type === "EXECUTION_FAILED");
-  if (failureEvent?.payloadRef?.startsWith("error:")) {
-    state.error = failureEvent.payloadRef.slice("error:".length);
+  const unknownEvent = [...latestEvents].reverse().find((event) => event.type === "EXECUTION_UNKNOWN");
+  const terminalErrorEvent = failureEvent ?? unknownEvent;
+  if (terminalErrorEvent?.payloadRef?.startsWith("error:")) {
+    state.error = terminalErrorEvent.payloadRef.slice("error:".length);
   }
 }
 
@@ -165,6 +171,17 @@ function render() {
   const signature = state.txSignature;
   const auditEvents = state.auditEvents;
   const reconciliation = state.reconciliation;
+  const executionAttempt = state.executionAttempt;
+  const executionState = executionAttempt?.state ?? "IDLE";
+  const executionLocked = executionAttempt ? !canStartExecution(executionAttempt) : false;
+  const canExecute = Boolean(state.intent && state.result && decision === "APPROVE" && !executionLocked);
+  const executeLabel = executionState === "FAILED_BEFORE_SUBMISSION"
+    ? "Retry approved payment"
+    : executionState === "UNKNOWN_AFTER_SUBMISSION"
+      ? "Execution outcome uncertain"
+      : executionState === "CONFIRMED" || executionState === "RECONCILED"
+        ? "Payment execution complete"
+        : "Execute approved payment";
 
   const connectInProgress = walletStatus === "pending" || walletStatus === "connecting" || walletStatus === "reconnecting";
   const connectLabel = connectInProgress ? "Connecting…" : `Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}`;
@@ -175,7 +192,7 @@ function render() {
         <div>
           <div class="eyebrow">NUBLE / VAERIQ</div>
           <h1>Control before value moves.</h1>
-          <p class="sub">Milestone 01 · Solana Devnet · Stablecoin payment control</p>
+          <p class="sub">M02 · Solana Devnet · Control boundary + recovery</p>
         </div>
         <div class="wallet-box">
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
@@ -218,7 +235,11 @@ function render() {
           <div class="reason-box">
             ${reasons.length ? reasons.map((x) => `<div>• ${x}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
           </div>
-          <button class="execute" id="execute" ${decision === "APPROVE" ? "" : "disabled"}>Execute approved payment</button>
+          <button class="execute" id="execute" ${canExecute ? "" : "disabled"}>${executeLabel}</button>
+          <div class="execution-status ${executionState.toLowerCase()}"><span>Execution state</span><strong>${executionState}</strong></div>
+          ${executionAttempt ? `<div class="execution-meta">Attempt <code>${executionAttempt.id}</code><br/>Idempotency key <code>${executionAttempt.idempotencyKey}</code></div>` : ""}
+          ${executionState === "FAILED_BEFORE_SUBMISSION" ? `<div class="recovery-note">Retry is allowed because failure was recorded before transaction submission.</div>` : ""}
+          ${executionState === "UNKNOWN_AFTER_SUBMISSION" ? `<div class="recovery-warning">Execution outcome is uncertain. VAERIQ blocks an automatic retry to avoid duplicate payment.</div>` : ""}
           ${state.error ? `<div class="error">${state.error}</div>` : ""}
           ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
         </div>
@@ -230,6 +251,8 @@ function render() {
         <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
         <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId ?? "—"}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
+        <div class="audit-row"><span>Execution state</span><strong class="execution-state-cell ${executionState.toLowerCase()}">${executionState}</strong></div>
+        <div class="audit-row"><span>Execution attempt</span><code>${executionAttempt?.id ?? "—"}</code></div>
         <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
         <div class="audit-row"><span>Last reconciled transaction</span><code>${state.lastReconciledTxSignature || "—"}</code></div>
         <div class="audit-row"><span>Reconciliation</span><strong class="recon ${reconciliation?.status?.toLowerCase() ?? "idle"}">${reconciliation?.status ?? "—"}</strong></div>
@@ -276,14 +299,15 @@ function render() {
     render();
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
     state.txSignature = "";
     state.auditEvents = [];
     state.reconciliation = null;
+    state.executionAttempt = null;
     state.decision = null;
     try {
       const intent = buildIntent();
@@ -303,17 +327,27 @@ function render() {
     state.error = "";
     let approvedIntent: PaymentIntent | null = null;
     let executionStarted = false;
-    let transactionSubmitted = false;
+    let adapterExecutionEntered = false;
+
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
+      if (state.result.result.decision !== "APPROVE") throw new Error(`EXECUTION_NOT_AUTHORIZED:${state.result.result.decision}`);
+      if (state.executionAttempt && !canStartExecution(state.executionAttempt)) {
+        throw new Error(`EXECUTION_NOT_AUTHORIZED:EXECUTION_ATTEMPT_NOT_RETRYABLE:${state.executionAttempt.state}`);
+      }
+
       approvedIntent = authorizeExecution(state.intent, state.result.result);
+      const attempt = createExecutionAttempt(approvedIntent);
+      executionStore.append(attempt);
+      state.executionAttempt = attempt;
+
       const started = createAuditEvent({
-        id: `${approvedIntent.id}:execution-started`,
+        id: `${approvedIntent.id}:execution-started:${attempt.id}`,
         type: "EXECUTION_STARTED",
         actor: approvedIntent.requesterId,
         intentId: approvedIntent.id,
         organizationId: approvedIntent.organizationId,
-        payloadRef: "execution:started"
+        payloadRef: `execution:${attempt.id}`
       });
       executionStarted = true;
       state.auditEvents = [...state.auditEvents, started];
@@ -325,10 +359,39 @@ function render() {
       const adapter = new SolanaAdapter({}, connectedSigner);
       const simulation = await adapter.simulateIntent(approvedIntent);
       if (!simulation.ok) throw new Error(simulation.message);
-      const result = await adapter.execute(approvedIntent);
-      transactionSubmitted = true;
+
+      adapterExecutionEntered = true;
+      let result;
+      try {
+        result = await adapter.execute(approvedIntent);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
+        const beforeSubmission = message === "INSUFFICIENT_USDC_BALANCE";
+        const next = nextExecutionAttemptState(
+          attempt,
+          beforeSubmission ? "FAILED_BEFORE_SUBMISSION" : "UNKNOWN_AFTER_SUBMISSION",
+          { error: message }
+        );
+        executionStore.replace(next);
+        state.executionAttempt = next;
+        throw error;
+      }
+
       state.txSignature = result.txHash;
-      const executionEvents = createExecutionAuditEvents({ intent: approvedIntent, actor: approvedIntent.requesterId, txHash: result.txHash }).filter((event) => event.type !== "EXECUTION_STARTED");
+      const submitted = nextExecutionAttemptState(attempt, "SUBMITTED", { txHash: result.txHash });
+      executionStore.replace(submitted);
+      state.executionAttempt = submitted;
+
+      const confirmed = nextExecutionAttemptState(submitted, result.confirmed ? "CONFIRMED" : "SUBMITTED", { txHash: result.txHash });
+      executionStore.replace(confirmed);
+      state.executionAttempt = confirmed;
+
+      const executionEvents = createExecutionAuditEvents({
+        intent: approvedIntent,
+        actor: approvedIntent.requesterId,
+        txHash: result.txHash,
+        executionAttemptId: attempt.id
+      }).filter((event) => event.type !== "EXECUTION_STARTED");
       state.auditEvents = [...state.auditEvents, ...executionEvents];
       auditStore.append(executionEvents);
 
@@ -348,11 +411,18 @@ function render() {
       }
 
       state.reconciliation = reconciliation;
+      if (reconciliation.status === "MATCHED") {
+        const reconciled = nextExecutionAttemptState(confirmed, "RECONCILED", { txHash: result.txHash });
+        executionStore.replace(reconciled);
+        state.executionAttempt = reconciled;
+      }
+
       const reconciliationEvent = createTransactionReconciliationAuditEvent({
         intent: approvedIntent,
         actor: approvedIntent.requesterId,
         txHash: result.txHash,
-        status: reconciliation.status
+        status: reconciliation.status,
+        executionAttemptId: attempt.id
       });
       state.auditEvents = [...state.auditEvents, reconciliationEvent];
       auditStore.append([reconciliationEvent]);
@@ -360,11 +430,45 @@ function render() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
       state.error = message;
-      if (executionStarted && !transactionSubmitted && approvedIntent) {
-        const failure = createExecutionFailureAuditEvent({ intent: approvedIntent, actor: approvedIntent.requesterId, error: message });
+
+      if (executionStarted && approvedIntent && state.executionAttempt && adapterExecutionEntered) {
+        const attempt = state.executionAttempt;
+        const beforeSubmission = message === "INSUFFICIENT_USDC_BALANCE";
+        const failureState = beforeSubmission ? "FAILED_BEFORE_SUBMISSION" : "UNKNOWN_AFTER_SUBMISSION";
+        const next = nextExecutionAttemptState(attempt, failureState, { error: message });
+        executionStore.replace(next);
+        state.executionAttempt = next;
+
+        const event = beforeSubmission
+          ? createExecutionFailureAuditEvent({
+              intent: approvedIntent,
+              actor: approvedIntent.requesterId,
+              error: message,
+              executionAttemptId: attempt.id
+            })
+          : createExecutionUnknownAuditEvent({
+              intent: approvedIntent,
+              actor: approvedIntent.requesterId,
+              error: message,
+              executionAttemptId: attempt.id
+            });
+        state.auditEvents = [...state.auditEvents, event];
+        auditStore.append([event]);
+      } else if (executionStarted && approvedIntent && state.executionAttempt) {
+        const attempt = state.executionAttempt;
+        const next = nextExecutionAttemptState(attempt, "FAILED_BEFORE_SUBMISSION", { error: message });
+        executionStore.replace(next);
+        state.executionAttempt = next;
+        const failure = createExecutionFailureAuditEvent({
+          intent: approvedIntent,
+          actor: approvedIntent.requesterId,
+          error: message,
+          executionAttemptId: attempt.id
+        });
         state.auditEvents = [...state.auditEvents, failure];
         auditStore.append([failure]);
       }
+
       render();
     }
   });
