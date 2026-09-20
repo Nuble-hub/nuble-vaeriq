@@ -42,9 +42,28 @@ This is intentionally a demo-grade persistence layer, not a production treasury 
 - [x] Fail closed when the decision evidence is not policy-pass, is high risk, or the intent is in an invalid execution state.
 - [x] Add execution failure handling and evidence.
 - [x] Add transaction lookup/reconciliation.
-- [ ] Improve demo reliability and recovery states.
+- [x] Implement demo recovery state tracking, intent-scoped idempotency keys, safe retry gating, and explicit uncertain-execution state.
+- [ ] Runtime-verify recovery behavior across refresh, pre-submission failure, retry, and uncertain execution scenarios.
 
 The execution guard is defense-in-depth: APPROVE alone is not sufficient if the decision evidence is inconsistent with the intent or otherwise unsafe to execute.
+
+### Recovery model
+
+Execution attempts are persisted separately from audit events and are keyed to the PaymentIntent:
+
+    STARTED
+      ↓
+    SUBMITTED
+      ↓
+    CONFIRMED
+      ↓
+    RECONCILED
+
+Pre-submission failures enter `FAILED_BEFORE_SUBMISSION` and may be retried because the system has explicit evidence that no transaction was submitted.
+
+Any error after the adapter execution boundary enters `UNKNOWN_AFTER_SUBMISSION` unless the adapter can establish a known pre-submission failure. In this state VAERIQ disables automatic retry to avoid accidental duplicate payment.
+
+The current idempotency key is intent-scoped (`intent:<PaymentIntent.id>`). Multiple attempts for a retryable pre-submission failure share the same key while retaining distinct attempt IDs for auditability.
 
 ## Workstream C — Demo proof
 
@@ -81,7 +100,7 @@ Customer validation remains important market evidence, but it is not a dependenc
 4. A decision that is inconsistent with its PaymentIntent cannot be reused for another intent.
 5. A decision with failed/review policy evidence or HIGH risk cannot be promoted to execution.
 6. Completed execution appends transaction events with the real transaction signature.
-7. Failed execution records EXECUTION_STARTED and EXECUTION_FAILED without TRANSACTION_SUBMITTED or TRANSACTION_CONFIRMED.
+7. Failed execution records EXECUTION_STARTED and EXECUTION_FAILED without TRANSACTION_SUBMITTED or TRANSACTION_CONFIRMED when failure is known to be pre-submission; uncertain post-boundary failures are recorded as EXECUTION_UNKNOWN and cannot be retried automatically.
 8. Reconciliation can return MATCHED, MISMATCHED, or NOT_FOUND.
 9. Refreshing the browser preserves the demo audit evidence.
 10. The final demo can explain the control boundary without relying on hidden state.
