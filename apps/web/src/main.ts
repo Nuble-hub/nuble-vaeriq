@@ -9,7 +9,7 @@ import type { AuditEvent } from "../../../packages/domain/index.js";
 import { reconcilePaymentTransaction, type TransactionReconciliation } from "../../../packages/reconciliation/index.js";
 import { JsonExecutionAttemptStore, canStartExecution, createExecutionAttempt, nextExecutionAttemptState, type ExecutionAttempt } from "../../../packages/execution/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
-import type { PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
+import type { ApprovedIntent, PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
 import "./styles.css";
 
 const DEMO_DESTINATION = "HQVxiMVDoV9jzG4tpoxmDZsNfWvaHXm8DGGv93Gka75v";
@@ -325,7 +325,7 @@ function render() {
 
   document.querySelector<HTMLButtonElement>("#execute")?.addEventListener("click", async () => {
     state.error = "";
-    let approvedIntent: PaymentIntent | null = null;
+    let approvedIntent: ApprovedIntent | null = null;
     let executionStarted = false;
     let adapterExecutionEntered = false;
 
