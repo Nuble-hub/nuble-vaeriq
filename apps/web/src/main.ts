@@ -361,21 +361,7 @@ function render() {
       if (!simulation.ok) throw new Error(simulation.message);
 
       adapterExecutionEntered = true;
-      let result;
-      try {
-        result = await adapter.execute(approvedIntent);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
-        const beforeSubmission = message === "INSUFFICIENT_USDC_BALANCE";
-        const next = nextExecutionAttemptState(
-          attempt,
-          beforeSubmission ? "FAILED_BEFORE_SUBMISSION" : "UNKNOWN_AFTER_SUBMISSION",
-          { error: message }
-        );
-        executionStore.replace(next);
-        state.executionAttempt = next;
-        throw error;
-      }
+      const result = await adapter.execute(approvedIntent);
 
       state.txSignature = result.txHash;
       const submitted = nextExecutionAttemptState(attempt, "SUBMITTED", { txHash: result.txHash });
