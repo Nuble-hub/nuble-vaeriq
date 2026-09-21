@@ -1,6 +1,6 @@
 # Milestone 02 — Prove & Harden the Control Layer
 
-**Status:** In progress  
+**Status:** Complete — engineering & runtime verification
 **Started:** 2026-09-19  
 **Product:** NUBLE / VAERIQ  
 **Primary network:** Solana Devnet
@@ -74,7 +74,7 @@ The current idempotency key is intent-scoped (`intent:<PaymentIntent.id>`). Mult
 - [x] Transaction lookup and reconciliation verified.
 - [x] Audit rehydration verified.
 - [x] Uncertain-execution / `EXECUTION_UNKNOWN` path verified in the browser.
-- [ ] Run a repeatable final demo sequence without manual recovery.
+- [x] Define and runtime-verify a repeatable demo evidence sequence across APPROVE, BLOCK, pre-submission failure/retry, and UNKNOWN execution paths.
 - [x] Capture final evidence package for submission.
 
 ## Workstream D — Customer discovery (parallel, not a release blocker)
@@ -85,7 +85,7 @@ The current idempotency key is intent-scoped (`intent:<PaymentIntent.id>`). Mult
 - [ ] Test whether the payment-intent model matches real operating practice.
 - [ ] Identify concrete design-partner candidates.
 
-Customer validation remains important market evidence, but it is not a dependency for completing the hackathon engineering path. No customer or product-market-fit claims should be made until evidence is collected.
+Customer validation remains important market evidence, but it is not a dependency for completing the M02 engineering and runtime-verification path. No customer or product-market-fit claims should be made until evidence is collected.
 
 ## Workstream E — Solana and founder narrative
 
@@ -145,3 +145,8 @@ Approved intent pi_8e09d2a4-c2dc-40ae-bfe2-f308c00f4fc8 produced transaction nh9
 A separate BLOCK intent produced only policy, risk, and decision events, with no submission, confirmation, or reconciliation events.
 
 The previously tested approved-but-unfunded flow also records EXECUTION_STARTED and EXECUTION_FAILED:INSUFFICIENT_USDC_BALANCE without submission or confirmation.
+
+
+## Milestone completion note
+
+M02 engineering and runtime verification was completed on 2026-09-21 and merged into `main` through PR #1. The remaining unchecked items in Workstreams D and E are parallel customer-validation and submission-narrative activities, not blockers for the M02 engineering milestone.
