@@ -60,6 +60,7 @@ Capture the following screenshots for the milestone evidence package:
 - APPROVE with `MATCHED` reconciliation and transaction signature.
 - BLOCK with no transaction signature or execution events.
 - Execution failure with `EXECUTION_FAILED` and no submission/confirmation.
+- `UNKNOWN_AFTER_SUBMISSION` with retry disabled and no transaction signature.
 - Recent persisted events after a browser refresh.
 
 ### Execution recovery and safe retry
@@ -68,8 +69,12 @@ Capture the following screenshots for the milestone evidence package:
 2. Confirm the audit trail contains `EXECUTION_STARTED` and `EXECUTION_FAILED`.
 3. Confirm the UI shows `FAILED_BEFORE_SUBMISSION` and changes the action to `Retry approved payment`.
 4. Retry the same PaymentIntent and confirm the retry gets a new execution-attempt ID but keeps the same intent-scoped idempotency key.
-5. Do not retry an execution that reaches `UNKNOWN_AFTER_SUBMISSION`.
-6. Confirm a browser refresh restores the persisted execution state and keeps an uncertain attempt locked.
+5. Switch to **Recovery · UNKNOWN**, evaluate the compliant intent, and run the demo-only uncertainty scenario.
+6. Confirm the UI records `UNKNOWN_AFTER_SUBMISSION`, creates an `EXECUTION_UNKNOWN` audit event, shows no transaction signature, and disables retry.
+7. Do not retry an execution that reaches `UNKNOWN_AFTER_SUBMISSION`.
+8. Confirm a browser refresh restores the persisted execution state and keeps the uncertain attempt locked.
+
+The **Recovery · UNKNOWN** scenario is deterministic and demo-only: it simulates uncertainty immediately after the execution boundary without intentionally submitting a real transaction.
 
 Expected safety behavior:
 
