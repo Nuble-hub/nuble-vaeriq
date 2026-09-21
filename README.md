@@ -103,7 +103,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [ ] Durable server-side audit storage
 - [x] Transaction lookup and intent reconciliation
 - [x] Restore latest persisted audit summary after refresh
-- [x] Persisted execution recovery state and safe retry gating (runtime verification pending)
+- [x] Persisted execution recovery state and safe retry gating (runtime verified)
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
@@ -120,8 +120,6 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/FOUNDER_MARKET_FIT.md` — founder journey, founder-market-fit thesis, evidence boundaries, and narrative draft
 - `docs/MILESTONE_02.md` — control-layer hardening, persistent audit evidence, validation, and demo-proof plan
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
-- `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
-- `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
 
