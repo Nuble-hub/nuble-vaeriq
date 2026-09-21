@@ -168,3 +168,13 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Retry remains blocked because the execution outcome is intentionally treated as uncertain.
 - Added the scenario to the Milestone 02 runtime verification runbook and final evidence checklist.
 - Browser runtime verification of this scenario remains open.
+
+
+## 2026-09-21 — Recovery runtime verification completed
+
+- Founder runtime testing verified the pre-submission failure path with `FAILED_BEFORE_SUBMISSION` and safe retry behavior.
+- Retry produced a new execution-attempt ID while retaining the same intent-scoped idempotency key.
+- Browser refresh restored the latest failed execution state and persisted audit evidence.
+- Founder runtime testing verified the deterministic **Recovery · UNKNOWN** scenario: `UNKNOWN_AFTER_SUBMISSION` was persisted with `EXECUTION_UNKNOWN`, no transaction signature was created by the demo scenario, and retry remained blocked.
+- Browser refresh preserved the uncertain execution state and attempt identity.
+- Milestone 02 recovery runtime verification is therefore complete for the current demo path.
