@@ -1,6 +1,6 @@
 # Milestone 03 — Prove the Intent & Context Control Layer
 
-**Status:** Planned  
+**Status:** In progress  
 **Started:** 2026-09-21  
 **Product:** NUBLE / VAERIQ  
 **Base:** M02 complete and merged into `main`
@@ -46,12 +46,12 @@ No customer traction, design-partner, or product-market-fit claim should be made
 
 ## Workstream B — Intent/context/evidence product slice
 
-- [ ] Define a typed context snapshot contract separate from chain execution.
-- [ ] Add deterministic context-completeness evaluation.
-- [ ] Persist a `CONTEXT_ATTACHED` audit event with stable evidence references.
+- [x] Define a typed context snapshot contract separate from chain execution.
+- [x] Add deterministic context-completeness evaluation.
+- [x] Persist a `CONTEXT_ATTACHED` audit event with stable evidence references.
 - [ ] Surface the context/evidence that influenced policy or risk in the demo.
 - [ ] Keep financial enforcement deterministic; AI remains advisory.
-- [ ] Add automated tests for context integrity and decision evidence binding.
+- [x] Add automated tests for context integrity and decision evidence binding.
 
 ## Workstream C — Demo narrative
 
@@ -89,3 +89,16 @@ versus
 `VAERIQ control: "Should this business payment move?"`
 
 The goal is not to add more fields. The goal is to prove that the additional context changes a financial control decision in a traceable way.
+
+## Initial implementation note — 2026-09-21
+
+The first M03 engineering slice is implemented on `feature/m03-intent-context-evidence`:
+
+- `ContextSnapshot` captures intent-bound business context separately from chain execution.
+- Context completeness is deterministic and reports missing purpose, counterparty, required invoice, or referenced invoice evidence.
+- The evaluation bundle now includes the context snapshot and completeness result.
+- Evaluation emits a `CONTEXT_ATTACHED` event before policy/risk/decision evidence.
+- Context-to-intent and organization binding fail closed through explicit assertions.
+- A dedicated automated M03 context/evidence gate is included in `npm test`.
+
+Runtime/UI verification remains open.
