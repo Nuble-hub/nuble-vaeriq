@@ -265,28 +265,28 @@ function render() {
             <div class="card-title">Why should this payment move?</div>
             <h2>Intent · Context · Evidence</h2>
           </div>
-          \${contextCompleteness ? `<strong class="context-status \${contextCompleteness.status.toLowerCase()}">\${contextCompleteness.status}</strong>` : ""}
+          ${contextCompleteness ? `<strong class="context-status ${contextCompleteness.status.toLowerCase()}">${contextCompleteness.status}</strong>` : ""}
         </div>
 
-        \${contextSnapshot ? `
+        ${contextSnapshot ? `
           <div class="context-grid">
-            <div class="context-item"><span>Purpose</span><strong>\${contextSnapshot.purpose || "—"}</strong></div>
-            <div class="context-item"><span>Counterparty</span><strong>\${contextSnapshot.counterpartyId || "—"}</strong></div>
-            <div class="context-item"><span>Invoice</span><strong>\${contextSnapshot.invoiceRef || "—"}</strong></div>
-            <div class="context-item"><span>Destination</span><strong>\${contextSnapshot.destinationKnown ? "Known destination" : "New destination"}</strong></div>
-            <div class="context-item"><span>Counterparty context</span><strong>\${contextSnapshot.counterpartyKnown ? "Known counterparty" : "Unknown counterparty"}</strong></div>
-            <div class="context-item"><span>Asset</span><strong>\${contextSnapshot.assetApproved ? "Approved asset" : "Unapproved asset"}</strong></div>
+            <div class="context-item"><span>Purpose</span><strong>${contextSnapshot.purpose || "—"}</strong></div>
+            <div class="context-item"><span>Counterparty</span><strong>${contextSnapshot.counterpartyId || "—"}</strong></div>
+            <div class="context-item"><span>Invoice</span><strong>${contextSnapshot.invoiceRef || "—"}</strong></div>
+            <div class="context-item"><span>Destination</span><strong>${contextSnapshot.destinationKnown ? "Known destination" : "New destination"}</strong></div>
+            <div class="context-item"><span>Counterparty context</span><strong>${contextSnapshot.counterpartyKnown ? "Known counterparty" : "Unknown counterparty"}</strong></div>
+            <div class="context-item"><span>Asset</span><strong>${contextSnapshot.assetApproved ? "Approved asset" : "Unapproved asset"}</strong></div>
           </div>
 
           <div class="context-evidence">
             <div class="context-label">Evidence references</div>
-            \${contextEvidence.length
-              ? contextEvidence.map((item) => `<div class="evidence-row"><code>\${item.ref}</code>\${item.summary ? `<span>\${item.summary}</span>` : ""}</div>`).join("")
+            ${contextEvidence.length
+              ? contextEvidence.map((item) => `<div class="evidence-row"><code>${item.ref}</code>${item.summary ? `<span>${item.summary}</span>` : ""}</div>`).join("")
               : `<div class="muted">No evidence references attached.</div>`}
           </div>
 
-          \${contextCompleteness?.status === "INCOMPLETE"
-            ? `<div class="context-warning">Missing context: \${contextCompleteness.missing.join(", ")}.</div>`
+          ${contextCompleteness?.status === "INCOMPLETE"
+            ? `<div class="context-warning">Missing context: ${contextCompleteness.missing.join(", ")}.</div>`
             : `<div class="context-note">This context snapshot is bound to the current PaymentIntent before policy and risk evaluation.</div>`}
         ` : `<div class="muted context-empty">Run an evaluation to see the business context and evidence attached to this payment intent.</div>`}
       </section>
