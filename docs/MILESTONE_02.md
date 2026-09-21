@@ -43,6 +43,7 @@ This is intentionally a demo-grade persistence layer, not a production treasury 
 - [x] Add execution failure handling and evidence.
 - [x] Add transaction lookup/reconciliation.
 - [x] Implement demo recovery state tracking, intent-scoped idempotency keys, safe retry gating, and explicit uncertain-execution state.
+- [x] Add a deterministic demo-only scenario for post-boundary execution uncertainty without intentionally submitting a real transaction.
 - [ ] Runtime-verify recovery behavior across refresh, pre-submission failure, retry, and uncertain execution scenarios.
 
 The execution guard is defense-in-depth: APPROVE alone is not sufficient if the decision evidence is inconsistent with the intent or otherwise unsafe to execute.
@@ -72,6 +73,7 @@ The current idempotency key is intent-scoped (`intent:<PaymentIntent.id>`). Mult
 - [x] Execution-failure path verified without submission/confirmation.
 - [x] Transaction lookup and reconciliation verified.
 - [x] Audit rehydration verified.
+- [ ] Uncertain-execution / `EXECUTION_UNKNOWN` path verified in the browser.
 - [ ] Run a repeatable final demo sequence without manual recovery.
 - [ ] Capture final evidence package for submission.
 
