@@ -1,4 +1,4 @@
-import { address, createClient, signature, type TransactionSigner } from "@solana/kit";
+import { address, createClient, createSolanaRpc, signature, type TransactionSigner } from "@solana/kit";
 import { solanaRpc } from "@solana/kit-plugin-rpc";
 import { signer } from "@solana/kit-plugin-signer";
 import {
@@ -39,8 +39,8 @@ export class SolanaAdapter implements ChainAdapter {
     this.transactionSigner = transactionSigner;
   }
 
-  private readClient() {
-    return createClient().use(solanaRpc({ rpcUrl: this.rpcUrl }));
+  private readRpc() {
+    return createSolanaRpc(this.rpcUrl);
   }
 
   private executionClient() {
@@ -49,15 +49,15 @@ export class SolanaAdapter implements ChainAdapter {
   }
 
   async getBalance(wallet: WalletRef): Promise<Balance[]> {
-    const client = this.readClient();
+    const rpc = this.readRpc();
     const owner = address(wallet.address);
     const result: Balance[] = [];
-    const lamports = await client.rpc.getBalance(owner).send();
+    const lamports = await rpc.getBalance(owner).send();
     result.push({ asset: "SOL", amountAtomic: lamports.value.toString() });
 
     const [tokenAccount] = await findAssociatedTokenPda({ mint: this.usdcMint, owner, tokenProgram: TOKEN_PROGRAM_ADDRESS });
     try {
-      const token = await fetchToken(client.rpc, tokenAccount);
+      const token = await fetchToken(rpc, tokenAccount);
       result.push({ asset: "USDC", amountAtomic: token.data.amount.toString() });
     } catch {
       result.push({ asset: "USDC", amountAtomic: "0" });
@@ -74,8 +74,8 @@ export class SolanaAdapter implements ChainAdapter {
     if (intent.asset !== "USDC") return { ok: false, message: "UNSUPPORTED_ASSET" };
     if (!/^\d+$/.test(intent.amountAtomic) || BigInt(intent.amountAtomic) <= 0n) return { ok: false, message: "INVALID_ATOMIC_AMOUNT" };
 
-    const client = this.readClient();
-    const mint = await fetchMint(client.rpc, this.usdcMint);
+    const rpc = this.readRpc();
+    const mint = await fetchMint(rpc, this.usdcMint);
     if (mint.data.decimals !== USDC_DECIMALS) return { ok: false, message: `USDC_DECIMALS_MISMATCH:${mint.data.decimals}` };
     return { ok: true, message: "Solana Devnet USDC configuration validated." };
   }
@@ -110,8 +110,8 @@ export class SolanaAdapter implements ChainAdapter {
   }
 
   async getTransaction(hash: string): Promise<Transaction> {
-    const client = this.readClient();
-    const rpcTransaction = await client.rpc.getTransaction(signature(hash), {
+    const rpc = this.readRpc();
+    const rpcTransaction = await rpc.getTransaction(signature(hash), {
       commitment: "confirmed",
       encoding: "jsonParsed",
       maxSupportedTransactionVersion: 1

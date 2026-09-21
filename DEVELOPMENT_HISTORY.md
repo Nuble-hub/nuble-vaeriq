@@ -147,3 +147,34 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Hardened the execution guard so it fails closed when approval evidence is bound to a different intent, the intent is not in the expected pre-execution state, policy evidence is not a clean pass, or risk is already classified as high.
 - Expanded the automated control-boundary gate to cover intent mismatch, tampered policy evidence, tampered high-risk evidence, invalid intent status, and existing REVIEW/BLOCK cases.
 - Reframed Milestone 02 so product hardening and demo proof remain the hackathon critical path; customer validation continues in parallel and does not block engineering progress.
+
+
+## 2026-09-21 — Execution recovery and idempotency hardening implemented
+
+- Added a persisted execution-attempt model separate from audit events.
+- Bound execution attempts to the PaymentIntent through an intent-scoped idempotency key.
+- Added explicit lifecycle states: STARTED, SUBMITTED, CONFIRMED, RECONCILED, FAILED_BEFORE_SUBMISSION, and UNKNOWN_AFTER_SUBMISSION.
+- Retry is permitted only when the system has explicit evidence that failure occurred before transaction submission.
+- Any error after entering the chain execution adapter is treated conservatively as UNKNOWN_AFTER_SUBMISSION unless it is a known pre-submission balance failure.
+- The web demo now restores the latest execution state after browser refresh and disables automatic retry for uncertain execution outcomes.
+- Added automated tests for persistence, retry gating, idempotency-key reuse, and unknown-execution locking.
+- Runtime verification of the new recovery behavior remains open.
+
+
+## 2026-09-21 — Deterministic uncertain-execution demo scenario
+
+- Added a dedicated **Recovery · UNKNOWN** browser scenario to exercise the post-execution-boundary uncertainty path without intentionally submitting a real transaction.
+- The scenario crosses the execution boundary marker and records `UNKNOWN_AFTER_SUBMISSION` with an `EXECUTION_UNKNOWN` audit event.
+- Retry remains blocked because the execution outcome is intentionally treated as uncertain.
+- Added the scenario to the Milestone 02 runtime verification runbook and final evidence checklist.
+- Browser runtime verification of this scenario remains open.
+
+
+## 2026-09-21 — Recovery runtime verification completed
+
+- Founder runtime testing verified the pre-submission failure path with `FAILED_BEFORE_SUBMISSION` and safe retry behavior.
+- Retry produced a new execution-attempt ID while retaining the same intent-scoped idempotency key.
+- Browser refresh restored the latest failed execution state and persisted audit evidence.
+- Founder runtime testing verified the deterministic **Recovery · UNKNOWN** scenario: `UNKNOWN_AFTER_SUBMISSION` was persisted with `EXECUTION_UNKNOWN`, no transaction signature was created by the demo scenario, and retry remained blocked.
+- Browser refresh preserved the uncertain execution state and attempt identity.
+- Milestone 02 recovery runtime verification is therefore complete for the current demo path.

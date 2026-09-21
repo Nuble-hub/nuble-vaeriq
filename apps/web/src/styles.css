@@ -17,7 +17,7 @@ label { display:block; font-size:13px; color:#9fa8c2; margin:14px 0 8px; }
 input { width:100%; border:1px solid rgba(255,255,255,.1); border-radius:11px; padding:12px 13px; background:#090c14; color:#eef2ff; outline:none; }
 input:focus { border-color:rgba(164,178,255,.55); }
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-.scenario-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.scenario-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
 .mode { border:1px solid rgba(255,255,255,.1); color:#aab3cc; background:#090c14; border-radius:11px; padding:12px; }
 .mode.active { color:#fff; border-color:rgba(190,198,255,.55); background:#151a2a; }
 .primary { width:100%; margin-top:18px; }
@@ -41,6 +41,7 @@ a { display:inline-block; margin-top:8px; color:#a9b8ff; font-size:13px; }
 code { overflow-wrap:anywhere; color:#c4ccdf; font-size:12px; }
 .muted { color:#646d83; }
 @media (max-width: 900px) { .topbar { flex-direction:column; align-items:flex-start; } .grid { grid-template-columns:1fr; } }
+@media (max-width: 720px) { .scenario-row { grid-template-columns:1fr; } }
 @media (max-width: 560px) { .two-col, .scenario-row { grid-template-columns:1fr; } .audit-row { grid-template-columns:1fr; gap:4px; } }
 
 .recent-title { margin-top: 22px; margin-bottom: 10px; }
@@ -54,3 +55,15 @@ code { overflow-wrap:anywhere; color:#c4ccdf; font-size:12px; }
 .recon.matched { color:#7ce0b5; }
 .recon.mismatched { color:#ffbf7d; }
 .recon.not_found { color:#ff9ba7; }
+
+.execution-status { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding:11px 12px; border-radius:10px; background:#080b12; border:1px solid rgba(255,255,255,.06); font-size:12px; }
+.execution-status span { color:#747e97; }
+.execution-status strong { letter-spacing:.05em; }
+.execution-status.idle strong, .execution-status.started strong, .execution-status.submitted strong, .execution-status.confirmed strong { color:#c8cee0; }
+.execution-status.failed_before_submission strong, .execution-state-cell.failed_before_submission { color:#ffbf7d; }
+.execution-status.unknown_after_submission strong, .execution-state-cell.unknown_after_submission { color:#ff9ba7; }
+.execution-status.reconciled strong, .execution-state-cell.reconciled { color:#7ce0b5; }
+.execution-meta { margin-top:10px; color:#747e97; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+.recovery-note { margin-top:10px; color:#ffbf7d; font-size:12px; line-height:1.5; }
+.recovery-warning { margin-top:10px; padding:10px 12px; border-radius:10px; background:#211015; border:1px solid rgba(255,155,167,.14); color:#ffb1bb; font-size:12px; line-height:1.5; }
+.execution-state-cell { font-size:12px; letter-spacing:.05em; }

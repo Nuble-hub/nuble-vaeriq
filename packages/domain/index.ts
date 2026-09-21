@@ -24,5 +24,5 @@ export type TransactionStatus = "CONFIRMED" | "FAILED";
 export type Transaction = { hash: string; chain: ChainId; asset: string; amountAtomic: string; from: string; to: string; timestamp: string; status: TransactionStatus; slot?: string; feeAtomic?: string };
 export type ChainPage<T> = { items: T[]; nextCursor?: string };
 export type WalletRef = { address: string };
-export type AuditEventType = "INTENT_CREATED" | "CONTEXT_ATTACHED" | "POLICY_EVALUATED" | "RISK_EVALUATED" | "DECISION_MADE" | "APPROVAL_GRANTED" | "EXECUTION_STARTED" | "TRANSACTION_SUBMITTED" | "TRANSACTION_CONFIRMED" | "EXECUTION_FAILED" | "TRANSACTION_RECONCILED";
+export type AuditEventType = "INTENT_CREATED" | "CONTEXT_ATTACHED" | "POLICY_EVALUATED" | "RISK_EVALUATED" | "DECISION_MADE" | "APPROVAL_GRANTED" | "EXECUTION_STARTED" | "TRANSACTION_SUBMITTED" | "TRANSACTION_CONFIRMED" | "EXECUTION_FAILED" | "EXECUTION_UNKNOWN" | "TRANSACTION_RECONCILED";
 export type AuditEvent = { id: string; type: AuditEventType; actor: string; intentId: string; organizationId: string; timestamp: string; payloadRef?: string };
