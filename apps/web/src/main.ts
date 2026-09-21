@@ -424,7 +424,9 @@ function render() {
       render();
     } catch (error) {
       const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
-      state.error = message;
+      state.error = message === "SIMULATED_POST_SUBMISSION_UNCERTAINTY"
+        ? "Execution outcome could not be verified safely."
+        : message;
 
       if (executionStarted && approvedIntent && state.executionAttempt && adapterExecutionEntered) {
         const attempt = state.executionAttempt;
