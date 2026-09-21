@@ -170,6 +170,14 @@ function render() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   const decision = state.result?.result.decision ?? state.decision;
   const reasons = state.result?.result.reasons ?? [];
+  const contextSnapshot = state.result?.contextSnapshot ?? null;
+  const contextCompleteness = state.result?.contextCompleteness ?? null;
+  const contextEvidence = contextSnapshot
+    ? contextSnapshot.evidenceRefs.map((ref) => {
+        const evidence = state.result?.explanation?.evidence?.find?.((item) => item.id === ref);
+        return { ref, summary: evidence?.summary ?? "" };
+      })
+    : [];
   const signature = state.txSignature;
   const auditEvents = state.auditEvents;
   const reconciliation = state.reconciliation;
@@ -196,7 +204,7 @@ function render() {
         <div>
           <div class="eyebrow">NUBLE / VAERIQ</div>
           <h1>Control before value moves.</h1>
-          <p class="sub">M02 · Solana Devnet · Control boundary + recovery</p>
+          <p class="sub">M03 · Solana Devnet · Intent + context + evidence</p>
         </div>
         <div class="wallet-box">
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
@@ -249,6 +257,38 @@ function render() {
           ${state.error ? `<div class="error">${state.error}</div>` : ""}
           ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
         </div>
+      </section>
+
+      <section class="context-panel card">
+        <div class="context-heading">
+          <div>
+            <div class="card-title">Why should this payment move?</div>
+            <h2>Intent · Context · Evidence</h2>
+          </div>
+          \${contextCompleteness ? `<strong class="context-status \${contextCompleteness.status.toLowerCase()}">\${contextCompleteness.status}</strong>` : ""}
+        </div>
+
+        \${contextSnapshot ? `
+          <div class="context-grid">
+            <div class="context-item"><span>Purpose</span><strong>\${contextSnapshot.purpose || "—"}</strong></div>
+            <div class="context-item"><span>Counterparty</span><strong>\${contextSnapshot.counterpartyId || "—"}</strong></div>
+            <div class="context-item"><span>Invoice</span><strong>\${contextSnapshot.invoiceRef || "—"}</strong></div>
+            <div class="context-item"><span>Destination</span><strong>\${contextSnapshot.destinationKnown ? "Known destination" : "New destination"}</strong></div>
+            <div class="context-item"><span>Counterparty context</span><strong>\${contextSnapshot.counterpartyKnown ? "Known counterparty" : "Unknown counterparty"}</strong></div>
+            <div class="context-item"><span>Asset</span><strong>\${contextSnapshot.assetApproved ? "Approved asset" : "Unapproved asset"}</strong></div>
+          </div>
+
+          <div class="context-evidence">
+            <div class="context-label">Evidence references</div>
+            \${contextEvidence.length
+              ? contextEvidence.map((item) => `<div class="evidence-row"><code>\${item.ref}</code>\${item.summary ? `<span>\${item.summary}</span>` : ""}</div>`).join("")
+              : `<div class="muted">No evidence references attached.</div>`}
+          </div>
+
+          \${contextCompleteness?.status === "INCOMPLETE"
+            ? `<div class="context-warning">Missing context: \${contextCompleteness.missing.join(", ")}.</div>`
+            : `<div class="context-note">This context snapshot is bound to the current PaymentIntent before policy and risk evaluation.</div>`}
+        ` : `<div class="muted context-empty">Run an evaluation to see the business context and evidence attached to this payment intent.</div>`}
       </section>
 
       <section class="audit card">
