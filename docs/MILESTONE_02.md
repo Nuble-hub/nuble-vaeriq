@@ -75,7 +75,7 @@ The current idempotency key is intent-scoped (`intent:<PaymentIntent.id>`). Mult
 - [x] Audit rehydration verified.
 - [x] Uncertain-execution / `EXECUTION_UNKNOWN` path verified in the browser.
 - [ ] Run a repeatable final demo sequence without manual recovery.
-- [ ] Capture final evidence package for submission.
+- [x] Capture final evidence package for submission.
 
 ## Workstream D — Customer discovery (parallel, not a release blocker)
 
