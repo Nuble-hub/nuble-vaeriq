@@ -5,7 +5,8 @@
 **Primary network:** Solana Devnet  
 **Runtime verification date:** 2026-09-21  
 **Branch:** `feature/m02-recovery-idempotency`  
-**Pull Request:** #1 — M02 — Harden execution control boundary and recovery
+**Pull Request:** #1 — M02 — Harden execution control boundary and recovery  
+**Evidence bundle:** `VAERIQ_M02_Final_Evidence_2026-09-21.zip`
 
 ## Verification status
 
@@ -44,6 +45,9 @@
 
 7. `07_persisted_events.png`  
    Persisted recent-event view showing the approved transaction lifecycle and reconciliation events surviving page reload.
+
+8. `SHA256SUMS.txt`  
+   SHA-256 manifest for the evidence bundle contents.
 
 ## End-to-end recovery evidence
 
