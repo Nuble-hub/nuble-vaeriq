@@ -120,6 +120,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/FOUNDER_MARKET_FIT.md` — founder journey, founder-market-fit thesis, evidence boundaries, and narrative draft
 - `docs/MILESTONE_02.md` — control-layer hardening, persistent audit evidence, validation, and demo-proof plan
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
+- `docs/evidence/M02_FINAL_EVIDENCE.md` — consolidated M02 verification matrix, scope notes, and submission evidence narrative
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
 
