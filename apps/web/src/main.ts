@@ -172,12 +172,7 @@ function render() {
   const reasons = state.result?.result.reasons ?? [];
   const contextSnapshot = state.result?.contextSnapshot ?? null;
   const contextCompleteness = state.result?.contextCompleteness ?? null;
-  const contextEvidence = contextSnapshot
-    ? contextSnapshot.evidenceRefs.map((ref) => {
-        const evidence = state.result?.explanation?.evidence?.find?.((item) => item.id === ref);
-        return { ref, summary: evidence?.summary ?? "" };
-      })
-    : [];
+  const contextEvidenceRefs = contextSnapshot?.evidenceRefs ?? [];
   const signature = state.txSignature;
   const auditEvents = state.auditEvents;
   const reconciliation = state.reconciliation;
@@ -280,8 +275,8 @@ function render() {
 
           <div class="context-evidence">
             <div class="context-label">Evidence references</div>
-            ${contextEvidence.length
-              ? contextEvidence.map((item) => `<div class="evidence-row"><code>${item.ref}</code>${item.summary ? `<span>${item.summary}</span>` : ""}</div>`).join("")
+            ${contextEvidenceRefs.length
+              ? contextEvidenceRefs.map((ref) => `<div class="evidence-row"><code>${ref}</code></div>`).join("")
               : `<div class="muted">No evidence references attached.</div>`}
           </div>
 
