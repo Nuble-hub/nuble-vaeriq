@@ -159,3 +159,12 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The web demo now restores the latest execution state after browser refresh and disables automatic retry for uncertain execution outcomes.
 - Added automated tests for persistence, retry gating, idempotency-key reuse, and unknown-execution locking.
 - Runtime verification of the new recovery behavior remains open.
+
+
+## 2026-09-21 — Deterministic uncertain-execution demo scenario
+
+- Added a dedicated **Recovery · UNKNOWN** browser scenario to exercise the post-execution-boundary uncertainty path without intentionally submitting a real transaction.
+- The scenario crosses the execution boundary marker and records `UNKNOWN_AFTER_SUBMISSION` with an `EXECUTION_UNKNOWN` audit event.
+- Retry remains blocked because the execution outcome is intentionally treated as uncertain.
+- Added the scenario to the Milestone 02 runtime verification runbook and final evidence checklist.
+- Browser runtime verification of this scenario remains open.
