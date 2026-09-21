@@ -178,3 +178,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Founder runtime testing verified the deterministic **Recovery · UNKNOWN** scenario: `UNKNOWN_AFTER_SUBMISSION` was persisted with `EXECUTION_UNKNOWN`, no transaction signature was created by the demo scenario, and retry remained blocked.
 - Browser refresh preserved the uncertain execution state and attempt identity.
 - Milestone 02 recovery runtime verification is therefore complete for the current demo path.
+
+
+## 2026-09-21 — Milestone 02 completed and merged
+
+- M02 engineering and browser runtime verification were completed across control-boundary hardening, persistent audit evidence, transaction reconciliation, recovery, safe retry, uncertain execution handling, and browser refresh persistence.
+- Final evidence was consolidated in `docs/evidence/M02_FINAL_EVIDENCE.md` and the associated evidence bundle.
+- PR #1 (`M02 — Harden execution control boundary and recovery`) was marked ready and merged into `main` with squash merge commit `012fc7d83a47710a827eef10ce74b00529ff8103`.
+- Customer discovery and final narrative work remain parallel activities and are not represented as completed customer traction or product-market-fit evidence.
