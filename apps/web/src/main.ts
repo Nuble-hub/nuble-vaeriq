@@ -114,6 +114,8 @@ function restoreLatestAuditState(): void {
   state.persistedLatestIntentId = latestIntentId;
   state.lastReconciledTxSignature = findLastReconciledSignature(events.filter((event) => event.intentId === latestIntentId));
   state.executionAttempt = executionStore.latest(latestIntentId);
+  if (state.executionAttempt?.state === "UNKNOWN_AFTER_SUBMISSION") state.mode = "UNKNOWN";
+  else if (state.executionAttempt?.state === "FAILED_BEFORE_SUBMISSION") state.mode = "APPROVE";
 
   const latestEvents = events.filter((event) => event.intentId === latestIntentId);
   state.auditEvents = latestEvents;
@@ -303,12 +305,13 @@ function render() {
     render();
   });
 
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
+    localStorage.setItem("vaeriq:demo:mode:v1", state.mode);
     state.txSignature = "";
     state.auditEvents = [];
     state.reconciliation = null;
@@ -471,6 +474,10 @@ function render() {
   });
 }
 
+const persistedMode = localStorage.getItem("vaeriq:demo:mode:v1");
+if (persistedMode === "APPROVE" || persistedMode === "BLOCK" || persistedMode === "UNKNOWN") {
+  state.mode = persistedMode;
+}
 restoreLatestAuditState();
 client.wallet.subscribe(render);
 render();
