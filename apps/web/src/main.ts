@@ -112,7 +112,7 @@ function restoreLatestAuditState(): void {
   if (!latestIntentId) return;
 
   state.persistedLatestIntentId = latestIntentId;
-  state.lastReconciledTxSignature = findLastReconciledSignature(events);
+  state.lastReconciledTxSignature = findLastReconciledSignature(events.filter((event) => event.intentId === latestIntentId));
   state.executionAttempt = executionStore.latest(latestIntentId);
 
   const latestEvents = events.filter((event) => event.intentId === latestIntentId);
