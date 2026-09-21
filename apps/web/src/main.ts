@@ -24,7 +24,7 @@ const auditStore = new JsonAuditEventStore(window.localStorage);
 const executionStore = new JsonExecutionAttemptStore(window.localStorage);
 
 const state = {
-  mode: "APPROVE" as "APPROVE" | "BLOCK",
+  mode: "APPROVE" as "APPROVE" | "BLOCK" | "UNKNOWN",
   intent: null as PaymentIntent | null,
   result: null as ReturnType<typeof evaluatePayment> | null,
   txSignature: "",
@@ -47,7 +47,7 @@ function parseUsdcAtomic(value: string): string {
 }
 
 function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
-  const approvedDestination = mode === "APPROVE" ? recipient : DEMO_DESTINATION;
+  const approvedDestination = mode === "BLOCK" ? DEMO_DESTINATION : recipient;
   return {
     id: "policy_demo_m01",
     version: 1,
@@ -62,7 +62,7 @@ function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
 }
 
 function contextFor(mode: typeof state.mode): PaymentContext {
-  const known = mode === "APPROVE" ? [state.intent?.recipient ?? DEMO_DESTINATION] : [DEMO_DESTINATION];
+  const known = mode === "BLOCK" ? [DEMO_DESTINATION] : [state.intent?.recipient ?? DEMO_DESTINATION];
   return {
     knownDestinations: known,
     knownCounterparties: ["vendor_demo"],
@@ -181,7 +181,9 @@ function render() {
       ? "Execution outcome uncertain"
       : executionState === "CONFIRMED" || executionState === "RECONCILED"
         ? "Payment execution complete"
-        : "Execute approved payment";
+        : state.mode === "UNKNOWN"
+          ? "Simulate execution uncertainty"
+          : "Execute approved payment";
 
   const connectInProgress = walletStatus === "pending" || walletStatus === "connecting" || walletStatus === "reconnecting";
   const connectLabel = connectInProgress ? "Connecting…" : `Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}`;
@@ -207,6 +209,7 @@ function render() {
           <div class="scenario-row">
             <button class="mode ${state.mode === "APPROVE" ? "active" : ""}" id="approve-mode">Compliant · APPROVE</button>
             <button class="mode ${state.mode === "BLOCK" ? "active" : ""}" id="block-mode">Adversarial · BLOCK</button>
+            <button class="mode ${state.mode === "UNKNOWN" ? "active" : ""}" id="unknown-mode">Recovery · UNKNOWN</button>
           </div>
 
           <label for="recipient">Recipient</label>
@@ -225,6 +228,7 @@ function render() {
 
           <button class="primary" id="evaluate">Evaluate payment</button>
           <p class="hint">The decision is deterministic. The connected wallet is only asked to sign after an explicit APPROVE.</p>
+          ${state.mode === "UNKNOWN" ? `<p class="recovery-note">Demo-only recovery scenario: execution uncertainty is simulated after the execution boundary. No transaction is intentionally submitted by this scenario.</p>` : ""}
         </div>
 
         <div class="card decision-card">
@@ -301,6 +305,7 @@ function render() {
 
   document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
   document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
     state.error = "";
@@ -361,6 +366,9 @@ function render() {
       if (!simulation.ok) throw new Error(simulation.message);
 
       adapterExecutionEntered = true;
+      if (state.mode === "UNKNOWN") {
+        throw new Error("SIMULATED_POST_SUBMISSION_UNCERTAINTY");
+      }
       const result = await adapter.execute(approvedIntent);
 
       state.txSignature = result.txHash;
@@ -398,6 +406,7 @@ function render() {
 
       state.reconciliation = reconciliation;
       if (reconciliation.status === "MATCHED") {
+        state.lastReconciledTxSignature = result.txHash;
         const reconciled = nextExecutionAttemptState(confirmed, "RECONCILED", { txHash: result.txHash });
         executionStore.replace(reconciled);
         state.executionAttempt = reconciled;
