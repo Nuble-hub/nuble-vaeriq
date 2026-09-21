@@ -49,14 +49,14 @@ No customer traction, design-partner, or product-market-fit claim should be made
 - [x] Define a typed context snapshot contract separate from chain execution.
 - [x] Add deterministic context-completeness evaluation.
 - [x] Persist a `CONTEXT_ATTACHED` audit event with stable evidence references.
-- [ ] Surface the context/evidence that influenced policy or risk in the demo.
+- [x] Surface the context/evidence that influenced policy or risk in the demo.
 - [ ] Keep financial enforcement deterministic; AI remains advisory.
 - [x] Add automated tests for context integrity and decision evidence binding.
 
 ## Workstream C — Demo narrative
 
-- [ ] Add one visible UI panel answering: "Why should this payment move?"
-- [ ] Show purpose, counterparty, invoice/evidence, and relevant risk/policy signals.
+- [x] Add one visible UI panel answering: "Why should this payment move?"
+- [x] Show purpose, counterparty, invoice/evidence, and relevant risk/policy signals.
 - [ ] Keep the live Solana execution path unchanged.
 - [ ] Preserve the M02 recovery states and safe retry behavior.
 - [ ] Update the final demo sequence and evidence package only after runtime verification.
@@ -102,3 +102,10 @@ The first M03 engineering slice is implemented on `feature/m03-intent-context-ev
 - A dedicated automated M03 context/evidence gate is included in `npm test`.
 
 Runtime/UI verification remains open.
+
+
+## UI implementation note — 2026-09-22
+
+The M03 demo UI now exposes a visible **Why should this payment move?** panel. After evaluation it shows the typed context snapshot, context-completeness status, business purpose, counterparty, invoice, destination/asset context, and evidence references. The panel is informational and auditable; it does not replace deterministic policy/risk enforcement or the M02 execution guard.
+
+Browser runtime verification of the new UI slice remains open.
