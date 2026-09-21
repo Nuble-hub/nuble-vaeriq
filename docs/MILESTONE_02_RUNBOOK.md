@@ -83,4 +83,4 @@ Expected safety behavior:
     CONFIRMED                 → retry blocked
     RECONCILED                → retry blocked
 
-Runtime verification of this section remains open until the founder exercises these scenarios in the browser demo.
+Runtime verification of this section was completed in the browser demo on 2026-09-21.
