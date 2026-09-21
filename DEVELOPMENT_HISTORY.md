@@ -197,3 +197,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added `CONTEXT_ATTACHED` audit evidence before policy/risk/decision events.
 - Added automated M03 context/evidence tests and included them in the repository test gate.
 - UI exposure and browser runtime verification remain open.
+
+
+## 2026-09-22 — M03 intent/context/evidence UI slice
+
+- Added a visible **Why should this payment move?** panel to the web demo.
+- The panel exposes the evaluated ContextSnapshot, completeness status, purpose, counterparty, invoice, destination/asset context, and evidence references.
+- The UI remains informational: deterministic policy/risk enforcement and the M02 execution boundary are unchanged.
+- Browser runtime verification of the new panel remains open.
