@@ -186,3 +186,14 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Final evidence was consolidated in `docs/evidence/M02_FINAL_EVIDENCE.md` and the associated evidence bundle.
 - PR #1 (`M02 — Harden execution control boundary and recovery`) was marked ready and merged into `main` with squash merge commit `012fc7d83a47710a827eef10ce74b00529ff8103`.
 - Customer discovery and final narrative work remain parallel activities and are not represented as completed customer traction or product-market-fit evidence.
+
+
+## 2026-09-21 — Milestone 03 context/evidence slice started
+
+- Started M03 on branch `feature/m03-intent-context-evidence`.
+- Added a typed, intent-bound `ContextSnapshot` separate from chain execution.
+- Added deterministic context-completeness evaluation for purpose, counterparty, required invoice, and invoice evidence.
+- Added explicit context-to-intent and organization binding checks.
+- Added `CONTEXT_ATTACHED` audit evidence before policy/risk/decision events.
+- Added automated M03 context/evidence tests and included them in the repository test gate.
+- UI exposure and browser runtime verification remain open.
