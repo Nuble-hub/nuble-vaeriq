@@ -214,3 +214,9 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Existing BLOCK decisions remain BLOCK; existing REVIEW decisions can include the additional context reason.
 - Added automated coverage for the incomplete-context review gate.
 - The M02 execution guard remains unchanged and still requires a final APPROVE before execution.
+
+## 2026-09-22 — M03 UI decision explanation refinement
+
+- Updated the context panel to state explicitly when incomplete required context changes the final decision to REVIEW.
+- Clarified that the context snapshot is evaluated before execution and is part of the control flow, not only presentation.
+- The next runtime proof is to demonstrate APPROVE → REVIEW solely by changing required business context while keeping the payment otherwise policy-compliant.
