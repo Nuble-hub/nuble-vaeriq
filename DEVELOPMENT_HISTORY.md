@@ -205,3 +205,12 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The panel exposes the evaluated ContextSnapshot, completeness status, purpose, counterparty, invoice, destination/asset context, and evidence references.
 - The UI remains informational: deterministic policy/risk enforcement and the M02 execution boundary are unchanged.
 - Browser runtime verification of the new panel remains open.
+
+
+## 2026-09-22 — M03 deterministic context gate
+
+- Extended M03 evaluation so incomplete required business context can no longer silently produce an APPROVE result.
+- An otherwise-approvable payment with incomplete context is deterministically converted to REVIEW with an explicit context-completeness reason.
+- Existing BLOCK decisions remain BLOCK; existing REVIEW decisions can include the additional context reason.
+- Added automated coverage for the incomplete-context review gate.
+- The M02 execution guard remains unchanged and still requires a final APPROVE before execution.
