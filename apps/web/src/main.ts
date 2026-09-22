@@ -73,7 +73,9 @@ function contextFor(mode: typeof state.mode): PaymentContext {
     agentSinglePaymentLimitAtomic: "5000000000",
     agentDailyLimitAtomic: "20000000000",
     agentSpentTodayAtomic: "1000000000",
-    evidence: mode === "BLOCK" ? [] : [{ id: "invoice:INV-001", type: "INVOICE", summary: "Demo invoice INV-001 is attached." }]
+    evidence: state.intent?.invoiceRef
+      ? [{ id: `invoice:${state.intent.invoiceRef}`, type: "INVOICE", summary: `Invoice ${state.intent.invoiceRef} is attached.` }]
+      : []
   };
 }
 
