@@ -105,7 +105,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Transaction lookup and intent reconciliation
 - [x] Restore latest persisted audit summary after refresh
 - [x] Persisted execution recovery state and safe retry gating (runtime verified)
-- [ ] Milestone 03 — intent/context/evidence control proof
+- [x] Milestone 03 — intent/context/evidence control proof (engineering/runtime verified)
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
@@ -124,6 +124,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
 - `docs/MILESTONE_03.md` — intent/context/evidence control-layer milestone and acceptance criteria
 - `docs/MILESTONE_03_RUNBOOK.md` — product-proof and external-validation runbook for M03
+- `docs/evidence/M03_FINAL_EVIDENCE.md` — consolidated M03 runtime verification matrix and evidence narrative
 - `docs/evidence/M02_FINAL_EVIDENCE.md` — consolidated M02 verification matrix, scope notes, and submission evidence narrative
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
