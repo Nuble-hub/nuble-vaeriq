@@ -75,7 +75,7 @@ assert.equal(evaluation.contextSnapshot.intentId, intent.id);
 assert.equal(evaluation.contextCompleteness.status, "COMPLETE");
 assert.equal(evaluation.auditEvents[0].type, "CONTEXT_ATTACHED");
 assert.equal(evaluation.auditEvents[0].intentId, intent.id);
-assert.match(evaluation.auditEvents[0].payloadRef, /^context:ctx:pi_context_test:status:COMPLETE:evidence:/);
+assert.match(evaluation.auditEvents[0].payloadRef, /^context:ctx:pi_context_test:status:COMPLETE:missing:none:evidence:/);
 
 const incompleteContext = {
   ...context,
