@@ -6,6 +6,7 @@ export function createAuditEvent(args: { id: string; type: AuditEventType; actor
 
 export function createContextAttachedAuditEvent(args: { intent: PaymentIntent; snapshot: ContextSnapshot; completeness: ContextCompletenessResult; actor: string; now?: string }): AuditEvent {
   const evidence = args.snapshot.evidenceRefs.length ? args.snapshot.evidenceRefs.join(",") : "none";
+  const missing = args.completeness.missing.length ? args.completeness.missing.join(",") : "none";
   return createAuditEvent({
     id: `${args.intent.id}:context`,
     type: "CONTEXT_ATTACHED",
@@ -13,7 +14,7 @@ export function createContextAttachedAuditEvent(args: { intent: PaymentIntent; s
     intentId: args.intent.id,
     organizationId: args.intent.organizationId,
     now: args.now,
-    payloadRef: `context:${args.snapshot.id}:status:${args.completeness.status}:evidence:${evidence}`
+    payloadRef: `context:${args.snapshot.id}:status:${args.completeness.status}:missing:${missing}:evidence:${evidence}`
   });
 }
 
