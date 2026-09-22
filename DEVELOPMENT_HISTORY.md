@@ -220,3 +220,11 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Updated the context panel to state explicitly when incomplete required context changes the final decision to REVIEW.
 - Clarified that the context snapshot is evaluated before execution and is part of the control flow, not only presentation.
 - The next runtime proof is to demonstrate APPROVE → REVIEW solely by changing required business context while keeping the payment otherwise policy-compliant.
+
+## 2026-09-22 — M03 decision-changing context runtime proof
+
+- Browser runtime verification demonstrated the key M03 control transition using the same 2,000 USDC payment intent shape.
+- With the required invoice removed, the context became INCOMPLETE and the final decision changed to REVIEW.
+- Restoring `INV-001` returned the context to COMPLETE and the decision to APPROVE.
+- The UI made the decision change explicit and kept execution unavailable while the decision was REVIEW.
+- This runtime proof establishes the intended context-as-control behavior; final regression verification after the latest UI changes remains open.
