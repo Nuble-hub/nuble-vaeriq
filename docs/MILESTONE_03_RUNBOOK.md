@@ -52,3 +52,16 @@ Do not convert opinions into traction claims. Record exact evidence and attribut
 - validated context fields
 - candidate design-partner evidence
 - any concrete workflow commitment
+## Decision-changing context proof
+
+1. Switch to **Compliant · APPROVE**.
+2. Set an amount above the configured invoice threshold but below the policy review threshold, for example `2000` USDC.
+3. Clear the invoice reference.
+4. Evaluate the payment.
+5. Confirm the base policy remains passable but the context completeness result is `INCOMPLETE`.
+6. Confirm the final decision is `REVIEW` with an explicit business-context reason.
+7. Confirm execution remains unavailable because the final decision is not `APPROVE`.
+8. Restore the invoice reference and evaluate again.
+9. Confirm context becomes `COMPLETE` and the decision can return to `APPROVE` when policy and risk also pass.
+
+This scenario is the key M03 proof that explicit business context is a control input, not merely a UI display.
