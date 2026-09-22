@@ -17,7 +17,15 @@ export function evaluatePayment(args: { intent: PaymentIntent; policy: PolicySet
   const contextSnapshot = createContextSnapshot(args.intent, args.context);
   assertContextBoundToIntent(contextSnapshot, args.intent);
   const contextCompleteness = evaluateContextCompleteness(contextSnapshot);
-  const result = evaluateIntent(args.intent, args.policy, args.context);
+  const baseResult = evaluateIntent(args.intent, args.policy, args.context);
+  const contextGateReason = contextCompleteness.status === "INCOMPLETE"
+    ? `Business context is incomplete: ${contextCompleteness.missing.join(", ")}.`
+    : "";
+  const result: DecisionResult = contextGateReason && baseResult.decision === "APPROVE"
+    ? { ...baseResult, decision: "REVIEW", reasons: [contextGateReason] }
+    : contextGateReason && baseResult.decision === "REVIEW"
+      ? { ...baseResult, reasons: [...baseResult.reasons, contextGateReason] }
+      : baseResult;
   const evidence: Evidence[] = args.context.evidence;
 
   return {
