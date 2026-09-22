@@ -283,8 +283,8 @@ function render() {
           </div>
 
           ${contextCompleteness?.status === "INCOMPLETE"
-            ? `<div class="context-warning">Missing context: ${contextCompleteness.missing.join(", ")}.</div>`
-            : `<div class="context-note">This context snapshot is bound to the current PaymentIntent before policy and risk evaluation.</div>`}
+            ? `<div class="context-warning">Missing context: ${contextCompleteness.missing.join(", ")}.${decision === "REVIEW" ? " The incomplete context changed the decision to REVIEW." : ""}</div>`
+            : `<div class="context-note">This context snapshot is bound to the current PaymentIntent and is evaluated before execution.</div>`}
         ` : `<div class="muted context-empty">Run an evaluation to see the business context and evidence attached to this payment intent.</div>`}
       </section>
 
