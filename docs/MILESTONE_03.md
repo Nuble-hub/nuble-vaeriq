@@ -66,7 +66,7 @@ No customer traction, design-partner, or product-market-fit claim should be made
 1. A PaymentIntent can be evaluated with an explicit, typed business-context snapshot.
 2. Context completeness is deterministic and reproducible.
 3. Context/evidence is auditable and remains bound to the same PaymentIntent.
-4. Policy and risk decisions can reference context/evidence without hidden state.
+4. Policy and risk evaluation receives explicit context, and incomplete required business context deterministically prevents an APPROVE result by moving the decision to REVIEW.
 5. The UI can explain the business reason and evidence behind an execution decision.
 6. M02 execution guard and recovery invariants remain unchanged.
 7. No AI output can directly authorize or sign value movement.
@@ -88,7 +88,7 @@ versus
 
 `VAERIQ control: "Should this business payment move?"`
 
-The goal is not to add more fields. The goal is to prove that the additional context changes a financial control decision in a traceable way.
+The goal is not to add more fields. The goal is to prove that explicit business context can change a financial control decision in a deterministic, traceable way.
 
 ## Initial implementation note — 2026-09-21
 
@@ -109,3 +109,9 @@ Runtime/UI verification remains open.
 The M03 demo UI now exposes a visible **Why should this payment move?** panel. After evaluation it shows the typed context snapshot, context-completeness status, business purpose, counterparty, invoice, destination/asset context, and evidence references. The panel is informational and auditable; it does not replace deterministic policy/risk enforcement or the M02 execution guard.
 
 Browser runtime verification of the new UI slice remains open.
+
+## Context-gate implementation note — 2026-09-22
+
+The M03 evaluation layer now treats incomplete required business context as a deterministic review condition. An otherwise-approvable payment with missing required context receives REVIEW with an explicit reason rather than silently proceeding to execution. Existing BLOCK and REVIEW decisions remain unchanged except that incomplete context can add a review reason.
+
+This keeps the M02 execution boundary intact: only a final APPROVE result can reach authorizeExecution.
