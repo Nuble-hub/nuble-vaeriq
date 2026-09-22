@@ -77,9 +77,22 @@ assert.equal(evaluation.auditEvents[0].type, "CONTEXT_ATTACHED");
 assert.equal(evaluation.auditEvents[0].intentId, intent.id);
 assert.match(evaluation.auditEvents[0].payloadRef, /^context:ctx:pi_context_test:status:COMPLETE:evidence:/);
 
+const incompleteContext = {
+  ...context,
+  evidence: [],
+  invoiceRequiredAboveAtomic: "1000000000"
+};
+const incompleteEvaluation = evaluatePayment({ intent, policy, context: incompleteContext });
+assert.equal(incompleteEvaluation.contextCompleteness.status, "INCOMPLETE");
+assert.equal(incompleteEvaluation.result.decision, "REVIEW");
+assert.ok(incompleteEvaluation.result.reasons.some((reason) => reason.includes("Business context is incomplete")));
+assert.equal(incompleteEvaluation.auditEvents[0].type, "CONTEXT_ATTACHED");
+
+
 console.log("VAERIQ M03 context/evidence tests: PASS");
 console.log(JSON.stringify({
   contextBinding: "PASS",
   completeness: evaluation.contextCompleteness.status,
-  auditEvent: evaluation.auditEvents[0].type
+  auditEvent: evaluation.auditEvents[0].type,
+  incompleteContext: "REVIEW"
 }, null, 2));
