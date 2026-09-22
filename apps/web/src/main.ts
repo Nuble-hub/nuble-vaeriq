@@ -229,7 +229,7 @@ function render() {
             </div>
             <div>
               <label for="invoice">Invoice ref</label>
-              <input id="invoice" value="${state.intent?.invoiceRef ?? (state.mode === "BLOCK" ? "" : "INV-001")}" />
+              <input id="invoice" value="${state.intent ? (state.intent.invoiceRef ?? "") : (state.mode === "BLOCK" ? "" : "INV-001")}" />
             </div>
           </div>
 
