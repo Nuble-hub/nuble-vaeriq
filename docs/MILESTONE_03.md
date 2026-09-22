@@ -1,6 +1,6 @@
 # Milestone 03 — Prove the Intent & Context Control Layer
 
-**Status:** In progress  
+**Status:** Complete — engineering & runtime verification
 **Started:** 2026-09-21  
 **Product:** NUBLE / VAERIQ  
 **Base:** M02 complete and merged into `main`
@@ -50,16 +50,16 @@ No customer traction, design-partner, or product-market-fit claim should be made
 - [x] Add deterministic context-completeness evaluation.
 - [x] Persist a `CONTEXT_ATTACHED` audit event with stable evidence references.
 - [x] Surface the context/evidence that influenced policy or risk in the demo.
-- [ ] Keep financial enforcement deterministic; AI remains advisory.
+- [x] Keep financial enforcement deterministic; AI remains advisory.
 - [x] Add automated tests for context integrity and decision evidence binding.
 
 ## Workstream C — Demo narrative
 
 - [x] Add one visible UI panel answering: "Why should this payment move?"
 - [x] Show purpose, counterparty, invoice/evidence, and relevant risk/policy signals.
-- [ ] Keep the live Solana execution path unchanged.
-- [ ] Preserve the M02 recovery states and safe retry behavior.
-- [ ] Update the final demo sequence and evidence package only after runtime verification.
+- [x] Keep the live Solana execution path unchanged.
+- [x] Preserve the M02 recovery states and safe retry behavior.
+- [x] Update the final demo sequence and evidence package only after runtime verification.
 
 ## Acceptance criteria
 
@@ -122,3 +122,17 @@ Verified in the browser on 2026-09-22: with an otherwise policy-compliant 2,000 
 The screenshots show the same payment flow moving between `APPROVE` and `REVIEW` solely because the required business context changed. Execution remained unavailable while the decision was `REVIEW`.
 
 This is the primary M03 runtime proof that context is a financial control input rather than a presentation-only field.
+
+## M03 completion note — 2026-09-22
+
+M03 engineering and browser runtime verification is complete for the intent/context/evidence control slice.
+
+Verified behavior:
+- A typed context snapshot is bound to the PaymentIntent and organization.
+- Context completeness is deterministic and auditable.
+- Required invoice context can change an otherwise approvable payment from APPROVE to REVIEW.
+- Restoring the required invoice returns the context to COMPLETE and the decision to APPROVE when other controls pass.
+- REVIEW remains non-executable through the unchanged M02 execution guard.
+- The final M03 evidence bundle was captured as `VAERIQ_M03_Final_Evidence_2026-09-22.zip`.
+
+Workstream A customer-validation items remain open and are not represented as completed traction or product-market-fit evidence.
