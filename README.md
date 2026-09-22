@@ -92,6 +92,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Repository foundation
 - [x] Solana-first architecture decision
 - [x] Milestone 01 — chain-connected payment control
+- [x] Milestone 02 — control-boundary hardening and recovery
 - [x] Solana Devnet stablecoin read/validation path
 - [x] Solana Devnet stablecoin execution path
 - [x] Execution guard behavior for `APPROVE` / `REVIEW` / `BLOCK`
@@ -104,6 +105,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Transaction lookup and intent reconciliation
 - [x] Restore latest persisted audit summary after refresh
 - [x] Persisted execution recovery state and safe retry gating (runtime verified)
+- [ ] Milestone 03 — intent/context/evidence control proof
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
@@ -120,6 +122,8 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/FOUNDER_MARKET_FIT.md` — founder journey, founder-market-fit thesis, evidence boundaries, and narrative draft
 - `docs/MILESTONE_02.md` — control-layer hardening, persistent audit evidence, validation, and demo-proof plan
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
+- `docs/MILESTONE_03.md` — intent/context/evidence control-layer milestone and acceptance criteria
+- `docs/MILESTONE_03_RUNBOOK.md` — product-proof and external-validation runbook for M03
 - `docs/evidence/M02_FINAL_EVIDENCE.md` — consolidated M02 verification matrix, scope notes, and submission evidence narrative
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template

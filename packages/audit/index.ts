@@ -1,7 +1,21 @@
-import type { AuditEvent, AuditEventType, DecisionResult, PaymentIntent } from "../domain/index.js";
+import type { AuditEvent, AuditEventType, ContextCompletenessResult, ContextSnapshot, DecisionResult, PaymentIntent } from "../domain/index.js";
 
 export function createAuditEvent(args: { id: string; type: AuditEventType; actor: string; intentId: string; organizationId: string; payloadRef?: string; now?: string }): AuditEvent {
   return { id: args.id, type: args.type, actor: args.actor, intentId: args.intentId, organizationId: args.organizationId, timestamp: args.now ?? new Date().toISOString(), payloadRef: args.payloadRef };
+}
+
+export function createContextAttachedAuditEvent(args: { intent: PaymentIntent; snapshot: ContextSnapshot; completeness: ContextCompletenessResult; actor: string; now?: string }): AuditEvent {
+  const evidence = args.snapshot.evidenceRefs.length ? args.snapshot.evidenceRefs.join(",") : "none";
+  const missing = args.completeness.missing.length ? args.completeness.missing.join(",") : "none";
+  return createAuditEvent({
+    id: `${args.intent.id}:context`,
+    type: "CONTEXT_ATTACHED",
+    actor: args.actor,
+    intentId: args.intent.id,
+    organizationId: args.intent.organizationId,
+    now: args.now,
+    payloadRef: `context:${args.snapshot.id}:status:${args.completeness.status}:missing:${missing}:evidence:${evidence}`
+  });
 }
 
 export function createDecisionAuditEvents(args: { intent: PaymentIntent; decision: DecisionResult; actor: string; now?: string }): AuditEvent[] {
