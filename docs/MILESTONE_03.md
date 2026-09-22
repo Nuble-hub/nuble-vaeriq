@@ -115,3 +115,8 @@ Browser runtime verification of the new UI slice remains open.
 The M03 evaluation layer now treats incomplete required business context as a deterministic review condition. An otherwise-approvable payment with missing required context receives REVIEW with an explicit reason rather than silently proceeding to execution. Existing BLOCK and REVIEW decisions remain unchanged except that incomplete context can add a review reason.
 
 This keeps the M02 execution boundary intact: only a final APPROVE result can reach authorizeExecution.
+## Decision-changing context runtime target
+
+The next browser proof should demonstrate the strategic test directly: with an otherwise policy-compliant payment, removing required invoice context must change the final decision from APPROVE to REVIEW. Restoring the invoice evidence should allow APPROVE again when all other controls pass.
+
+This is the main runtime demonstration that M03 context is a financial control input rather than a presentation-only field.
