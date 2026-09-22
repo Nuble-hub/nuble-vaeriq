@@ -228,3 +228,12 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Restoring `INV-001` returned the context to COMPLETE and the decision to APPROVE.
 - The UI made the decision change explicit and kept execution unavailable while the decision was REVIEW.
 - This runtime proof establishes the intended context-as-control behavior; final regression verification after the latest UI changes remains open.
+
+
+## 2026-09-22 — Milestone 03 engineering proof completed
+
+- M03 typed context, deterministic completeness, context audit evidence, UI explanation, and decision-changing context behavior were completed and runtime-verified.
+- Browser evidence demonstrated a 2,000 USDC payment changing from APPROVE with invoice context to REVIEW when required invoice context was removed, then returning to APPROVE when restored.
+- M02 execution guard and recovery behavior remained green through the final regression check.
+- Final M03 evidence was consolidated in `VAERIQ_M03_Final_Evidence_2026-09-22.zip`.
+- Customer-validation work remains open and no traction or product-market-fit claim is implied.
