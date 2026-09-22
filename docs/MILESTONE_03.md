@@ -101,7 +101,7 @@ The first M03 engineering slice is implemented on `feature/m03-intent-context-ev
 - Context-to-intent and organization binding fail closed through explicit assertions.
 - A dedicated automated M03 context/evidence gate is included in `npm test`.
 
-Runtime/UI verification remains open.
+Runtime/UI verification of the context panel and decision-changing scenario is complete; final M03 regression gate remains open after the latest UI changes.
 
 
 ## UI implementation note — 2026-09-22
@@ -115,8 +115,10 @@ Browser runtime verification of the new UI slice remains open.
 The M03 evaluation layer now treats incomplete required business context as a deterministic review condition. An otherwise-approvable payment with missing required context receives REVIEW with an explicit reason rather than silently proceeding to execution. Existing BLOCK and REVIEW decisions remain unchanged except that incomplete context can add a review reason.
 
 This keeps the M02 execution boundary intact: only a final APPROVE result can reach authorizeExecution.
-## Decision-changing context runtime target
+## Decision-changing context runtime proof
 
-The next browser proof should demonstrate the strategic test directly: with an otherwise policy-compliant payment, removing required invoice context must change the final decision from APPROVE to REVIEW. Restoring the invoice evidence should allow APPROVE again when all other controls pass.
+Verified in the browser on 2026-09-22: with an otherwise policy-compliant 2,000 USDC payment, removing the required invoice context produced `INCOMPLETE` context and changed the final decision to `REVIEW`. Restoring `INV-001` produced `COMPLETE` context and returned the final decision to `APPROVE`.
 
-This is the main runtime demonstration that M03 context is a financial control input rather than a presentation-only field.
+The screenshots show the same payment flow moving between `APPROVE` and `REVIEW` solely because the required business context changed. Execution remained unavailable while the decision was `REVIEW`.
+
+This is the primary M03 runtime proof that context is a financial control input rather than a presentation-only field.
