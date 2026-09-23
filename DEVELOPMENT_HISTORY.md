@@ -286,3 +286,12 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Fixed the HTTP benchmark helper regression introduced while adding method selection; required integer parsing helpers are restored.
 - Fixed the WebSocket observation probe's stream-key mismatch that caused slot notifications to crash the process.
 - Added explicit baseline-only and candidate-only slot counts to the streaming report so observation gaps are measurable rather than described only in notes.
+
+## 2026-09-24 — M04 HTTP and WebSocket benchmark evidence captured
+
+- Completed Mainnet HTTP benchmark runs, including generic RPC methods and isolated `getTransaction` runs at sequential and concurrent settings.
+- Observed public-baseline `HTTP_429` responses in repeated 30-request runs, while the same runs completed without observed RPC Fast errors.
+- Completed a corrected 30-slot Mainnet `slotSubscribe` observation run with 30 matched slots, zero duplicates, zero stream errors, and no baseline-only or candidate-only slots.
+- Preserved the measured results in `docs/M04_RPC_BENCHMARK_RESULTS.md` and `docs/M04_STREAM_BENCHMARK_RESULTS.md`.
+- Engineering decision from the measured workload: keep RPC Fast as an optional provider rather than a core VAERIQ dependency.
+- Streaming remains an observation layer; confirmation, `getTransaction`, and reconciliation remain authoritative.
