@@ -10,6 +10,7 @@
     "check": "npm run typecheck && npm test",
     "demo": "npm run build && node scripts/demo-server.mjs",
     "solana:probe": "node scripts/solana-devnet-probe.mjs",
+    "benchmark:rpc": "node scripts/rpc-benchmark.mjs",
     "web:dev": "vite --config vite.config.ts",
     "web:build": "vite build --config vite.config.ts"
   },
