@@ -267,3 +267,10 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The provisioned RPC Fast Focus endpoint is Mainnet-only, so the comparative benchmark network was aligned to Solana Mainnet for apples-to-apples endpoint testing.
 - The M04 runbook and evidence template were updated to distinguish the current Mainnet benchmark from VAERIQ's existing Devnet application path.
 - The next reconciliation-oriented benchmark input is a known confirmed Mainnet transaction signature available to both endpoints.
+
+## 2026-09-24 — M04 streaming observation probe added
+
+- Added a provider-neutral WebSocket observation probe using Solana Mainnet `slotSubscribe`.
+- The probe compares same-slot notification arrival between the public Mainnet WebSocket and RPC Fast Focus, while separately recording duplicates, unmatched slots, and WebSocket errors.
+- Added `benchmark:stream` and documented the runtime procedure.
+- The probe is observation-only; transaction confirmation, `getTransaction`, and reconciliation remain authoritative.
