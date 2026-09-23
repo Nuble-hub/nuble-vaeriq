@@ -133,6 +133,7 @@ for (const [key, stream] of Object.entries(streams)) {
   observations[key].reconnectAttempts = streamState.reconnectAttempts;
   observations[key].reconnectsSucceeded = streamState.reconnectsSucceeded;
   observations[key].reconnectErrors = streamState.reconnectErrors;
+  observations[key].forcedReconnects = streamState.forcedReconnects;
   observations[key].errors.push(...streamState.errors);
   stream.stop();
 }
@@ -216,7 +217,8 @@ async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
     stopped: false,
     reconnectTimer: null,
     reconnectInFlight: false,
-    subscriptionId: null
+    subscriptionId: null,
+    forcedReconnects: 0
   };
   session.state = state;
 
@@ -414,7 +416,7 @@ async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
 
   function forceReconnect(reason) {
     if (state.stopped || !state.ws) return;
-    state.errors.push(`FORCED_RECONNECT:${reason}`);
+    state.forcedReconnects += 1;
     try {
       state.ws.close(1000, "M04 forced reconnect");
     } catch {
