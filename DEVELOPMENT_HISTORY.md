@@ -237,3 +237,14 @@ The next open work remains execution failure handling, transaction reconciliatio
 - M02 execution guard and recovery behavior remained green through the final regression check.
 - Final M03 evidence was consolidated in `VAERIQ_M03_Final_Evidence_2026-09-22.zip`.
 - Customer-validation work remains open and no traction or product-market-fit claim is implied.
+
+
+## 2026-09-23 — M04 operating-layer benchmark started
+
+- Started `feature/m04-validation-rpc-benchmark` from M03-complete `main`.
+- Added a repeatable JSON-RPC benchmark harness for matched Solana workloads.
+- The harness measures p50/p95/p99 latency, success rate, min/max latency, wall-clock achieved request rate, and sampled errors.
+- Workloads include `getHealth`, `getLatestBlockhash`, `getBlockHeight`, and optional `getBalance` / `getTransaction` when a wallet or known transaction signature is supplied.
+- Added optional RPC Fast token support through the `X-Token` request header without committing credentials.
+- Added M04 operating-layer milestone and runtime runbook.
+- Benchmark execution against RPC Fast Focus is pending endpoint setup and a matched runtime run.
