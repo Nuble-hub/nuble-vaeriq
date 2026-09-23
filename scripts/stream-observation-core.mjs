@@ -9,7 +9,8 @@ export function createObservationState() {
     lastObservedSlot: null,
     reconnectAttempts: 0,
     reconnectsSucceeded: 0,
-    reconnectErrors: 0
+    reconnectErrors: 0,
+    forcedReconnects: 0
   };
 }
 
@@ -51,6 +52,7 @@ export function summarizeObservation(state) {
     reconnectAttempts: state.reconnectAttempts,
     reconnectsSucceeded: state.reconnectsSucceeded,
     reconnectErrors: state.reconnectErrors,
+    forcedReconnects: state.forcedReconnects,
     errorCount: state.errors.length,
     errors: state.errors.slice(0, 5)
   };
