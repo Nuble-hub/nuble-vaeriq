@@ -280,3 +280,9 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added `BENCHMARK_METHODS` so individual JSON-RPC methods can be benchmarked in isolation.
 - This separates clean latency measurement from full-suite capacity/throttling observations on rate-limited public RPC endpoints.
 - The next HTTP measurement is an isolated `getTransaction` run using the same Mainnet transaction signature on both endpoints.
+
+## 2026-09-24 — M04 probe runtime bug fixes
+
+- Fixed the HTTP benchmark helper regression introduced while adding method selection; required integer parsing helpers are restored.
+- Fixed the WebSocket observation probe's stream-key mismatch that caused slot notifications to crash the process.
+- Added explicit baseline-only and candidate-only slot counts to the streaming report so observation gaps are measurable rather than described only in notes.
