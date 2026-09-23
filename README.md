@@ -106,7 +106,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Restore latest persisted audit summary after refresh
 - [x] Persisted execution recovery state and safe retry gating (runtime verified)
 - [x] Milestone 03 — intent/context/evidence control proof (engineering/runtime verified)
-- [ ] Milestone 04 — operating-layer validation and RPC benchmark
+- [ ] Milestone 04 — operating-layer validation and RPC benchmark (harness ready)
 - [ ] Public demo URL
 - [ ] Customer discovery / user validation
 - [ ] Final demo package
@@ -135,3 +135,20 @@ No external human builder is part of the core VAERIQ team. External community co
 ## License
 
 No open-source license has been selected yet. Until a license is added, repository contents remain proprietary to the project owner, except for third-party dependencies governed by their own licenses.
+
+
+## M04 RPC benchmark
+
+The repository includes a provider-neutral JSON-RPC benchmark harness at `scripts/rpc-benchmark.mjs`.
+
+Run it with a matched Solana baseline and RPC Fast Focus endpoint:
+
+```bash
+export SOLANA_BASELINE_RPC_URL="https://api.devnet.solana.com"
+export RPC_FAST_RPC_URL="YOUR_RPC_FAST_FOCUS_ENDPOINT"
+npm run benchmark:rpc
+```
+
+Optional `RPC_FAST_TOKEN` can be supplied through the environment when the endpoint requires an `X-Token` header. Credentials are never stored in the repository.
+
+The harness is designed to measure VAERIQ-relevant read and verification workloads rather than reproduce a provider's published benchmark. Results should retain the machine, region, sample count, concurrency, timeout, and run date alongside the measurements.
