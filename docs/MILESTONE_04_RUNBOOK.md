@@ -98,3 +98,38 @@ For every interview, capture workflow evidence in `docs/CUSTOMER_VALIDATION_LOG.
 - next step offered
 
 Do not turn a positive comment into a traction claim.
+
+
+## A2. WebSocket slot observation spike
+
+The first streaming prototype compares the Solana `slotSubscribe` notification stream on the public Mainnet WebSocket and the RPC Fast Focus WebSocket.
+
+Current Focus evaluation is Mainnet-only, so keep both endpoints on Mainnet for this comparison.
+
+PowerShell example:
+
+```powershell
+$env:SOLANA_BASELINE_WS_URL="wss://api.mainnet.solana.com"
+$env:RPC_FAST_WS_URL="YOUR_RPC_FAST_FOCUS_WEBSOCKET_ENDPOINT"
+$env:STREAM_TARGET_MATCHED_SLOTS="30"
+$env:STREAM_TIMEOUT_MS="45000"
+
+npm run benchmark:stream
+```
+
+Do not paste or commit a WebSocket URL containing an API key.
+
+The probe compares the arrival timestamp of the same slot notification on both streams and reports:
+
+- matched slot count
+- candidate-first / baseline-first / tied percentages
+- p50 / p95 / p99 signed arrival delta
+- duplicate notifications
+- unmatched slot observations
+- WebSocket errors
+
+A negative `candidateMinusBaselineMs` means RPC Fast's notification arrived earlier for that matched slot.
+
+This is an observation experiment only. A slot notification does not replace transaction confirmation, `getTransaction`, or reconciliation.
+
+RPC Fast documents `slotSubscribe` as a supported WebSocket subscription and describes WebSocket PubSub for light/reactive workloads. [RPC Fast WebSocket guide](https://rpcfast.com/blog/solana-websocket-subscriptions)
