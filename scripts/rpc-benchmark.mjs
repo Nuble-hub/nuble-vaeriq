@@ -16,6 +16,7 @@ const samples = positiveInt(process.env.BENCHMARK_SAMPLES, DEFAULT_SAMPLES);
 const concurrency = positiveInt(process.env.BENCHMARK_CONCURRENCY, DEFAULT_CONCURRENCY);
 const warmup = nonNegativeInt(process.env.BENCHMARK_WARMUP, DEFAULT_WARMUP);
 const timeoutMs = positiveInt(process.env.BENCHMARK_TIMEOUT_MS, 10_000);
+const rpcFastToken = process.env.RPC_FAST_TOKEN || "";
 
 const methods = [
   {
@@ -116,6 +117,7 @@ async function benchmarkEndpoint(label, url) {
     }
 
     const observations = [];
+    const methodStartedAt = performance.now();
     let cursor = 0;
 
     while (cursor < samples) {
@@ -127,6 +129,7 @@ async function benchmarkEndpoint(label, url) {
       cursor += batchSize;
     }
 
+    const methodElapsedMs = performance.now() - methodStartedAt;
     result.methods[method.name] = {
       requests: observations.length,
       successful: observations.filter((item) => item.ok).length,
@@ -141,9 +144,10 @@ async function benchmarkEndpoint(label, url) {
       minMs: round(Math.min(...observations.map((item) => item.ms)), 2),
       maxMs: round(Math.max(...observations.map((item) => item.ms)), 2),
       achievedReqPerSec: round(
-        observations.length / (observations.reduce((sum, item) => sum + item.ms, 0) / 1000),
+        observations.length / (methodElapsedMs / 1000),
         2
       ),
+      elapsedMs: round(methodElapsedMs, 2),
       errors: observations
         .filter((item) => !item.ok)
         .slice(0, 5)
@@ -176,7 +180,10 @@ async function callRpc(url, method) {
     const [rpcMethod, params] = method.request();
     const response = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(url === candidateUrl && rpcFastToken ? { "X-Token": rpcFastToken } : {})
+      },
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: 1,
