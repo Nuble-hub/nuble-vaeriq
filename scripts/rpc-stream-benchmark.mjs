@@ -28,11 +28,20 @@ if (!candidateUrl) {
 
 if (typeof WebSocket === "undefined") {
   console.error("WebSocket is not available in this Node.js runtime.");
-  console.error("Use a Node.js version with the built-in WebSocket client (Node 22+ recommended).");
+  console.error(
+    "Use a Node.js version with the built-in WebSocket client (Node 22+ recommended)."
+  );
   process.exit(2);
 }
 
 const startedAt = new Date().toISOString();
+const startedMeasurementAt = performance.now();
+const observations = {
+  baseline: createObservationState(),
+  candidate: createObservationState()
+};
+const matchedSlots = new Map();
+let finished = false;
 
 console.log("VAERIQ M04 streaming observation probe");
 console.log(
@@ -52,49 +61,22 @@ console.log(
   )
 );
 
-const [baseline, candidate] = await Promise.all([
-  openSubscription("baseline", baselineUrl),
-  openSubscription("rpc-fast-focus", candidateUrl)
-]);
-
-const streams = { baseline, candidate };
-const startedMeasurementAt = performance.now();
-const observations = {
-  baseline: createObservationState(),
-  candidate: createObservationState()
+const streams = {
+  baseline: await openSubscription(
+    "baseline",
+    baselineUrl,
+    handleSlot("baseline")
+  ),
+  candidate: await openSubscription(
+    "candidate",
+    candidateUrl,
+    handleSlot("candidate")
+  )
 };
-const matchedSlots = new Map();
-let timer;
-let finished = false;
 
-const timeoutPromise = new Promise((resolve) => {
-  timer = setTimeout(() => resolve({ reason: "timeout" }), timeoutMs);
-});
+const outcome = await waitForMatches();
 
-const matchedPromise = new Promise((resolve) => {
-  for (const [key, stream] of Object.entries(streams)) {
-    stream.onSlot = (slot) => {
-      recordSlot(key, slot);
-
-      const left = observations.baseline.slots.get(slot);
-      const right = observations.candidate.slots.get(slot);
-
-      if (left !== undefined && right !== undefined && !matchedSlots.has(slot)) {
-        const candidateMinusBaselineMs = right - left;
-        matchedSlots.set(slot, candidateMinusBaselineMs);
-
-        if (matchedSlots.size >= targetMatchedSlots && !finished) {
-          finished = true;
-          resolve({ reason: "target_reached" });
-        }
-      }
-    };
-  }
-});
-
-await Promise.race([matchedPromise, timeoutPromise]);
-
-clearTimeout(timer);
+clearTimeout(outcome.timer);
 finished = true;
 
 for (const stream of Object.values(streams)) {
@@ -105,6 +87,21 @@ for (const stream of Object.values(streams)) {
   }
 }
 
+const unionSlots = new Set([
+  ...observations.baseline.slots.keys(),
+  ...observations.candidate.slots.keys()
+]);
+const baselineOnlySlots = [...unionSlots].filter(
+  (slot) =>
+    observations.baseline.slots.has(slot) &&
+    !observations.candidate.slots.has(slot)
+).length;
+const candidateOnlySlots = [...unionSlots].filter(
+  (slot) =>
+    observations.candidate.slots.has(slot) &&
+    !observations.baseline.slots.has(slot)
+).length;
+
 const deltas = [...matchedSlots.values()];
 const candidateFirstCount = deltas.filter((value) => value < 0).length;
 const baselineFirstCount = deltas.filter((value) => value > 0).length;
@@ -114,8 +111,7 @@ const result = {
   startedAt,
   completedAt: new Date().toISOString(),
   durationMs: round(performance.now() - startedMeasurementAt, 2),
-  outcome:
-    matchedSlots.size >= targetMatchedSlots ? "TARGET_REACHED" : "TIMEOUT",
+  outcome: outcome.reason,
   targetMatchedSlots,
   matchedSlots: matchedSlots.size,
   baseline: summarizeObservation(observations.baseline),
@@ -135,7 +131,7 @@ const result = {
   notes: [
     "Negative candidateMinusBaselineMs means RPC Fast notification arrived earlier for that matched slot.",
     "Positive candidateMinusBaselineMs means the public baseline notification arrived earlier.",
-    "Only the first notification timestamp per slot is used; duplicate notifications are counted separately.",
+    "Notification counts include duplicates; uniqueSlots counts distinct observed slot numbers.",
     "A slot gap is an observation where the slot was seen by one stream during the probe window but not by both; baseline-only and candidate-only counts are reported.",
     "This probe tests observation timing only. It does not replace confirmation, transaction lookup, or reconciliation.",
     "The reported delta is end-to-end client-observed arrival timing from the same machine, not validator-side processing time."
@@ -144,17 +140,36 @@ const result = {
 
 console.log(JSON.stringify(result, null, 2));
 
-async function openSubscription(label, url) {
+function handleSlot(key) {
+  return (slot, timestamp) => {
+    const state = observations[key];
+
+    state.notifications += 1;
+    if (state.slots.has(slot)) {
+      state.duplicates += 1;
+      return;
+    }
+
+    state.slots.set(slot, timestamp);
+
+    const left = observations.baseline.slots.get(slot);
+    const right = observations.candidate.slots.get(slot);
+
+    if (left !== undefined && right !== undefined && !matchedSlots.has(slot)) {
+      matchedSlots.set(slot, right - left);
+    }
+  };
+}
+
+async function openSubscription(key, url, onSlot) {
   const ws = new WebSocket(url);
   const state = {
-    label,
+    key,
     ws,
     subscriptionId: null,
-    onSlot: null,
-    openedAt: performance.now(),
     errors: [],
-    duplicates: 0,
     notifications: 0,
+    duplicates: 0,
     slots: new Map()
   };
 
@@ -208,27 +223,19 @@ async function openSubscription(label, url) {
         return;
       }
 
-      state.notifications += 1;
-      const now = performance.now();
-      if (state.slots.has(slot)) {
-        state.duplicates += 1;
-        return;
-      }
-
-      state.slots.set(slot, now);
-      state.onSlot?.(slot);
+      onSlot(slot, performance.now());
     });
 
     ws.addEventListener("error", () => {
       state.errors.push("WEBSOCKET_ERROR");
-      fail(new Error(`${label}: WebSocket error`));
+      fail(new Error(`${key}: WebSocket error`));
     });
 
     ws.addEventListener("close", (event) => {
       if (!settled) {
         fail(
           new Error(
-            `${label}: WebSocket closed before subscription acknowledgement (code=${event.code})`
+            `${key}: WebSocket closed before subscription acknowledgement (code=${event.code})`
           )
         );
       }
@@ -236,10 +243,34 @@ async function openSubscription(label, url) {
 
     setTimeout(() => {
       if (!settled) {
-        fail(new Error(`${label}: subscription acknowledgement timeout`));
+        fail(new Error(`${key}: subscription acknowledgement timeout`));
       }
     }, Math.min(timeoutMs, 15_000));
   });
+}
+
+function waitForMatches() {
+  let timer;
+
+  const matchedPromise = new Promise((resolve) => {
+    const check = () => {
+      if (matchedSlots.size >= targetMatchedSlots && !finished) {
+        resolve({ reason: "TARGET_REACHED", timer });
+        return;
+      }
+      timer = setTimeout(check, 50);
+    };
+    check();
+  });
+
+  const timeoutPromise = new Promise((resolve) => {
+    timer = setTimeout(
+      () => resolve({ reason: "TIMEOUT", timer }),
+      timeoutMs
+    );
+  });
+
+  return Promise.race([matchedPromise, timeoutPromise]);
 }
 
 function createObservationState() {
@@ -249,17 +280,6 @@ function createObservationState() {
     slots: new Map(),
     errors: []
   };
-}
-
-function recordSlot(key, slot) {
-  const state = observations[key];
-  if (!state) return;
-  if (!state.slots.has(slot)) {
-    state.slots.set(slot, performance.now());
-    state.notifications += 1;
-  } else {
-    state.duplicates += 1;
-  }
 }
 
 function summarizeObservation(state) {
