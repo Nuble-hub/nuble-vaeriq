@@ -128,7 +128,12 @@ finished = true;
 
 if (forceReconnectTimer) clearTimeout(forceReconnectTimer);
 
-for (const stream of Object.values(streams)) {
+for (const [key, stream] of Object.entries(streams)) {
+  const streamState = stream.state;
+  observations[key].reconnectAttempts = streamState.reconnectAttempts;
+  observations[key].reconnectsSucceeded = streamState.reconnectsSucceeded;
+  observations[key].reconnectErrors = streamState.reconnectErrors;
+  observations[key].errors.push(...streamState.errors);
   stream.stop();
 }
 
