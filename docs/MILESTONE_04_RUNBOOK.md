@@ -133,3 +133,22 @@ A negative `candidateMinusBaselineMs` means RPC Fast's notification arrived earl
 This is an observation experiment only. A slot notification does not replace transaction confirmation, `getTransaction`, or reconciliation.
 
 RPC Fast documents `slotSubscribe` as a supported WebSocket subscription and describes WebSocket PubSub for light/reactive workloads. [RPC Fast WebSocket guide](https://rpcfast.com/blog/solana-websocket-subscriptions)
+
+
+### Rate-limit-aware HTTP runs
+
+Solana's public Mainnet RPC is rate-limited. For a clean latency comparison, isolate a single method per run with `BENCHMARK_METHODS` so cumulative requests from multiple methods do not become a confounding factor.
+
+PowerShell example for the reconciliation-oriented workload:
+
+```powershell
+$env:BENCHMARK_METHODS="getTransaction"
+$env:BENCHMARK_SAMPLES="30"
+$env:BENCHMARK_CONCURRENCY="4"
+$env:BENCHMARK_WARMUP="0"
+$env:BENCHMARK_TIMEOUT_MS="10000"
+
+npm run benchmark:rpc
+```
+
+Use the full method set as a separate capacity/throttling observation, not as a pure latency comparison. [Solana public RPC documentation](https://solana.com/docs/references/clusters)
