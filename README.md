@@ -141,13 +141,15 @@ No open-source license has been selected yet. Until a license is added, reposito
 
 The repository includes a provider-neutral JSON-RPC benchmark harness at `scripts/rpc-benchmark.mjs`.
 
-Run it with a matched Solana baseline and RPC Fast Focus endpoint:
+Run it with a matched Solana Mainnet baseline and RPC Fast Focus endpoint:
 
 ```bash
-export SOLANA_BASELINE_RPC_URL="https://api.devnet.solana.com"
+export SOLANA_BASELINE_RPC_URL="https://api.mainnet-beta.solana.com"
 export RPC_FAST_RPC_URL="YOUR_RPC_FAST_FOCUS_ENDPOINT"
 npm run benchmark:rpc
 ```
+
+The current RPC Fast Focus endpoint provisioned for M04 is Mainnet-only. This benchmark is intentionally Mainnet-to-Mainnet; the application demo remains on Solana Devnet.
 
 Optional `RPC_FAST_TOKEN` can be supplied through the environment when the endpoint requires an `X-Token` header. Credentials are never stored in the repository.
 
