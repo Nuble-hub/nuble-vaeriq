@@ -5,7 +5,7 @@ Operator:
 Machine / region:
 Baseline endpoint:
 RPC Fast Focus endpoint/app:
-Known transaction signature (optional):
+Known Mainnet transaction signature (optional):
 Sample count:
 Concurrency:
 Warmup:
