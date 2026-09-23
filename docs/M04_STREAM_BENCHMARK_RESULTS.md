@@ -47,12 +47,12 @@ This is an end-to-end client-observed timing comparison, not validator-side proc
 
 ## Limits / next work
 
-This probe does not test reconnects, long-lived stream stability, transaction-first-observed timing, or polling-vs-streaming end-to-end reconciliation latency. It should therefore remain an observation prototype rather than a production streaming claim.
+Reconnect handling is now runtime-verified for the bounded prototype. Remaining M04 observation work is the polling-vs-streaming comparison and any longer-lived/fault-injection testing needed before a production streaming claim. This remains an observation prototype rather than a production streaming claim.
 
 The observation path remains subordinate to confirmation, `getTransaction`, and reconciliation.
 
 
-## Forced reconnect runtime verification — 30 matched slots
+## Forced reconnect runtime verification — canonical run — 30 matched slots
 
 ### Configuration
 
@@ -75,14 +75,14 @@ The observation path remains subordinate to confirmation, `getTransaction`, and 
 | WebSocket errors | 0 | 0 |
 | Duplicate notifications | 0 | 0 |
 | Unique slots | 38 | 30 |
-| Observed gap slots | 5 | 13 |
+| Observed gap slots | 3 | 10 |
 
 The process reached the configured target of 30 matched slots after the forced disconnect/reconnect cycle. This verifies that the bounded reconnect path can re-establish the subscription and resume observation in the tested runtime.
 
 The observed slot gaps occurred during the same measurement window and should not be interpreted as provider packet-loss attribution. A gap means this process did not observe the intervening slot notifications; the test does not identify whether the cause was provider delivery, transport, client scheduling, or the intentional disconnect interval.
 
-The signed same-slot timing delta in this forced-reconnect run was p50 +6.22 ms, p95 +218.23 ms, and p99 +292.38 ms. Because this run intentionally introduces a disconnect/reconnect event, these timing values should be treated as resilience-run observations rather than a clean latency benchmark.
+The signed same-slot timing delta in the canonical forced-reconnect run was p50 +4.46 ms, p95 +291.29 ms, and p99 +393.67 ms. Candidate-first was 10/30 (33.33%), while baseline-first was 20/30 (66.67%). Because this run intentionally introduces a disconnect/reconnect event, these timing values should be treated as resilience-run observations rather than a clean latency benchmark.
 
 ## Verification boundary
 
-The reconnect runtime proof is complete for this bounded observation prototype. It does not establish production-grade stream durability, lossless delivery, or provider-wide performance characteristics. Confirmation, `getTransaction`, and reconciliation remain the execution-truth path.
+The canonical reconnect runtime proof is complete for this bounded observation prototype. It does not establish production-grade stream durability, lossless delivery, or provider-wide performance characteristics. Confirmation, `getTransaction`, and reconciliation remain the execution-truth path.
