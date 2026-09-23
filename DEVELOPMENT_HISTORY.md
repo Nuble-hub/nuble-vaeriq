@@ -295,3 +295,12 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Preserved the measured results in `docs/M04_RPC_BENCHMARK_RESULTS.md` and `docs/M04_STREAM_BENCHMARK_RESULTS.md`.
 - Engineering decision from the measured workload: keep RPC Fast as an optional provider rather than a core VAERIQ dependency.
 - Streaming remains an observation layer; confirmation, `getTransaction`, and reconciliation remain authoritative.
+
+
+## 2026-09-24 — M04 streaming resilience hardening
+
+- Added a small provider-neutral stream observation core for duplicate detection, slot-gap accounting, reconnect counters, and delta summaries.
+- Hardened the Mainnet `slotSubscribe` probe with bounded reconnect handling and optional deterministic forced disconnect testing.
+- Added a regression test covering duplicate delivery, observed slot gaps, reconnect accounting, and signed timing delta summaries.
+- Added `STREAM_RECONNECT_DELAY_MS`, `STREAM_MAX_RECONNECTS`, and `STREAM_FORCE_RECONNECT_AFTER_MS` runtime controls.
+- Reconnect/gap implementation is complete at code level; live forced-reconnect verification remains open.
