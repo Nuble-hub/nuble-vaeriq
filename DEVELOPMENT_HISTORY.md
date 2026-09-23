@@ -248,3 +248,9 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added optional RPC Fast token support through the `X-Token` request header without committing credentials.
 - Added M04 operating-layer milestone and runtime runbook.
 - Benchmark execution against RPC Fast Focus is pending endpoint setup and a matched runtime run.
+
+
+## 2026-09-23 — M04 benchmark harness documented
+
+- Added repository documentation for the M04 JSON-RPC benchmark harness.
+- Added a benchmark results template so each run retains comparable conditions and measured outputs.
