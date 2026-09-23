@@ -28,11 +28,14 @@ assert.equal(state.lastObservedSlot, 104);
 state.reconnectAttempts = 2;
 state.reconnectsSucceeded = 2;
 state.reconnectErrors = 0;
+state.forcedReconnects = 1;
 
 const summary = summarizeObservation(state);
 assert.equal(summary.observedGapSlots, 2);
 assert.equal(summary.duplicateNotifications, 1);
 assert.equal(summary.reconnectsSucceeded, 2);
+assert.equal(summary.forcedReconnects, 1);
+assert.equal(summary.errorCount, 0);
 
 const deltas = summarizeDeltas([-5, 0, 3, 10]);
 assert.equal(deltas.count, 4);
