@@ -304,3 +304,13 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added a regression test covering duplicate delivery, observed slot gaps, reconnect accounting, and signed timing delta summaries.
 - Added `STREAM_RECONNECT_DELAY_MS`, `STREAM_MAX_RECONNECTS`, and `STREAM_FORCE_RECONNECT_AFTER_MS` runtime controls.
 - Reconnect/gap implementation is complete at code level; live forced-reconnect verification remains open.
+
+
+## 2026-09-24 — M04 forced reconnect runtime verification
+
+- Ran the Mainnet streaming probe with a deterministic 5-second forced disconnect and bounded reconnect settings.
+- Both the public Solana baseline and RPC Fast Focus re-established their subscriptions successfully after one reconnect attempt.
+- The run reached 30 matched slots after reconnect, with zero observed WebSocket errors and zero duplicate notifications.
+- Observed slot gaps were recorded explicitly (baseline 5, RPC Fast 13) and are treated as observation-window gaps rather than provider-loss attribution.
+- The reconnect implementation is therefore runtime-verified for the current bounded prototype; production-grade stream durability remains outside M04 scope.
+- Forced reconnect is now reported separately from actual WebSocket error counts in the benchmark output.
