@@ -24,9 +24,9 @@ M04 has two parallel evidence tracks:
 - [ ] Run baseline vs RPC Fast Focus with matched methods, sample count, concurrency, and timeout.
 - [ ] Measure p50 / p95 / p99 latency and success rate.
 - [x] Add a rate-limit-aware method-isolation mode for clean HTTP latency comparisons.
-- [ ] Include `getTransaction` against a known confirmed transaction on the selected benchmark network; the current RPC Fast Focus comparison uses Mainnet because the provisioned endpoint is Mainnet-only.
-- [ ] Record run date, workload configuration, and observed results.
-- [ ] Decide whether RPC Fast should remain an optional provider rather than a core dependency.
+- [x] Include `getTransaction` against a known confirmed transaction on the selected benchmark network; the current RPC Fast Focus comparison uses Mainnet because the provisioned endpoint is Mainnet-only.
+- [x] Record run date, workload configuration, and observed results.
+- [x] Decide whether RPC Fast should remain an optional provider rather than a core dependency.
 
 The benchmark is comparative evidence for VAERIQ's workload. It does not convert RPC Fast's public benchmarks into VAERIQ performance claims.
 
@@ -35,7 +35,7 @@ The benchmark is comparative evidence for VAERIQ's workload. It does not convert
 - [x] Add a minimal streaming observation probe using Mainnet `slotSubscribe`.
 - [ ] Keep chain confirmation/reconciliation as the source of execution truth.
 - [ ] Compare polling lookup with streaming observation latency where measurable.
-- [ ] Run and preserve the Mainnet slot-observation results.
+- [x] Run and preserve the Mainnet slot-observation results.
 - [ ] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
 
 Early transaction feeds should be treated as observation signals, not final execution truth. RPC Fast's current documentation distinguishes early transaction visibility from full execution metadata and recommends a separate confirmation path. [RPC Fast Aperture documentation](https://rpcfast.com/blog/aperture-gRPC-explained)
