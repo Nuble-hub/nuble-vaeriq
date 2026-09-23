@@ -1,8 +1,8 @@
 # Milestone 04 — Prove the Operating Layer
 
-**Status:** In progress  
-**Started:** 2026-09-23  
-**Product:** NUBLE / VAERIQ  
+**Status:** In progress  \
+**Started:** 2026-09-23  \
+**Product:** NUBLE / VAERIQ  \
 **Base:** M03 complete and merged into `main`
 
 ## Objective
@@ -21,8 +21,8 @@ M04 has two parallel evidence tracks:
 ## Workstream A — RPC infrastructure benchmark
 
 - [x] Add a repeatable JSON-RPC benchmark harness.
-- [ ] Run baseline vs RPC Fast Focus with matched methods, sample count, concurrency, and timeout.
-- [ ] Measure p50 / p95 / p99 latency and success rate.
+- [x] Run baseline vs RPC Fast Focus with matched methods, sample count, concurrency, and timeout.
+- [x] Measure p50 / p95 / p99 latency and success rate.
 - [x] Add a rate-limit-aware method-isolation mode for clean HTTP latency comparisons.
 - [x] Include `getTransaction` against a known confirmed transaction on the selected benchmark network; the current RPC Fast Focus comparison uses Mainnet because the provisioned endpoint is Mainnet-only.
 - [x] Record run date, workload configuration, and observed results.
@@ -33,12 +33,14 @@ The benchmark is comparative evidence for VAERIQ's workload. It does not convert
 ## Workstream B — Transaction observation spike
 
 - [x] Add a minimal streaming observation probe using Mainnet `slotSubscribe`.
-- [ ] Keep chain confirmation/reconciliation as the source of execution truth.
+- [x] Keep chain confirmation/reconciliation as the source of execution truth.
 - [ ] Compare polling lookup with streaming observation latency where measurable.
 - [x] Run and preserve the Mainnet slot-observation results.
+- [x] Add explicit duplicate/gap accounting and reconnect-capable stream handling to the observation probe.
+- [ ] Runtime-test forced reconnect and observe post-reconnect slot continuity before treating reconnect/gap handling as verified.
 - [ ] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
 
-Early transaction feeds should be treated as observation signals, not final execution truth. RPC Fast's current documentation distinguishes early transaction visibility from full execution metadata and recommends a separate confirmation path. [RPC Fast Aperture documentation](https://rpcfast.com/blog/aperture-gRPC-explained)
+The current stream probe is intentionally an observation layer. Confirmation, `getTransaction`, and reconciliation remain authoritative.
 
 ## Workstream C — Operator validation
 
