@@ -31,9 +31,10 @@ The benchmark is comparative evidence for VAERIQ's workload. It does not convert
 
 ## Workstream B — Transaction observation spike
 
-- [ ] Evaluate a streaming observation path for transaction visibility.
+- [x] Add a minimal streaming observation probe using Mainnet `slotSubscribe`.
 - [ ] Keep chain confirmation/reconciliation as the source of execution truth.
 - [ ] Compare polling lookup with streaming observation latency where measurable.
+- [ ] Run and preserve the Mainnet slot-observation results.
 - [ ] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
 
 Early transaction feeds should be treated as observation signals, not final execution truth. RPC Fast's current documentation distinguishes early transaction visibility from full execution metadata and recommends a separate confirmation path. [RPC Fast Aperture documentation](https://rpcfast.com/blog/aperture-gRPC-explained)
