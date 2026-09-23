@@ -152,3 +152,32 @@ npm run benchmark:rpc
 ```
 
 Use the full method set as a separate capacity/throttling observation, not as a pure latency comparison. [Solana public RPC documentation](https://solana.com/docs/references/clusters)
+
+
+### A3. Reconnect and gap runtime probe
+
+The stream probe now supports bounded reconnect handling and explicit observed-slot gap accounting.
+
+For a deterministic runtime check on a live environment:
+
+```powershell
+$env:STREAM_TARGET_MATCHED_SLOTS="30"
+$env:STREAM_TIMEOUT_MS="45000"
+$env:STREAM_RECONNECT_DELAY_MS="500"
+$env:STREAM_MAX_RECONNECTS="3"
+$env:STREAM_FORCE_RECONNECT_AFTER_MS="5000"
+
+npm run benchmark:stream
+```
+
+Expected evidence from a successful forced-reconnect run:
+
+- `forcedDisconnectAfterMs` is populated.
+- each stream reports at least one `reconnectsSucceeded` when both reconnects complete.
+- `observedGapSlots` and `gapEvents` make any post-disconnect notification gap explicit.
+- matched-slot collection resumes after reconnect and reaches the configured target, or the run records `TIMEOUT`.
+
+A reported gap is an observation that intervening slot notifications were not seen by this process. It does not prove whether the cause was provider delivery, network transport, client scheduling, or another layer.
+
+Do not treat a successful reconnect probe as proof of production-grade stream durability. The next production-oriented step would require longer-lived sessions and deliberate fault-injection/recovery testing.
+
