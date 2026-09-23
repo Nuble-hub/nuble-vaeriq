@@ -9,7 +9,7 @@ Use the same machine, region, wallet, transaction signature, sample count, concu
 Set:
 
 ```bash
-export SOLANA_BASELINE_RPC_URL="https://api.devnet.solana.com"
+export SOLANA_BASELINE_RPC_URL="https://api.mainnet-beta.solana.com"
 export RPC_FAST_RPC_URL="YOUR_RPC_FAST_FOCUS_ENDPOINT"
 ```
 
@@ -18,7 +18,7 @@ Optional:
 ```bash
 export RPC_FAST_TOKEN="YOUR_TOKEN"
 export BENCHMARK_WALLET="YOUR_DEVNET_WALLET"
-export BENCHMARK_TX_SIGNATURE="KNOWN_CONFIRMED_SIGNATURE"
+export BENCHMARK_TX_SIGNATURE="KNOWN_CONFIRMED_MAINNET_SIGNATURE"
 export BENCHMARK_SAMPLES=30
 export BENCHMARK_CONCURRENCY=4
 export BENCHMARK_WARMUP=3
@@ -54,7 +54,7 @@ Compare endpoints only for the same workload and test conditions.
 
 Treat success rate and throttling as first-class results. Do not use latency numbers from failed requests to characterize successful RPC response latency.
 
-Use `getTransaction` only when a known confirmed signature is supplied. This makes the workload directly relevant to VAERIQ reconciliation rather than using synthetic methods alone.
+For the current RPC Fast Focus app, use a known confirmed **Mainnet** signature for `getTransaction` because the candidate endpoint is Mainnet-only. This makes the workload directly relevant to VAERIQ reconciliation while keeping both endpoints on the same network.
 
 Do not claim that one provider is universally faster from one local run. Preserve the run conditions with every recorded result.
 
