@@ -55,6 +55,17 @@ const allMethods = [
 
 const methods = selectMethods(allMethods, requestedMethods);
 
+function positiveInt(value, fallback) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeInt(value, fallback) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+
 function selectMethods(all, selection) {
   if (!selection.trim()) return all;
 
