@@ -23,6 +23,7 @@ M04 has two parallel evidence tracks:
 - [x] Add a repeatable JSON-RPC benchmark harness.
 - [ ] Run baseline vs RPC Fast Focus with matched methods, sample count, concurrency, and timeout.
 - [ ] Measure p50 / p95 / p99 latency and success rate.
+- [x] Add a rate-limit-aware method-isolation mode for clean HTTP latency comparisons.
 - [ ] Include `getTransaction` against a known confirmed transaction on the selected benchmark network; the current RPC Fast Focus comparison uses Mainnet because the provisioned endpoint is Mainnet-only.
 - [ ] Record run date, workload configuration, and observed results.
 - [ ] Decide whether RPC Fast should remain an optional provider rather than a core dependency.
