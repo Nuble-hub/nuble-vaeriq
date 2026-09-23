@@ -35,13 +35,6 @@ if (typeof WebSocket === "undefined") {
 }
 
 const startedAt = new Date().toISOString();
-const startedMeasurementAt = performance.now();
-const observations = {
-  baseline: createObservationState(),
-  candidate: createObservationState()
-};
-const matchedSlots = new Map();
-let finished = false;
 
 console.log("VAERIQ M04 streaming observation probe");
 console.log(
@@ -61,22 +54,45 @@ console.log(
   )
 );
 
-const streams = {
-  baseline: await openSubscription(
-    "baseline",
-    baselineUrl,
-    handleSlot("baseline")
-  ),
-  candidate: await openSubscription(
-    "candidate",
-    candidateUrl,
-    handleSlot("candidate")
-  )
+const [baseline, candidate] = await Promise.all([
+  openSubscription("baseline", baselineUrl),
+  openSubscription("candidate", candidateUrl)
+]);
+
+const streams = { baseline, candidate };
+const observations = {
+  baseline: createObservationState(),
+  candidate: createObservationState()
 };
+const matchedSlots = new Map();
+const startedMeasurementAt = performance.now();
+let finished = false;
+
+for (const [key, stream] of Object.entries(streams)) {
+  stream.onSlot = (slot, timestamp) => {
+    if (finished || timestamp < startedMeasurementAt) return;
+
+    const state = observations[key];
+    state.notifications += 1;
+
+    if (state.slots.has(slot)) {
+      state.duplicates += 1;
+      return;
+    }
+
+    state.slots.set(slot, timestamp);
+
+    const left = observations.baseline.slots.get(slot);
+    const right = observations.candidate.slots.get(slot);
+
+    if (left !== undefined && right !== undefined && !matchedSlots.has(slot)) {
+      matchedSlots.set(slot, right - left);
+    }
+  };
+}
 
 const outcome = await waitForMatches();
 
-clearTimeout(outcome.timer);
 finished = true;
 
 for (const stream of Object.values(streams)) {
@@ -111,7 +127,7 @@ const result = {
   startedAt,
   completedAt: new Date().toISOString(),
   durationMs: round(performance.now() - startedMeasurementAt, 2),
-  outcome: outcome.reason,
+  outcome,
   targetMatchedSlots,
   matchedSlots: matchedSlots.size,
   baseline: summarizeObservation(observations.baseline),
@@ -129,10 +145,11 @@ const result = {
     tiedCount
   },
   notes: [
+    "Both subscriptions are established in parallel and measurement begins only after both subscription acknowledgements complete.",
     "Negative candidateMinusBaselineMs means RPC Fast notification arrived earlier for that matched slot.",
     "Positive candidateMinusBaselineMs means the public baseline notification arrived earlier.",
     "Notification counts include duplicates; uniqueSlots counts distinct observed slot numbers.",
-    "A slot gap is an observation where the slot was seen by one stream during the probe window but not by both; baseline-only and candidate-only counts are reported.",
+    "A slot gap is an observation where the slot was seen by one stream during the measurement window but not by both; baseline-only and candidate-only counts are reported.",
     "This probe tests observation timing only. It does not replace confirmation, transaction lookup, or reconciliation.",
     "The reported delta is end-to-end client-observed arrival timing from the same machine, not validator-side processing time."
   ]
@@ -140,45 +157,32 @@ const result = {
 
 console.log(JSON.stringify(result, null, 2));
 
-function handleSlot(key) {
-  return (slot, timestamp) => {
-    const state = observations[key];
-
-    state.notifications += 1;
-    if (state.slots.has(slot)) {
-      state.duplicates += 1;
-      return;
-    }
-
-    state.slots.set(slot, timestamp);
-
-    const left = observations.baseline.slots.get(slot);
-    const right = observations.candidate.slots.get(slot);
-
-    if (left !== undefined && right !== undefined && !matchedSlots.has(slot)) {
-      matchedSlots.set(slot, right - left);
-    }
-  };
+function handleUnused() {
+  return null;
 }
 
-async function openSubscription(key, url, onSlot) {
+async function openSubscription(key, url) {
   const ws = new WebSocket(url);
   const state = {
     key,
     ws,
     subscriptionId: null,
-    errors: [],
-    notifications: 0,
-    duplicates: 0,
-    slots: new Map()
+    onSlot: null,
+    errors: []
   };
 
   return new Promise((resolve, reject) => {
     let settled = false;
+    const ackTimeout = setTimeout(() => {
+      if (!settled) {
+        fail(new Error(`${key}: subscription acknowledgement timeout`));
+      }
+    }, Math.min(timeoutMs, 15_000));
 
     const fail = (error) => {
       if (settled) return;
       settled = true;
+      clearTimeout(ackTimeout);
       try {
         ws.close();
       } catch {
@@ -210,6 +214,7 @@ async function openSubscription(key, url, onSlot) {
         state.subscriptionId = message.result;
         if (!settled) {
           settled = true;
+          clearTimeout(ackTimeout);
           resolve(state);
         }
         return;
@@ -223,7 +228,7 @@ async function openSubscription(key, url, onSlot) {
         return;
       }
 
-      onSlot(slot, performance.now());
+      state.onSlot?.(slot, performance.now());
     });
 
     ws.addEventListener("error", () => {
@@ -240,37 +245,21 @@ async function openSubscription(key, url, onSlot) {
         );
       }
     });
-
-    setTimeout(() => {
-      if (!settled) {
-        fail(new Error(`${key}: subscription acknowledgement timeout`));
-      }
-    }, Math.min(timeoutMs, 15_000));
   });
 }
 
-function waitForMatches() {
-  let timer;
+async function waitForMatches() {
+  const deadline = performance.now() + timeoutMs;
 
-  const matchedPromise = new Promise((resolve) => {
-    const check = () => {
-      if (matchedSlots.size >= targetMatchedSlots && !finished) {
-        resolve({ reason: "TARGET_REACHED", timer });
-        return;
-      }
-      timer = setTimeout(check, 50);
-    };
-    check();
-  });
+  while (!finished && matchedSlots.size < targetMatchedSlots) {
+    const remaining = deadline - performance.now();
+    if (remaining <= 0) break;
+    await new Promise((resolve) => setTimeout(resolve, Math.min(50, remaining)));
+  }
 
-  const timeoutPromise = new Promise((resolve) => {
-    timer = setTimeout(
-      () => resolve({ reason: "TIMEOUT", timer }),
-      timeoutMs
-    );
-  });
-
-  return Promise.race([matchedPromise, timeoutPromise]);
+  return matchedSlots.size >= targetMatchedSlots
+    ? "TARGET_REACHED"
+    : "TIMEOUT";
 }
 
 function createObservationState() {
@@ -305,11 +294,13 @@ function summarizeDeltas(values) {
 
 function percentile(values, ratio) {
   if (!values.length) return null;
+
   const sorted = values.slice().sort((a, b) => a - b);
   const index = Math.min(
     sorted.length - 1,
     Math.max(0, Math.ceil(ratio * sorted.length) - 1)
   );
+
   return round(sorted[index], 2);
 }
 
