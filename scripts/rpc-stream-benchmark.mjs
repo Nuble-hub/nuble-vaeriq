@@ -193,27 +193,30 @@ const result = {
 console.log(JSON.stringify(result, null, 2));
 
 async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
+  const session = {
+    onSlot: null,
+    forceReconnect,
+    stop,
+    state: null
+  };
+
   const state = {
     key,
     url,
     ws: null,
-    onSlot: null,
     errors: [],
     reconnectAttempts: 0,
     reconnectsSucceeded: 0,
     reconnectErrors: 0,
     stopped: false,
     reconnectTimer: null,
-    reconnectInFlight: false
+    reconnectInFlight: false,
+    subscriptionId: null
   };
+  session.state = state;
 
   await connect(true);
-  return {
-    onSlot: null,
-    forceReconnect,
-    stop,
-    state
-  };
+  return session;
 
   async function connect(isInitial) {
     return new Promise((resolve, reject) => {
@@ -291,6 +294,7 @@ async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
         }
 
         if (message.id === 1 && Object.hasOwn(message, "result")) {
+          acknowledged = true;
           state.subscriptionId = message.result;
 
           if (!settled) {
@@ -310,7 +314,7 @@ async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
           return;
         }
 
-        state.onSlot?.(slot, performance.now());
+        session.onSlot?.(slot, performance.now());
       });
 
       ws.addEventListener("error", () => {
