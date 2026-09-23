@@ -274,3 +274,9 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The probe compares same-slot notification arrival between the public Mainnet WebSocket and RPC Fast Focus, while separately recording duplicates, unmatched slots, and WebSocket errors.
 - Added `benchmark:stream` and documented the runtime procedure.
 - The probe is observation-only; transaction confirmation, `getTransaction`, and reconciliation remain authoritative.
+
+## 2026-09-24 — M04 HTTP benchmark rate-limit isolation added
+
+- Added `BENCHMARK_METHODS` so individual JSON-RPC methods can be benchmarked in isolation.
+- This separates clean latency measurement from full-suite capacity/throttling observations on rate-limited public RPC endpoints.
+- The next HTTP measurement is an isolated `getTransaction` run using the same Mainnet transaction signature on both endpoints.
