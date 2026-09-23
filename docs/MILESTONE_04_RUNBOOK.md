@@ -1,0 +1,93 @@
+# Milestone 04 — Runtime Runbook
+
+## A. Baseline vs RPC Fast Focus
+
+### Environment
+
+Use the same machine, region, wallet, transaction signature, sample count, concurrency, and timeout for both endpoints.
+
+Set:
+
+```bash
+export SOLANA_BASELINE_RPC_URL="https://api.devnet.solana.com"
+export RPC_FAST_RPC_URL="YOUR_RPC_FAST_FOCUS_ENDPOINT"
+```
+
+Optional:
+
+```bash
+export RPC_FAST_TOKEN="YOUR_TOKEN"
+export BENCHMARK_WALLET="YOUR_DEVNET_WALLET"
+export BENCHMARK_TX_SIGNATURE="KNOWN_CONFIRMED_DEVNET_SIGNATURE"
+export BENCHMARK_SAMPLES=30
+export BENCHMARK_CONCURRENCY=4
+export BENCHMARK_WARMUP=3
+export BENCHMARK_TIMEOUT_MS=10000
+```
+
+Do not commit tokens or private credentials.
+
+### Run
+
+```bash
+npm run benchmark:rpc
+```
+
+The harness runs matched JSON-RPC workloads against both endpoints and reports:
+
+- success rate
+- p50
+- p95
+- p99
+- min/max
+- wall-clock achieved requests/sec
+- first five observed errors per method
+
+### Interpretation
+
+Compare endpoints only for the same workload and test conditions.
+
+Use `getTransaction` only when a known confirmed signature is supplied. This makes the workload directly relevant to VAERIQ reconciliation rather than using synthetic methods alone.
+
+Do not claim that one provider is universally faster from one local run. Preserve the run conditions with every recorded result.
+
+## B. Streaming observation spike
+
+When RPC Fast stream credentials are available, evaluate a separate observation prototype.
+
+Measure:
+
+```text
+transaction first observed
+        ↓
+transaction confirmed
+        ↓
+reconciliation complete
+```
+
+Track:
+
+- observation latency
+- confirmation latency
+- reconciliation latency
+- duplicate deliveries
+- reconnect events
+- missing/gapped observations
+
+An early transaction stream is an observation signal. Confirmation and reconciliation remain authoritative.
+
+## C. Operator validation
+
+For every interview, capture workflow evidence in `docs/CUSTOMER_VALIDATION_LOG.md`:
+
+- workflow
+- who requests payment
+- who approves
+- required business context
+- required evidence
+- current failure modes
+- current workaround
+- reaction to VAERIQ
+- next step offered
+
+Do not turn a positive comment into a traction claim.
