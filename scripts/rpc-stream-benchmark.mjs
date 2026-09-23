@@ -72,9 +72,9 @@ const timeoutPromise = new Promise((resolve) => {
 });
 
 const matchedPromise = new Promise((resolve) => {
-  for (const stream of Object.values(streams)) {
+  for (const [key, stream] of Object.entries(streams)) {
     stream.onSlot = (slot) => {
-      recordSlot(stream.label, slot);
+      recordSlot(key, slot);
 
       const left = observations.baseline.slots.get(slot);
       const right = observations.candidate.slots.get(slot);
@@ -122,6 +122,9 @@ const result = {
   rpcFastFocus: summarizeObservation(observations.candidate),
   slotComparison: {
     candidateMinusBaselineMs: summarizeDeltas(deltas),
+    unionUniqueSlots: unionSlots.size,
+    baselineOnlySlots,
+    candidateOnlySlots,
     candidateFirstPct: pct(candidateFirstCount, matchedSlots.size),
     baselineFirstPct: pct(baselineFirstCount, matchedSlots.size),
     tiedPct: pct(tiedCount, matchedSlots.size),
@@ -133,8 +136,9 @@ const result = {
     "Negative candidateMinusBaselineMs means RPC Fast notification arrived earlier for that matched slot.",
     "Positive candidateMinusBaselineMs means the public baseline notification arrived earlier.",
     "Only the first notification timestamp per slot is used; duplicate notifications are counted separately.",
-    "A slot gap is an observation where the slot was seen by one stream during the probe window but not by both.",
-    "This probe tests observation timing only. It does not replace confirmation, transaction lookup, or reconciliation."
+    "A slot gap is an observation where the slot was seen by one stream during the probe window but not by both; baseline-only and candidate-only counts are reported.",
+    "This probe tests observation timing only. It does not replace confirmation, transaction lookup, or reconciliation.",
+    "The reported delta is end-to-end client-observed arrival timing from the same machine, not validator-side processing time."
   ]
 };
 
@@ -247,8 +251,9 @@ function createObservationState() {
   };
 }
 
-function recordSlot(label, slot) {
-  const state = observations[label];
+function recordSlot(key, slot) {
+  const state = observations[key];
+  if (!state) return;
   if (!state.slots.has(slot)) {
     state.slots.set(slot, performance.now());
     state.notifications += 1;
