@@ -254,3 +254,10 @@ The next open work remains execution failure handling, transaction reconciliatio
 
 - Added repository documentation for the M04 JSON-RPC benchmark harness.
 - Added a benchmark results template so each run retains comparable conditions and measured outputs.
+
+## 2026-09-24 — M04 benchmark measurement-quality hardening
+
+- Refined the JSON-RPC benchmark so latency percentiles and min/max are calculated from successful measurement requests only.
+- Added explicit attempted vs successful request rates, measured success/failure counts, error aggregation, and warmup-failure reporting.
+- Warmup failures no longer abort the entire benchmark; they are recorded and the matched measurement run continues.
+- Updated the M04 benchmark results template and runbook to preserve error/throttling evidence separately from successful-request latency.

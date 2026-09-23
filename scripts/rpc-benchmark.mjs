@@ -95,7 +95,7 @@ console.log(JSON.stringify({
   startedAt,
   completedAt: new Date().toISOString(),
   comparison,
-  note: "Lower latency is not automatically better for every workload; interpret against VAERIQ's read/verification workload and observed error rate."
+  note: "Latency percentiles/min/max are calculated from successful measurement requests only. Failed requests remain visible through failure counts and sampled errors; a zero-success method reports null latency statistics."
 }, null, 2));
 
 function positiveInt(value, fallback) {
@@ -112,8 +112,13 @@ async function benchmarkEndpoint(label, url) {
   const result = { label, url, methods: {} };
 
   for (const method of methods) {
+    const warmupErrors = [];
+
     for (let i = 0; i < warmup; i += 1) {
-      await callRpc(url, method);
+      const warmupObservation = await timedCall(url, method);
+      if (!warmupObservation.ok) {
+        warmupErrors.push(warmupObservation.error);
+      }
     }
 
     const observations = [];
@@ -130,26 +135,34 @@ async function benchmarkEndpoint(label, url) {
     }
 
     const methodElapsedMs = performance.now() - methodStartedAt;
+    const successful = observations.filter((item) => item.ok);
+    const failed = observations.filter((item) => !item.ok);
+    const successfulLatencies = successful.map((item) => item.ms);
+
     result.methods[method.name] = {
       requests: observations.length,
-      successful: observations.filter((item) => item.ok).length,
-      failed: observations.filter((item) => !item.ok).length,
-      successRatePct: round(
-        (observations.filter((item) => item.ok).length / observations.length) * 100,
-        2
-      ),
-      p50Ms: percentile(observations.map((item) => item.ms), 0.50),
-      p95Ms: percentile(observations.map((item) => item.ms), 0.95),
-      p99Ms: percentile(observations.map((item) => item.ms), 0.99),
-      minMs: round(Math.min(...observations.map((item) => item.ms)), 2),
-      maxMs: round(Math.max(...observations.map((item) => item.ms)), 2),
-      achievedReqPerSec: round(
+      successful: successful.length,
+      failed: failed.length,
+      successRatePct: round((successful.length / observations.length) * 100, 2),
+      p50Ms: percentile(successfulLatencies, 0.50),
+      p95Ms: percentile(successfulLatencies, 0.95),
+      p99Ms: percentile(successfulLatencies, 0.99),
+      minMs: minOrNull(successfulLatencies),
+      maxMs: maxOrNull(successfulLatencies),
+      attemptedReqPerSec: round(
         observations.length / (methodElapsedMs / 1000),
         2
       ),
+      successfulReqPerSec: round(
+        successful.length / (methodElapsedMs / 1000),
+        2
+      ),
       elapsedMs: round(methodElapsedMs, 2),
-      errors: observations
-        .filter((item) => !item.ok)
+      warmupRequests: warmup,
+      warmupFailed: warmupErrors.length,
+      warmupErrors: warmupErrors.slice(0, 5),
+      errorCounts: countErrors(failed),
+      errors: failed
         .slice(0, 5)
         .map((item) => item.error)
     };
@@ -210,7 +223,7 @@ async function callRpc(url, method) {
 
 function percentile(values, ratio) {
   const sorted = values.slice().sort((a, b) => a - b);
-  if (!sorted.length) return 0;
+  if (!sorted.length) return null;
   const index = Math.min(
     sorted.length - 1,
     Math.max(0, Math.ceil(ratio * sorted.length) - 1)
@@ -218,20 +231,41 @@ function percentile(values, ratio) {
   return round(sorted[index], 2);
 }
 
+function minOrNull(values) {
+  return values.length ? round(Math.min(...values), 2) : null;
+}
+
+function maxOrNull(values) {
+  return values.length ? round(Math.max(...values), 2) : null;
+}
+
 function summarize(item) {
   return {
     successRatePct: item.successRatePct,
+    successful: item.successful,
+    failed: item.failed,
     p50Ms: item.p50Ms,
     p95Ms: item.p95Ms,
     p99Ms: item.p99Ms,
     minMs: item.minMs,
     maxMs: item.maxMs,
-    achievedReqPerSec: item.achievedReqPerSec,
+    attemptedReqPerSec: item.attemptedReqPerSec,
+    successfulReqPerSec: item.successfulReqPerSec,
+    warmupFailed: item.warmupFailed,
+    errorCounts: item.errorCounts,
     errors: item.errors
   };
 }
 
+function countErrors(observations) {
+  return observations.reduce((counts, item) => {
+    counts[item.error] = (counts[item.error] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 function delta(candidate, baseline) {
+  if (candidate === null || baseline === null) return null;
   return round(candidate - baseline, 2);
 }
 

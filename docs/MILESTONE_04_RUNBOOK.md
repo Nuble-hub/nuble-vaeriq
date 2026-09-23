@@ -18,7 +18,7 @@ Optional:
 ```bash
 export RPC_FAST_TOKEN="YOUR_TOKEN"
 export BENCHMARK_WALLET="YOUR_DEVNET_WALLET"
-export BENCHMARK_TX_SIGNATURE="KNOWN_CONFIRMED_DEVNET_SIGNATURE"
+export BENCHMARK_TX_SIGNATURE="KNOWN_CONFIRMED_SIGNATURE"
 export BENCHMARK_SAMPLES=30
 export BENCHMARK_CONCURRENCY=4
 export BENCHMARK_WARMUP=3
@@ -35,17 +35,24 @@ npm run benchmark:rpc
 
 The harness runs matched JSON-RPC workloads against both endpoints and reports:
 
+- success and failure counts
 - success rate
-- p50
-- p95
-- p99
-- min/max
-- wall-clock achieved requests/sec
-- first five observed errors per method
+- p50 / p95 / p99 latency from successful measurement requests only
+- min/max latency from successful measurement requests only
+- attempted request rate
+- successful request rate
+- warmup failures
+- error counts and first five sampled errors
+
+A warmup failure no longer aborts the benchmark. Warmup failures are recorded separately from measured samples.
+
+If a method has zero successful measurement requests, its latency statistics are reported as `null`.
 
 ### Interpretation
 
 Compare endpoints only for the same workload and test conditions.
+
+Treat success rate and throttling as first-class results. Do not use latency numbers from failed requests to characterize successful RPC response latency.
 
 Use `getTransaction` only when a known confirmed signature is supplied. This makes the workload directly relevant to VAERIQ reconciliation rather than using synthetic methods alone.
 
