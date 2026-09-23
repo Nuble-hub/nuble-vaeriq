@@ -37,8 +37,8 @@ The benchmark is comparative evidence for VAERIQ's workload. It does not convert
 - [ ] Compare polling lookup with streaming observation latency where measurable.
 - [x] Run and preserve the Mainnet slot-observation results.
 - [x] Add explicit duplicate/gap accounting and reconnect-capable stream handling to the observation probe.
-- [ ] Runtime-test forced reconnect and observe post-reconnect slot continuity before treating reconnect/gap handling as verified.
-- [ ] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
+- [x] Runtime-test forced reconnect and observe post-reconnect slot continuity before treating reconnect/gap handling as verified.
+- [x] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
 
 The current stream probe is intentionally an observation layer. Confirmation, `getTransaction`, and reconciliation remain authoritative.
 
