@@ -261,3 +261,9 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added explicit attempted vs successful request rates, measured success/failure counts, error aggregation, and warmup-failure reporting.
 - Warmup failures no longer abort the entire benchmark; they are recorded and the matched measurement run continues.
 - Updated the M04 benchmark results template and runbook to preserve error/throttling evidence separately from successful-request latency.
+
+## 2026-09-24 — M04 benchmark network aligned to RPC Fast Focus
+
+- The provisioned RPC Fast Focus endpoint is Mainnet-only, so the comparative benchmark network was aligned to Solana Mainnet for apples-to-apples endpoint testing.
+- The M04 runbook and evidence template were updated to distinguish the current Mainnet benchmark from VAERIQ's existing Devnet application path.
+- The next reconciliation-oriented benchmark input is a known confirmed Mainnet transaction signature available to both endpoints.
