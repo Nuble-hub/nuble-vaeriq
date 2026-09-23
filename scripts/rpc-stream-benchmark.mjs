@@ -2,10 +2,22 @@
 
 import process from "node:process";
 import { performance } from "node:perf_hooks";
+import {
+  createObservationState,
+  recordSlotObservation,
+  summarizeDeltas,
+  summarizeObservation,
+  pct,
+  positiveInt,
+  nonNegativeInt,
+  round
+} from "./stream-observation-core.mjs";
 
 const DEFAULT_BASELINE_WS = "wss://api.mainnet.solana.com";
 const DEFAULT_TARGET_MATCHED_SLOTS = 30;
 const DEFAULT_TIMEOUT_MS = 45_000;
+const DEFAULT_RECONNECT_DELAY_MS = 500;
+const DEFAULT_MAX_RECONNECTS = 3;
 
 const baselineUrl = process.env.SOLANA_BASELINE_WS_URL || DEFAULT_BASELINE_WS;
 const candidateUrl = process.env.RPC_FAST_WS_URL || "";
@@ -16,6 +28,18 @@ const targetMatchedSlots = positiveInt(
 const timeoutMs = positiveInt(
   process.env.STREAM_TIMEOUT_MS,
   DEFAULT_TIMEOUT_MS
+);
+const reconnectDelayMs = positiveInt(
+  process.env.STREAM_RECONNECT_DELAY_MS,
+  DEFAULT_RECONNECT_DELAY_MS
+);
+const maxReconnects = nonNegativeInt(
+  process.env.STREAM_MAX_RECONNECTS,
+  DEFAULT_MAX_RECONNECTS
+);
+const forceReconnectAfterMs = nonNegativeInt(
+  process.env.STREAM_FORCE_RECONNECT_AFTER_MS,
+  0
 );
 
 if (!candidateUrl) {
@@ -46,6 +70,9 @@ console.log(
       method: "slotSubscribe",
       targetMatchedSlots,
       timeoutMs,
+      reconnectDelayMs,
+      maxReconnects,
+      forceReconnectAfterMs,
       note:
         "Measures end-to-end notification arrival from the same machine. It does not measure validator-side processing time and does not establish execution truth."
     },
@@ -55,8 +82,8 @@ console.log(
 );
 
 const [baseline, candidate] = await Promise.all([
-  openSubscription("baseline", baselineUrl),
-  openSubscription("candidate", candidateUrl)
+  createStreamSession("baseline", baselineUrl, reconnectDelayMs, maxReconnects),
+  createStreamSession("candidate", candidateUrl, reconnectDelayMs, maxReconnects)
 ]);
 
 const streams = { baseline, candidate };
@@ -73,14 +100,9 @@ for (const [key, stream] of Object.entries(streams)) {
     if (finished || timestamp < startedMeasurementAt) return;
 
     const state = observations[key];
-    state.notifications += 1;
+    const observation = recordSlotObservation(state, slot, timestamp);
 
-    if (state.slots.has(slot)) {
-      state.duplicates += 1;
-      return;
-    }
-
-    state.slots.set(slot, timestamp);
+    if (observation.duplicate) return;
 
     const left = observations.baseline.slots.get(slot);
     const right = observations.candidate.slots.get(slot);
@@ -91,16 +113,23 @@ for (const [key, stream] of Object.entries(streams)) {
   };
 }
 
+const forceReconnectTimer =
+  forceReconnectAfterMs > 0
+    ? setTimeout(() => {
+        for (const stream of Object.values(streams)) {
+          stream.forceReconnect("scheduled-test");
+        }
+      }, forceReconnectAfterMs)
+    : null;
+
 const outcome = await waitForMatches();
 
 finished = true;
 
+if (forceReconnectTimer) clearTimeout(forceReconnectTimer);
+
 for (const stream of Object.values(streams)) {
-  try {
-    stream.ws.close();
-  } catch {
-    // Ignore close errors during probe shutdown.
-  }
+  stream.stop();
 }
 
 const unionSlots = new Set([
@@ -130,6 +159,10 @@ const result = {
   outcome,
   targetMatchedSlots,
   matchedSlots: matchedSlots.size,
+  reconnectTest: {
+    enabled: forceReconnectAfterMs > 0,
+    forcedDisconnectAfterMs: forceReconnectAfterMs || null
+  },
   baseline: summarizeObservation(observations.baseline),
   rpcFastFocus: summarizeObservation(observations.candidate),
   slotComparison: {
@@ -146,10 +179,12 @@ const result = {
   },
   notes: [
     "Both subscriptions are established in parallel and measurement begins only after both subscription acknowledgements complete.",
+    "Active WebSocket errors and closes are treated as recoverable events up to STREAM_MAX_RECONNECTS per stream.",
     "Negative candidateMinusBaselineMs means RPC Fast notification arrived earlier for that matched slot.",
     "Positive candidateMinusBaselineMs means the public baseline notification arrived earlier.",
     "Notification counts include duplicates; uniqueSlots counts distinct observed slot numbers.",
-    "A slot gap is an observation where the slot was seen by one stream during the measurement window but not by both; baseline-only and candidate-only counts are reported.",
+    "An observed slot gap is a jump in slot numbers on one stream. It indicates notifications were not observed for the intervening slots during this process lifetime; it does not prove where the loss occurred.",
+    "The forced reconnect option intentionally closes both streams once so reconnect handling can be runtime-tested without waiting for a production network failure.",
     "This probe tests observation timing only. It does not replace confirmation, transaction lookup, or reconciliation.",
     "The reported delta is end-to-end client-observed arrival timing from the same machine, not validator-side processing time."
   ]
@@ -157,95 +192,240 @@ const result = {
 
 console.log(JSON.stringify(result, null, 2));
 
-function handleUnused() {
-  return null;
-}
-
-async function openSubscription(key, url) {
-  const ws = new WebSocket(url);
+async function createStreamSession(key, url, baseDelayMs, maxReconnects) {
   const state = {
     key,
-    ws,
-    subscriptionId: null,
+    url,
+    ws: null,
     onSlot: null,
-    errors: []
+    errors: [],
+    reconnectAttempts: 0,
+    reconnectsSucceeded: 0,
+    reconnectErrors: 0,
+    stopped: false,
+    reconnectTimer: null,
+    reconnectInFlight: false
   };
 
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const ackTimeout = setTimeout(() => {
-      if (!settled) {
-        fail(new Error(`${key}: subscription acknowledgement timeout`));
-      }
-    }, Math.min(timeoutMs, 15_000));
+  await connect(true);
+  return {
+    onSlot: null,
+    forceReconnect,
+    stop,
+    state
+  };
 
-    const fail = (error) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(ackTimeout);
-      try {
-        ws.close();
-      } catch {
-        // Ignore cleanup errors.
-      }
-      reject(error);
-    };
-
-    ws.addEventListener("open", () => {
-      ws.send(
-        JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "slotSubscribe"
-        })
-      );
-    });
-
-    ws.addEventListener("message", (event) => {
-      let message;
-      try {
-        message = JSON.parse(String(event.data));
-      } catch {
-        state.errors.push("INVALID_JSON");
+  async function connect(isInitial) {
+    return new Promise((resolve, reject) => {
+      if (state.stopped) {
+        reject(new Error(`${key}: stream stopped`));
         return;
       }
 
-      if (message.id === 1 && Object.hasOwn(message, "result")) {
-        state.subscriptionId = message.result;
-        if (!settled) {
-          settled = true;
-          clearTimeout(ackTimeout);
-          resolve(state);
+      const ws = new WebSocket(url);
+      state.ws = ws;
+
+      let acknowledged = false;
+      let settled = false;
+      const ackTimeout = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        try {
+          ws.close();
+        } catch {
+          // Ignore cleanup errors.
         }
-        return;
+
+        const error = new Error(`${key}: subscription acknowledgement timeout`);
+        if (isInitial) {
+          reject(error);
+        } else {
+          state.reconnectErrors += 1;
+          state.errors.push("RECONNECT_ACK_TIMEOUT");
+          resolve(false);
+        }
+      }, Math.min(timeoutMs, 15_000));
+
+      const failInitial = (errorCode, error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(ackTimeout);
+        state.errors.push(errorCode);
+        try {
+          ws.close();
+        } catch {
+          // Ignore cleanup errors.
+        }
+        reject(error);
+      };
+
+      ws.addEventListener("open", () => {
+        try {
+          ws.send(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: 1,
+              method: "slotSubscribe"
+            })
+          );
+        } catch (error) {
+          const message = error instanceof Error ? error : new Error(String(error));
+          if (isInitial) {
+            failInitial("WEBSOCKET_SEND_ERROR", message);
+          } else {
+            clearTimeout(ackTimeout);
+            state.reconnectErrors += 1;
+            state.errors.push("RECONNECT_SEND_ERROR");
+            resolve(false);
+          }
+        }
+      });
+
+      ws.addEventListener("message", (event) => {
+        let message;
+        try {
+          message = JSON.parse(String(event.data));
+        } catch {
+          state.errors.push("INVALID_JSON");
+          return;
+        }
+
+        if (message.id === 1 && Object.hasOwn(message, "result")) {
+          state.subscriptionId = message.result;
+
+          if (!settled) {
+            settled = true;
+            clearTimeout(ackTimeout);
+            if (!isInitial) state.reconnectsSucceeded += 1;
+            resolve(true);
+          }
+          return;
+        }
+
+        if (message.method !== "slotNotification") return;
+
+        const slot = message.params?.result?.slot;
+        if (!Number.isSafeInteger(slot)) {
+          state.errors.push("INVALID_SLOT_NOTIFICATION");
+          return;
+        }
+
+        state.onSlot?.(slot, performance.now());
+      });
+
+      ws.addEventListener("error", () => {
+        state.errors.push("WEBSOCKET_ERROR");
+
+        if (!acknowledged) {
+          if (isInitial) {
+            failInitial(
+              "WEBSOCKET_INITIAL_ERROR",
+              new Error(`${key}: WebSocket error before subscription acknowledgement`)
+            );
+          } else if (!settled) {
+            settled = true;
+            clearTimeout(ackTimeout);
+            state.reconnectErrors += 1;
+            resolve(false);
+          }
+          return;
+        }
+
+        scheduleReconnect("error");
+      });
+
+      ws.addEventListener("close", (event) => {
+        if (!acknowledged) {
+          if (isInitial) {
+            failInitial(
+              "WEBSOCKET_INITIAL_CLOSE",
+              new Error(
+                `${key}: WebSocket closed before subscription acknowledgement (code=${event.code})`
+              )
+            );
+          } else if (!settled) {
+            settled = true;
+            clearTimeout(ackTimeout);
+            state.reconnectErrors += 1;
+            resolve(false);
+          }
+          return;
+        }
+
+        if (!state.stopped) {
+          scheduleReconnect(`close:${event.code}`);
+        }
+      });
+    }).then((connected) => {
+      if (!connected && !isInitial && !state.stopped) {
+        scheduleReconnect("connect-failed");
       }
-
-      if (message.method !== "slotNotification") return;
-
-      const slot = message.params?.result?.slot;
-      if (!Number.isSafeInteger(slot)) {
-        state.errors.push("INVALID_SLOT_NOTIFICATION");
-        return;
-      }
-
-      state.onSlot?.(slot, performance.now());
+      return connected;
     });
+  }
 
-    ws.addEventListener("error", () => {
-      state.errors.push("WEBSOCKET_ERROR");
-      fail(new Error(`${key}: WebSocket error`));
-    });
+  function scheduleReconnect(reason) {
+    if (
+      state.stopped ||
+      state.reconnectInFlight ||
+      state.reconnectAttempts >= maxReconnects
+    ) {
+      return;
+    }
 
-    ws.addEventListener("close", (event) => {
-      if (!settled) {
-        fail(
-          new Error(
-            `${key}: WebSocket closed before subscription acknowledgement (code=${event.code})`
-          )
+    state.reconnectInFlight = true;
+    state.reconnectAttempts += 1;
+
+    const attempt = state.reconnectAttempts;
+    const delay = Math.min(baseDelayMs * 2 ** (attempt - 1), 10_000);
+
+    state.reconnectTimer = setTimeout(async () => {
+      state.reconnectTimer = null;
+
+      try {
+        await connect(false);
+      } catch (error) {
+        state.reconnectErrors += 1;
+        state.errors.push(
+          `RECONNECT_EXCEPTION:${error instanceof Error ? error.message : String(error)}`
         );
+      } finally {
+        state.reconnectInFlight = false;
+
+        if (
+          !state.stopped &&
+          state.reconnectAttempts < maxReconnects &&
+          state.reconnectsSucceeded < state.reconnectAttempts
+        ) {
+          scheduleReconnect(`retry-after-${reason}`);
+        }
       }
-    });
-  });
+    }, delay);
+  }
+
+  function forceReconnect(reason) {
+    if (state.stopped || !state.ws) return;
+    state.errors.push(`FORCED_RECONNECT:${reason}`);
+    try {
+      state.ws.close(1000, "M04 forced reconnect");
+    } catch {
+      // The close event will trigger normal recovery if possible.
+    }
+  }
+
+  function stop() {
+    state.stopped = true;
+    if (state.reconnectTimer) {
+      clearTimeout(state.reconnectTimer);
+      state.reconnectTimer = null;
+    }
+
+    try {
+      state.ws?.close();
+    } catch {
+      // Ignore close errors during shutdown.
+    }
+  }
 }
 
 async function waitForMatches() {
@@ -260,68 +440,4 @@ async function waitForMatches() {
   return matchedSlots.size >= targetMatchedSlots
     ? "TARGET_REACHED"
     : "TIMEOUT";
-}
-
-function createObservationState() {
-  return {
-    notifications: 0,
-    duplicates: 0,
-    slots: new Map(),
-    errors: []
-  };
-}
-
-function summarizeObservation(state) {
-  return {
-    notifications: state.notifications,
-    uniqueSlots: state.slots.size,
-    duplicateNotifications: state.duplicates,
-    errorCount: state.errors.length,
-    errors: state.errors.slice(0, 5)
-  };
-}
-
-function summarizeDeltas(values) {
-  return {
-    count: values.length,
-    p50Ms: percentile(values, 0.50),
-    p95Ms: percentile(values, 0.95),
-    p99Ms: percentile(values, 0.99),
-    minMs: minOrNull(values),
-    maxMs: maxOrNull(values)
-  };
-}
-
-function percentile(values, ratio) {
-  if (!values.length) return null;
-
-  const sorted = values.slice().sort((a, b) => a - b);
-  const index = Math.min(
-    sorted.length - 1,
-    Math.max(0, Math.ceil(ratio * sorted.length) - 1)
-  );
-
-  return round(sorted[index], 2);
-}
-
-function minOrNull(values) {
-  return values.length ? round(Math.min(...values), 2) : null;
-}
-
-function maxOrNull(values) {
-  return values.length ? round(Math.max(...values), 2) : null;
-}
-
-function positiveInt(value, fallback) {
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function pct(part, total) {
-  return total ? round((part / total) * 100, 2) : 0;
-}
-
-function round(value, decimals) {
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
 }
