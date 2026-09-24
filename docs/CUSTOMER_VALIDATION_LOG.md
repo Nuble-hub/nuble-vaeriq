@@ -122,3 +122,8 @@ Repeat the same fields as Interview 01.
 
 ### Claims we cannot yet support
 - 
+
+
+## Interviewer note for M04
+
+Use `docs/CUSTOMER_VALIDATION_INTERVIEW_01.md` as the interviewer guide for the first operator conversation. Complete Interview 01 in this log immediately after the session. Keep interview evidence separate from interpretation and do not promote general interest into a design-partner or workflow-commitment claim without a concrete next step.
