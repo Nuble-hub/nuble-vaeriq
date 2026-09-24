@@ -129,6 +129,10 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/MILESTONE_04_RUNBOOK.md` — RPC benchmark and operator-validation runbook
 - `docs/evidence/M03_FINAL_EVIDENCE.md` — consolidated M03 runtime verification matrix and evidence narrative
 - `docs/evidence/M04_FINAL_EVIDENCE.md` — consolidated M04 infrastructure evidence and open operator-validation work
+- `docs/OPERATOR_VALIDATION_FORM.md` — short written operator-research form
+- `docs/M04_OPERATOR_RESPONSE_INTAKE.md` — response evidence intake and analysis template
+- `docs/M04_OPERATOR_DEMO_WALKTHROUGH.md` — operator-led demo and validation walkthrough
+- `docs/OUTREACH_OPERATOR_VALIDATION.md` — outreach funnel and contact templates
 - `docs/evidence/M02_FINAL_EVIDENCE.md` — consolidated M02 verification matrix, scope notes, and submission evidence narrative
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
