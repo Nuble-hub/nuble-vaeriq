@@ -55,7 +55,7 @@ No customer traction or product-market-fit claim should be made without attribut
 
 ## Workstream D — Demo/evidence
 
-- [ ] Add a concise benchmark result to the final technical evidence.
+- [x] Add a concise benchmark result to the final technical evidence.
 - [ ] Show the M03 context decision proof in the final demo sequence.
 - [ ] Preserve M02 recovery behavior.
 - [ ] Update submission narrative from measured evidence only.
