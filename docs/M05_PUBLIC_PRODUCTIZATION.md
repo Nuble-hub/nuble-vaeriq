@@ -115,6 +115,21 @@ These are investigation targets, not guaranteed outcomes.
 
 Public claim rule: do not promote research responses, positive comments, demos, or introductions into customers, traction, PMF, or production demand without qualifying evidence.
 
+#### M05.3.2 — Feedback evidence intake
+
+The public beta feedback paths now have a documented evidence-intake protocol and a public-safe review log.
+
+Implementation:
+- Added `docs/FEEDBACK_EVIDENCE_INTAKE.md`
+- Added `docs/FEEDBACK_EVIDENCE_LOG.md`
+- Separated external-validation evidence from engineering/technical evidence.
+- Added explicit relevance, evidence-strength, qualification, counterevidence, and public-claim gates.
+- Disabled blank GitHub Issues so technical feedback is routed through the structured template.
+
+The intake process is intentionally manual and traceable. The repository does not ingest private form responses automatically.
+
+**Status:** Implemented on `feature/m05-feedback-evidence-intake`. Runtime/public verification remains part of the release check before merge.
+
 ### M05.4 — Submission readiness
 
 After the public demo and validation pass:
