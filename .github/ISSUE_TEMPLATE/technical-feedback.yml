@@ -1,0 +1,116 @@
+name: Technical Feedback
+description: Report a reproducible bug, broken demo behavior, or integration issue.
+title: "[Technical Feedback] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing VAERIQ.
+
+        Please use synthetic values only. Do not include private keys, seed phrases,
+        wallet credentials, transaction secrets, confidential company information,
+        or sensitive customer / financial data.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public demo / UI
+        - Payment evaluation
+        - Context / evidence
+        - APPROVE / REVIEW / BLOCK behavior
+        - Execution / recovery
+        - Transaction / reconciliation
+        - GitHub Pages / deployment
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - Minor — confusing or cosmetic
+        - Moderate — workflow is impaired
+        - Major — core demo flow is blocked
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser + OS + device, for example Chrome 154 / Windows 11 / desktop.
+      placeholder: Chrome 154 / Windows 11 / desktop
+    validations:
+      required: true
+
+  - type: input
+    id: network
+    attributes:
+      label: Network
+      description: Use Devnet or Mainnet as applicable. Never paste secrets.
+      placeholder: Solana Devnet
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior or error you saw.
+      placeholder: The evaluation returned REVIEW after ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Describe the behavior you expected from the scenario.
+      placeholder: I expected the decision to ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Give the shortest sequence that reproduces the issue.
+      placeholder: |
+        1. Open the public demo.
+        2. Select ...
+        3. Enter ...
+        4. Click ...
+    validations:
+      required: true
+
+  - type: input
+    id: scenario
+    attributes:
+      label: Scenario
+      description: Choose or name the scenario that exposed the issue.
+      placeholder: Compliant · APPROVE
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console / error details
+      description: Paste non-sensitive error messages or stack traces only.
+      placeholder: TypeError: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, timing, or anything else that helps reproduce the issue.
+      placeholder: Optional additional context.
+    validations:
+      required: false
