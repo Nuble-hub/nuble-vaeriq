@@ -348,3 +348,15 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The expected GitHub Pages project URL is `https://nuble-hub.github.io/nuble-vaeriq/`.
 - The founder manually opened `https://nuble-hub.github.io/nuble-vaeriq/` in a browser and confirmed that the rendered VAERIQ demo page loads successfully.
 - Updated the public README to surface the demo URL and kept the prototype / Devnet / browser-local persistence limitations explicit.
+
+
+## 2026-09-29 — M05.3 public beta feedback center completed
+
+- Added a dedicated `feedback.html` page to the public demo.
+- Added visible Feedback entry points from the main VAERIQ demo.
+- General product/workflow feedback routes to the existing research form.
+- Reproducible technical feedback routes to a structured GitHub Issue Form with environment, scenario, expected behavior, actual behavior, and reproduction fields.
+- Added GitHub Issue Template configuration to guide public feedback toward the appropriate channel while preserving the no-secrets / no-confidential-data rule.
+- Updated the Vite production configuration to emit both the main demo and feedback page as explicit HTML entry points.
+- Added a post-build verification that fails when either public HTML entry point is missing from `dist-web`.
+- Release Gate passed on the updated branch, and the updated Pages deployment completed successfully.
