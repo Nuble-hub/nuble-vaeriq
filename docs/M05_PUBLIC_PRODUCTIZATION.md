@@ -63,6 +63,22 @@ Acceptance criteria:
 
 **Status:** Complete. GitHub Pages deployment succeeded, the published project-site URL is documented in the README, and the founder manually verified the rendered public site in a browser on 2026-09-29.
 
+#### M05.2.1 — Public demo boot correction
+
+A production verification failure was discovered after the first public demo deployment: the Pages artifact referenced `/assets/...` from the domain root, while the project site is served under `/nuble-vaeriq/`. This caused the browser to load the HTML shell without the application bundle.
+
+The correction is now part of `main`:
+
+- dedicated `web:build:pages` command;
+- relative Pages asset base;
+- visible boot-failure fallback;
+- Pages-specific CI asset-path verification;
+- Node 22 for CI/deployment build environments.
+
+The corrected deployment for commit `14ec5ce6010044ea3a8842cf039e2d33448467b2` reported success, and its uploaded artifact was inspected directly to confirm relative `./assets/...` references.
+
+**Status:** Complete. Final interactive browser verification after propagation should still be performed from the founder's browser.
+
 ### M05.3 — Treasury / finance operator validation
 
 Use the existing research protocol and written form before live calls.
