@@ -237,3 +237,93 @@ The next open work remains execution failure handling, transaction reconciliatio
 - M02 execution guard and recovery behavior remained green through the final regression check.
 - Final M03 evidence was consolidated in `VAERIQ_M03_Final_Evidence_2026-09-22.zip`.
 - Customer-validation work remains open and no traction or product-market-fit claim is implied.
+
+
+## 2026-09-23 — M04 operating-layer benchmark started
+
+- Started `feature/m04-validation-rpc-benchmark` from M03-complete `main`.
+- Added a repeatable JSON-RPC benchmark harness for matched Solana workloads.
+- The harness measures p50/p95/p99 latency, success rate, min/max latency, wall-clock achieved request rate, and sampled errors.
+- Workloads include `getHealth`, `getLatestBlockhash`, `getBlockHeight`, and optional `getBalance` / `getTransaction` when a wallet or known transaction signature is supplied.
+- Added optional RPC Fast token support through the `X-Token` request header without committing credentials.
+- Added M04 operating-layer milestone and runtime runbook.
+- Benchmark execution against RPC Fast Focus is pending endpoint setup and a matched runtime run.
+
+
+## 2026-09-23 — M04 benchmark harness documented
+
+- Added repository documentation for the M04 JSON-RPC benchmark harness.
+- Added a benchmark results template so each run retains comparable conditions and measured outputs.
+
+## 2026-09-24 — M04 benchmark measurement-quality hardening
+
+- Refined the JSON-RPC benchmark so latency percentiles and min/max are calculated from successful measurement requests only.
+- Added explicit attempted vs successful request rates, measured success/failure counts, error aggregation, and warmup-failure reporting.
+- Warmup failures no longer abort the entire benchmark; they are recorded and the matched measurement run continues.
+- Updated the M04 benchmark results template and runbook to preserve error/throttling evidence separately from successful-request latency.
+
+## 2026-09-24 — M04 benchmark network aligned to RPC Fast Focus
+
+- The provisioned RPC Fast Focus endpoint is Mainnet-only, so the comparative benchmark network was aligned to Solana Mainnet for apples-to-apples endpoint testing.
+- The M04 runbook and evidence template were updated to distinguish the current Mainnet benchmark from VAERIQ's existing Devnet application path.
+- The next reconciliation-oriented benchmark input is a known confirmed Mainnet transaction signature available to both endpoints.
+
+## 2026-09-24 — M04 streaming observation probe added
+
+- Added a provider-neutral WebSocket observation probe using Solana Mainnet `slotSubscribe`.
+- The probe compares same-slot notification arrival between the public Mainnet WebSocket and RPC Fast Focus, while separately recording duplicates, unmatched slots, and WebSocket errors.
+- Added `benchmark:stream` and documented the runtime procedure.
+- The probe is observation-only; transaction confirmation, `getTransaction`, and reconciliation remain authoritative.
+
+## 2026-09-24 — M04 HTTP benchmark rate-limit isolation added
+
+- Added `BENCHMARK_METHODS` so individual JSON-RPC methods can be benchmarked in isolation.
+- This separates clean latency measurement from full-suite capacity/throttling observations on rate-limited public RPC endpoints.
+- The next HTTP measurement is an isolated `getTransaction` run using the same Mainnet transaction signature on both endpoints.
+
+## 2026-09-24 — M04 probe runtime bug fixes
+
+- Fixed the HTTP benchmark helper regression introduced while adding method selection; required integer parsing helpers are restored.
+- Fixed the WebSocket observation probe's stream-key mismatch that caused slot notifications to crash the process.
+- Added explicit baseline-only and candidate-only slot counts to the streaming report so observation gaps are measurable rather than described only in notes.
+
+## 2026-09-24 — M04 HTTP and WebSocket benchmark evidence captured
+
+- Completed Mainnet HTTP benchmark runs, including generic RPC methods and isolated `getTransaction` runs at sequential and concurrent settings.
+- Observed public-baseline `HTTP_429` responses in repeated 30-request runs, while the same runs completed without observed RPC Fast errors.
+- Completed a corrected 30-slot Mainnet `slotSubscribe` observation run with 30 matched slots, zero duplicates, zero stream errors, and no baseline-only or candidate-only slots.
+- Preserved the measured results in `docs/M04_RPC_BENCHMARK_RESULTS.md` and `docs/M04_STREAM_BENCHMARK_RESULTS.md`.
+- Engineering decision from the measured workload: keep RPC Fast as an optional provider rather than a core VAERIQ dependency.
+- Streaming remains an observation layer; confirmation, `getTransaction`, and reconciliation remain authoritative.
+
+
+## 2026-09-24 — M04 streaming resilience hardening
+
+- Added a small provider-neutral stream observation core for duplicate detection, slot-gap accounting, reconnect counters, and delta summaries.
+- Hardened the Mainnet `slotSubscribe` probe with bounded reconnect handling and optional deterministic forced disconnect testing.
+- Added a regression test covering duplicate delivery, observed slot gaps, reconnect accounting, and signed timing delta summaries.
+- Added `STREAM_RECONNECT_DELAY_MS`, `STREAM_MAX_RECONNECTS`, and `STREAM_FORCE_RECONNECT_AFTER_MS` runtime controls.
+- Reconnect/gap implementation is complete at code level; live forced-reconnect verification remains open.
+
+
+## 2026-09-24 — M04 forced reconnect runtime verification
+
+- Ran the canonical Mainnet streaming probe with a deterministic 5-second forced disconnect and bounded reconnect settings.
+- Both the public Solana baseline and RPC Fast Focus re-established their subscriptions successfully after one reconnect attempt.
+- The run reached 30 matched slots after reconnect, with zero observed WebSocket errors and zero duplicate notifications.
+- Observed slot gaps were recorded explicitly (baseline 3, RPC Fast 10) and are treated as observation-window gaps rather than provider-loss attribution.
+- The canonical same-slot timing delta was p50 +4.46 ms, p95 +291.29 ms, and p99 +393.67 ms; baseline-first occurred for 20/30 matched slots and RPC Fast-first for 10/30.
+- The reconnect implementation is runtime-verified for the current bounded prototype; production-grade stream durability remains outside M04 scope.
+- Forced reconnect is reported separately from actual WebSocket error counts in the benchmark output.
+
+## 2026-09-29 — M04 finalized and public release gate opened
+
+- Finalized M04 for the bounded hackathon prototype with engineering evidence consolidated.
+- Recorded the explicit validation constraint: the original 5–10 qualifying treasury/finance operator interview target was not reached, so no customer traction or product-market-fit claim is supported.
+- Preserved limited third-party payment-workflow research as domain evidence only, separate from operator validation.
+- Closed the polling-vs-streaming question for the current prototype by decision: streaming remains an observation signal; confirmation, `getTransaction`, and reconciliation remain authoritative.
+- Recorded the infrastructure decision to keep RPC Fast as an optional provider behind a provider-neutral adapter.
+- Corrected `npm run demo` to launch the Vite web demo instead of referencing the missing `scripts/demo-server.mjs`.
+- Updated README, SECURITY.md, CONTRIBUTING.md, the submission claims ledger, and the public release checklist for the release phase.
+- Added a GitHub Actions release-gate workflow covering typecheck, tests, web build, and an obvious-credential history scan.
+- Public visibility remains intentionally gated on exact-release verification, final history review, branch cleanup, and the final Private → Public change.

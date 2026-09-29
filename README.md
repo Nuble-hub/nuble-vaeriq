@@ -4,13 +4,13 @@
 
 > **VAERIQ decides whether value should move before it moves.**
 
-**Category:** Payments & Remittance  
-**Primary chain:** Solana  
-**Initial network:** Solana Devnet  
-**Expansion path:** Additional chains through adapters  
-**Master brand:** NUBLE  
-**Product:** VAERIQ  
-**Status:** Colosseum Crypto World's Fair — Build & Submit
+**Category:** Payments & Remittance  \
+**Primary chain:** Solana  \
+**Initial network:** Solana Devnet  \
+**Expansion path:** Additional chains through adapters  \
+**Master brand:** NUBLE  \
+**Product:** VAERIQ  \
+**Status:** Colosseum Crypto World's Fair — build, evidence, and release preparation
 
 ## Product thesis
 
@@ -34,9 +34,11 @@ AI is used for contextual reasoning and explanation. Financial enforcement remai
 
 ## Repository status
 
-This repository is the active development source for VAERIQ during the hackathon. It is intentionally private during development. The repository history is part of the project's development record.
+This repository is the active development source for VAERIQ during the hackathon. It remains private until the final release gate is completed.
 
-**Milestone 01 is complete:** the Solana Devnet payment-control loop has been exercised end-to-end for both an approved payment and a blocked payment.
+Milestones 01–03 are engineering/runtime verified. Milestone 04 is finalized for the bounded prototype with consolidated infrastructure evidence and an explicit operator-validation constraint. See `docs/M04_FINALIZATION_DECISION.md`.
+
+No customer traction or product-market-fit claim is made unless attributable evidence supports it.
 
 ## Core team
 
@@ -106,15 +108,17 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Restore latest persisted audit summary after refresh
 - [x] Persisted execution recovery state and safe retry gating (runtime verified)
 - [x] Milestone 03 — intent/context/evidence control proof (engineering/runtime verified)
+- [x] Milestone 04 — operating-layer evidence and RPC benchmark (market validation constrained)
 - [ ] Public demo URL
-- [ ] Customer discovery / user validation
-- [ ] Final demo package
+- [ ] Customer discovery / user validation target completion
+- [x] Final technical evidence package
 - [ ] Final Colosseum submission
 
 ## Documentation
 
 - `DEVELOPMENT_HISTORY.md` — development timeline and disclosure record
 - `CONTRIBUTING.md` — repository and engineering conventions
+- `SECURITY.md` — security reporting and safe-development rules
 - `docs/ARCHITECTURE.md` — system boundaries and technical decisions
 - `docs/HACKATHON.md` — Colosseum scope, demo and submission notes
 - `docs/MILESTONE_01.md` — acceptance criteria and runtime evidence for the first chain-connected milestone
@@ -124,11 +128,50 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/MILESTONE_02_RUNBOOK.md` — runtime verification steps and evidence requirements for transaction reconciliation
 - `docs/MILESTONE_03.md` — intent/context/evidence control-layer milestone and acceptance criteria
 - `docs/MILESTONE_03_RUNBOOK.md` — product-proof and external-validation runbook for M03
+- `docs/MILESTONE_04.md` — operating-layer milestone and finalization status
+- `docs/MILESTONE_04_RUNBOOK.md` — RPC benchmark and operator-validation runbook
+- `docs/M04_FINALIZATION_DECISION.md` — final M04 evidence boundary and release consequence
 - `docs/evidence/M03_FINAL_EVIDENCE.md` — consolidated M03 runtime verification matrix and evidence narrative
-- `docs/evidence/M02_FINAL_EVIDENCE.md` — consolidated M02 verification matrix, scope notes, and submission evidence narrative
-- `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol, interview questions, evidence standards, and validation targets
+- `docs/evidence/M04_FINAL_EVIDENCE.md` — consolidated M04 infrastructure evidence and validation boundary
+- `docs/M04_FINAL_DEMO_RUNBOOK.md` — final demo sequence
+- `docs/OPERATOR_VALIDATION_FORM.md` — short written operator-research form
+- `docs/M04_OPERATOR_RESPONSE_INTAKE.md` — response evidence intake and analysis template
+- `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol and evidence standards
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
+- `docs/PUBLIC_RELEASE_CHECKLIST.md` — public-release gate checklist
+- `docs/SUBMISSION_CLAIMS_LEDGER.md` — supported vs open public claims
 
 ## License
 
-No open-source license has been selected yet. Until a license is added, repository contents remain proprietary to the project owner, except for third-party dependencies governed by their own licenses.
+VAERIQ is released under the MIT License. See `LICENSE`.
+
+The package metadata remains `private: true` so the project is not accidentally published to npm.
+
+## M04 RPC benchmark
+
+The repository includes a provider-neutral JSON-RPC benchmark harness at `scripts/rpc-benchmark.mjs`.
+
+Run it with a matched Solana Mainnet baseline and RPC Fast Focus endpoint:
+
+```bash
+export SOLANA_BASELINE_RPC_URL="https://api.mainnet-beta.solana.com"
+export RPC_FAST_RPC_URL="YOUR_RPC_FAST_FOCUS_ENDPOINT"
+npm run benchmark:rpc
+```
+
+The current RPC Fast Focus endpoint provisioned for M04 is Mainnet-only. This benchmark is intentionally Mainnet-to-Mainnet; the application demo remains on Solana Devnet.
+
+Optional `RPC_FAST_TOKEN` can be supplied through the environment when the endpoint requires an `X-Token` header. Credentials are never stored in the repository.
+
+The harness is designed to measure VAERIQ-relevant read and verification workloads rather than reproduce a provider's published benchmark. Results should retain the machine, region, sample count, concurrency, timeout, and run date alongside the measurements.
+
+## Demo
+
+The web demo uses Vite:
+
+```bash
+npm install
+npm run demo
+```
+
+`npm run demo` starts the same Vite development server as `npm run web:dev`.
