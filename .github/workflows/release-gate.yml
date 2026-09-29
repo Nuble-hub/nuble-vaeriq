@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - feature/m04-validation-rpc-benchmark
+      - feature/m05-public-productization
   workflow_dispatch:
 
 permissions:
