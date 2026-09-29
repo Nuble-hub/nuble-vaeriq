@@ -14,6 +14,15 @@ for (const file of requiredFiles) {
   if (!html.includes("<html") || !html.includes("</html>")) {
     throw new Error(`WEB_BUILD_INVALID_HTML:${file}`);
   }
+
+  if (html.includes('src="/src/')) {
+    throw new Error(`WEB_BUILD_UNREBUNDED_SOURCE_PATH:${file}`);
+  }
+}
+
+const indexHtml = readFileSync(join(dist, "index.html"), "utf8");
+if (!indexHtml.includes("window.__VAERIQ_BOOT_READY__")) {
+  throw new Error("WEB_BUILD_BOOT_GUARD_MISSING:index.html");
 }
 
 console.log("Public web build verification: PASS", {
