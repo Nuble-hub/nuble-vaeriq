@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="VAERIQ public beta feedback — tell us what fits your payment-control workflow."
+    />
+    <title>VAERIQ — Public Beta Feedback</title>
+    <link rel="stylesheet" href="./feedback.css" />
+  </head>
+  <body>
+    <main class="feedback-shell">
+      <header class="feedback-header">
+        <div>
+          <div class="eyebrow">NUBLE / VAERIQ</div>
+          <h1>Public beta feedback.</h1>
+          <p class="subtitle">
+            You just tried the control flow. Tell us what worked, what did not,
+            and where this would fit into a real payment workflow.
+          </p>
+        </div>
+        <a class="back-link" href="./">← Back to demo</a>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <div class="card-kicker">GENERAL PRODUCT FEEDBACK</div>
+          <h2>Tell us what you think</h2>
+          <p>
+            Use the short research form for workflow feedback, confusing parts,
+            missing controls, and whether the prototype matches how you handle
+            stablecoin or on-chain payments today.
+          </p>
+
+          <div class="callout">
+            <strong>Best signal</strong>
+            <span>
+              Describe what you actually do today and where VAERIQ would or
+              would not fit. Specific workflow examples are more useful than
+              a generic “looks good”.
+            </span>
+          </div>
+
+          <a
+            class="primary-button"
+            href="https://forms.gle/yfCJPGuGMyvMw5h26"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open feedback form ↗
+          </a>
+
+          <div class="privacy-note">
+            Please do not submit private keys, wallet credentials, transaction
+            secrets, confidential company information, or sensitive customer
+            / financial data.
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-kicker">TECHNICAL FEEDBACK</div>
+          <h2>Found a bug or technical issue?</h2>
+          <p>
+            Open the structured GitHub technical-feedback form so the issue can
+            be reproduced and triaged without turning general product research
+            into a bug report.
+          </p>
+
+          <div class="signal-list">
+            <div><strong>What failed?</strong><span>Actual behavior or error.</span></div>
+            <div><strong>What did you expect?</strong><span>The intended behavior.</span></div>
+            <div><strong>How can we reproduce it?</strong><span>Scenario, browser, network, and steps.</span></div>
+          </div>
+
+          <a
+            class="secondary-button"
+            href="https://github.com/Nuble-hub/nuble-vaeriq/issues/new?template=technical-feedback.yml"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Report technical feedback ↗
+          </a>
+
+          <div class="privacy-note">
+            Never include secrets or real customer/payment data in a GitHub
+            issue. Use synthetic values only.
+          </div>
+        </article>
+      </section>
+
+      <section class="card feedback-guide">
+        <div class="card-kicker">WHAT WE ARE LEARNING</div>
+        <div class="guide-grid">
+          <div>
+            <strong>Workflow fit</strong>
+            <span>Does Intent → Context → Policy / Risk → Decision match a real workflow?</span>
+          </div>
+          <div>
+            <strong>Control gap</strong>
+            <span>What still requires manual review, judgment, or reconciliation today?</span>
+          </div>
+          <div>
+            <strong>Trust boundary</strong>
+            <span>What would you need before letting a system sit in front of real payment execution?</span>
+          </div>
+          <div>
+            <strong>Next step</strong>
+            <span>Would you show this to the person who owns treasury, finance, or payments?</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="feedback-footer">
+        <span>VAERIQ · Public bounded prototype · Solana Devnet</span>
+        <a href="https://github.com/Nuble-hub/nuble-vaeriq" target="_blank" rel="noreferrer">
+          GitHub ↗
+        </a>
+      </footer>
+    </main>
+  </body>
+</html>
