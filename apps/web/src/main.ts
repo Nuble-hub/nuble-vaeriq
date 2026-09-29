@@ -34,7 +34,8 @@ const state = {
   decision: null as "APPROVE" | "REVIEW" | "BLOCK" | null,
   persistedLatestIntentId: "",
   lastReconciledTxSignature: "",
-  error: ""
+  error: "",
+  guideOpen: localStorage.getItem("vaeriq:demo:guide:v1") !== "closed"
 };
 
 function parseUsdcAtomic(value: string): string {
@@ -192,6 +193,43 @@ function render() {
           ? "Simulate execution uncertainty"
           : "Execute approved payment";
 
+  const guideMarkup = state.guideOpen ? [
+    "      <section class=\"guide-card card\" aria-label=\"VAERIQ demo guide\">",
+    "        <div class=\"guide-top\">",
+    "          <div>",
+    "            <div class=\"card-title\">Quick start</div>",
+    "            <h2>New to VAERIQ? Start here.</h2>",
+    "            <p class=\"guide-lead\">This demo shows how a payment is checked before value is allowed to move. You do not need Treasury expertise to follow the flow.</p>",
+    "          </div>",
+    "          <button class=\"guide-close\" id=\"guide-close\">Hide guide</button>",
+    "        </div>",
+    "        <div class=\"guide-steps\">",
+    "          <article class=\"guide-step\"><span class=\"guide-step-number\">01</span><div><strong>Connect a Solana Devnet wallet</strong><p>The wallet identifies the requester and becomes the signer. Signing only happens after an explicit APPROVE.</p></div></article>",
+    "          <article class=\"guide-step\"><span class=\"guide-step-number\">02</span><div><strong>Choose a scenario, then Evaluate</strong><p>Start with <b>Adversarial · BLOCK</b> to see VAERIQ stop a payment that violates the demo control policy.</p><button class=\"guide-action\" id=\"guide-start-block\">Start with BLOCK scenario</button></div></article>",
+    "          <article class=\"guide-step\"><span class=\"guide-step-number\">03</span><div><strong>Read the decision evidence</strong><p>Follow <b>Intent → Context → Policy / Risk → Decision</b>. Only APPROVE can continue to the execution boundary.</p></div></article>",
+    "        </div>",
+    "        <div class=\"guide-scenarios\">",
+    "          <div class=\"guide-section-label\">What each scenario demonstrates</div>",
+    "          <div class=\"guide-scenario-grid\">",
+    "            <div class=\"guide-scenario\"><b>APPROVE</b><span>A compliant payment with complete business context.</span></div>",
+    "            <div class=\"guide-scenario\"><b>BLOCK</b><span>A payment outside the approved control boundary.</span></div>",
+    "            <div class=\"guide-scenario\"><b>UNKNOWN</b><span>How VAERIQ handles uncertain execution without automatic retry.</span></div>",
+    "          </div>",
+    "        </div>",
+    "        <details class=\"guide-glossary\">",
+    "          <summary>Small glossary — no Treasury background required</summary>",
+    "          <div class=\"glossary-grid\">",
+    "            <div><b>Intent</b><span>What the requester is trying to pay for.</span></div>",
+    "            <div><b>Context</b><span>Business information and evidence supporting the payment.</span></div>",
+    "            <div><b>Policy</b><span>Deterministic rules that decide what is allowed.</span></div>",
+    "            <div><b>Risk</b><span>Signals that can require additional review.</span></div>",
+    "            <div><b>Reconciliation</b><span>Checking that the blockchain transaction matches the intended payment.</span></div>",
+    "            <div><b>Audit</b><span>The evidence trail showing what VAERIQ decided and what happened.</span></div>",
+    "          </div>",
+    "        </details>",
+    "      </section>"
+  ].join("\n") : "";
+
   const connectInProgress = walletStatus === "pending" || walletStatus === "connecting" || walletStatus === "reconnecting";
   const connectLabel = connectInProgress ? "Connecting…" : `Connect wallet${wallets[0] ? ` · ${wallets[0].name}` : ""}`;
 
@@ -205,10 +243,13 @@ function render() {
         </div>
         <div class="wallet-box">
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
+          <button class="guide-nav" id="guide-toggle" aria-expanded="${state.guideOpen}">Guide</button>
           <a class="feedback-nav" href="./feedback.html">Feedback ↗</a>
           ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${connectLabel}</button>`}
         </div>
       </header>
+
+      ${guideMarkup}
 
       <section class="grid">
         <div class="card">
@@ -352,6 +393,22 @@ function render() {
     render();
   });
 
+  document.querySelector<HTMLButtonElement>("#guide-toggle")?.addEventListener("click", () => {
+    state.guideOpen = !state.guideOpen;
+    localStorage.setItem("vaeriq:demo:guide:v1", state.guideOpen ? "open" : "closed");
+    render();
+  });
+
+  document.querySelector<HTMLButtonElement>("#guide-close")?.addEventListener("click", () => {
+    state.guideOpen = false;
+    localStorage.setItem("vaeriq:demo:guide:v1", "closed");
+    render();
+  });
+
+  document.querySelector<HTMLButtonElement>("#guide-start-block")?.addEventListener("click", () => {
+    document.querySelector<HTMLButtonElement>("#block-mode")?.click();
+    document.querySelector<HTMLInputElement>("#recipient")?.focus();
+  });
   document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
   document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
   document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
