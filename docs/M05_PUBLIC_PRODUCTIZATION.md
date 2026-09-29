@@ -67,6 +67,33 @@ Acceptance criteria:
 
 Use the existing research protocol and written form before live calls.
 
+#### M05.3.1 — Public beta feedback center
+
+The public demo now exposes a dedicated feedback center at `feedback.html`.
+
+The feedback center separates two evidence paths:
+
+- **General product/workflow research** → existing Google Form
+- **Technical bugs and reproducible demo issues** → structured GitHub Issue Form
+
+The public beta flow is:
+
+```text
+X / Community / Colosseum
+          ↓
+    Public demo
+          ↓
+   Try the scenarios
+          ↓
+  Feedback center
+     ↙         ↘
+Research form   Technical issue
+     ↓               ↓
+Workflow evidence   Reproducible bug evidence
+```
+
+A feedback submission is not by itself a customer, traction, design-partner, or PMF signal. Qualification remains based on the evidence progression below.
+
 Evidence progression:
 
 1. Problem evidence
