@@ -346,5 +346,5 @@ The next open work remains execution failure handling, transaction reconciliatio
 - After Pages was enabled, the deployment workflow was rerun successfully.
 - The Pages build completed successfully, the Vite production artifact was uploaded successfully, and the deployment job completed successfully.
 - The expected GitHub Pages project URL is `https://nuble-hub.github.io/nuble-vaeriq/`.
-- The external rendered-site check remains a manual browser verification because the available repository integration cannot fetch the rendered Pages site directly.
+- The founder manually opened `https://nuble-hub.github.io/nuble-vaeriq/` in a browser and confirmed that the rendered VAERIQ demo page loads successfully.
 - Updated the public README to surface the demo URL and kept the prototype / Devnet / browser-local persistence limitations explicit.
