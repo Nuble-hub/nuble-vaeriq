@@ -1,0 +1,59 @@
+name: Release Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/m04-validation-rpc-benchmark
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck and test
+        run: npm run check
+
+      - name: Build web demo
+        run: npm run web:build
+
+      - name: Scan git history for obvious credential material
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          patterns=(
+            '-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----'
+            'ghp_[A-Za-z0-9]{20,}'
+            'github_pat_[A-Za-z0-9_]{20,}'
+            'AKIA[0-9A-Z]{16}'
+            'xox[baprs]-[A-Za-z0-9-]{20,}'
+          )
+
+          for pattern in "${patterns[@]}"; do
+            matches="$(git log --all --full-history -G "$pattern" --format='%H %s' -- . || true)"
+            if [ -n "$matches" ]; then
+              echo "Potential credential pattern found for: $pattern"
+              echo "$matches"
+              exit 1
+            fi
+          done
+
+          echo "No obvious credential patterns found in git history."
