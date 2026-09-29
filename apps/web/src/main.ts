@@ -205,7 +205,7 @@ function render() {
     "        </div>",
     "        <div class=\"guide-steps\">",
     "          <article class=\"guide-step\"><span class=\"guide-step-number\">01</span><div><strong>Connect a Solana Devnet wallet</strong><p>The wallet identifies the requester and becomes the signer. Signing only happens after an explicit APPROVE.</p></div></article>",
-    "          <article class=\"guide-step\"><span class=\"guide-step-number\">02</span><div><strong>Choose a scenario, then Evaluate</strong><p>Start with <b>Adversarial · BLOCK</b> to see VAERIQ stop a payment that violates the demo control policy.</p><button class=\"guide-action\" id=\"guide-start-block\">Start with BLOCK scenario</button></div></article>",
+    `          <article class="guide-step"><span class="guide-step-number">02</span><div><strong>Choose a scenario, then Evaluate</strong><p>Start with <b>Adversarial · BLOCK</b> to see VAERIQ stop a payment that violates the demo control policy.</p><button class="guide-action" id="guide-start-block">${walletState.connected ? "Start with BLOCK scenario" : "Connect wallet to start BLOCK"}</button></div></article>`,
     "          <article class=\"guide-step\"><span class=\"guide-step-number\">03</span><div><strong>Read the decision evidence</strong><p>Follow <b>Intent → Context → Policy / Risk → Decision</b>. Only APPROVE can continue to the execution boundary.</p></div></article>",
     "        </div>",
     "        <div class=\"guide-scenarios\">",
@@ -406,6 +406,15 @@ function render() {
   });
 
   document.querySelector<HTMLButtonElement>("#guide-start-block")?.addEventListener("click", () => {
+    state.mode = "BLOCK";
+    localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK");
+
+    const walletState = client.wallet.getState();
+    if (!walletState.connected) {
+      document.querySelector<HTMLButtonElement>("#connect")?.click();
+      return;
+    }
+
     document.querySelector<HTMLButtonElement>("#block-mode")?.click();
     document.querySelector<HTMLInputElement>("#recipient")?.focus();
   });
