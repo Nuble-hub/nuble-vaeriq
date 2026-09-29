@@ -6,7 +6,44 @@
     <title>VAERIQ — Control Before Value Moves</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="app">
+      <main id="boot-screen" style="max-width:720px;margin:10vh auto;padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#10131a">
+        <h1>VAERIQ</h1>
+        <p>Loading the public demo…</p>
+        <noscript><p>JavaScript is required to run the VAERIQ demo.</p></noscript>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        let booted = false;
+
+        window.__VAERIQ_BOOT_READY__ = () => {
+          booted = true;
+          document.getElementById("boot-screen")?.remove();
+        };
+
+        const showBootError = () => {
+          if (booted) return;
+          const app = document.getElementById("app");
+          if (!app) return;
+
+          app.innerHTML = `
+            <main style="max-width:720px;margin:10vh auto;padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#10131a">
+              <h1>VAERIQ demo could not start.</h1>
+              <p>The public page loaded, but the application bundle did not start correctly.</p>
+              <p>Please hard-refresh the page and try again. If the problem persists, use the Technical Feedback link in the repository.</p>
+              <p><a href="https://github.com/Nuble-hub/nuble-vaeriq/issues/new?template=technical-feedback.yml">Report technical feedback ↗</a></p>
+            </main>
+          `;
+        };
+
+        window.addEventListener("error", () => showBootError(), { once: true });
+        window.addEventListener("unhandledrejection", () => showBootError(), { once: true });
+        window.setTimeout(showBootError, 8000);
+      })();
+    </script>
+
+    <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
