@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+const mode = process.argv.includes("--mode") ? process.argv[process.argv.indexOf("--mode") + 1] : undefined;
+
 const dist = join(process.cwd(), "dist-web");
 const requiredFiles = ["index.html", "feedback.html"];
 
@@ -18,6 +20,15 @@ for (const file of requiredFiles) {
   if (html.includes('src="/src/')) {
     throw new Error(`WEB_BUILD_UNREBUNDED_SOURCE_PATH:${file}`);
   }
+
+  if (mode === "github-pages") {
+    const references = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((match) => match[1]);
+    for (const reference of references) {
+      if (reference.startsWith("/") && !reference.startsWith("//")) {
+        throw new Error(`WEB_BUILD_ROOT_ABSOLUTE_ASSET_PATH:${file}:${reference}`);
+      }
+    }
+  }
 }
 
 const indexHtml = readFileSync(join(dist, "index.html"), "utf8");
@@ -27,5 +38,6 @@ if (!indexHtml.includes("window.__VAERIQ_BOOT_READY__")) {
 
 console.log("Public web build verification: PASS", {
   output: dist,
-  files: requiredFiles
+  files: requiredFiles,
+  mode: mode ?? "default"
 });
