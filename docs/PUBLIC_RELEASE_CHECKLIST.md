@@ -2,7 +2,7 @@
 
 ## Current status
 
-Repository remains **private** while the release gate is being completed. M04 is finalized and merged to `main`; the remaining work is exact-commit verification, final history review, branch cleanup, and the final visibility decision.
+Repository remains **private** while the release gate is being completed. M04 is finalized and merged to `main`; the public snapshot review is complete, and the remaining work is final exact-commit verification plus the visibility decision.
 
 ## Audit updated on 2026-09-29
 
@@ -25,10 +25,10 @@ Repository remains **private** while the release gate is being completed. M04 is
 | M04 final evidence | Ready | Engineering evidence + validation boundary consolidated |
 | Demo command cleanup | Resolved | `npm run demo` now starts the Vite web dev server |
 | Release-gate CI | Added | `.github/workflows/release-gate.yml` runs typecheck, tests, web build, and an obvious-credential history scan |
-| Final exact-release verification | Open | Must pass on the final release commit |
-| Full credential-history review | In progress | CI scans for obvious credential patterns; deeper local/manual review is still prudent before public visibility |
+| Final exact-release verification | Open | Code/tests/build were verified on commit `8edb2e7`; the final `main` snapshot needs one last exact-commit verification after the release-only documentation commit |
+| Full credential-history review | Pass (scoped) | Local history scans found no credential files or actual key/token values; regex literals in the scanner are expected. Automated scan remains additional protection, not a full secret-forensics guarantee |
 | Final branch history | Preserve | Keep M02/M03/M04 feature branches as historical development records so judges can inspect milestone implementation history and evidence paths |
-| Repository visibility | Open | Change Private → Public only after all preceding gates pass |
+| Repository visibility | Open | Change Private → Public only after exact-commit verification and the final manual GitHub visibility action |
 
 ## Public-release gates
 
@@ -44,10 +44,16 @@ Repository remains **private** while the release gate is being completed. M04 is
 - [x] Review public-facing claims against `docs/SUBMISSION_CLAIMS_LEDGER.md`.
 - [x] Add an automated release-gate workflow.
 - [ ] Run final typecheck/tests/web build on the exact release commit.
-- [ ] Complete the credential-history review before visibility changes.
+- [x] Complete the scoped credential-history review; retain automated scan as defense-in-depth.
 - [x] Merge the release candidate to `main` (merge commit `e38c0063f5e6fe3052c4f47071c28e8b5ce660f4`).
 - [x] Decide historical branch policy: preserve the M02/M03/M04 feature branches for auditability and judge inspection.
 - [ ] Change repository visibility to Public.
+
+## Final public snapshot review — 2026-09-29
+
+Reviewed the public-facing snapshot on `main` for stale private-development messaging, milestone-status consistency, demo-command consistency, license references, and claim boundaries. No release-blocking wording inconsistency was found. Historical validation warnings remain intentionally visible because they are part of the evidence boundary.
+
+The only remaining gate is to run the code/test/web-build checks once more on the final `main` snapshot and then perform the manual Private → Public visibility change.
 
 ## Public-release principle
 
