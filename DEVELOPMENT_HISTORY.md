@@ -315,3 +315,15 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The canonical same-slot timing delta was p50 +4.46 ms, p95 +291.29 ms, and p99 +393.67 ms; baseline-first occurred for 20/30 matched slots and RPC Fast-first for 10/30.
 - The reconnect implementation is runtime-verified for the current bounded prototype; production-grade stream durability remains outside M04 scope.
 - Forced reconnect is reported separately from actual WebSocket error counts in the benchmark output.
+
+## 2026-09-29 — M04 finalized and public release gate opened
+
+- Finalized M04 for the bounded hackathon prototype with engineering evidence consolidated.
+- Recorded the explicit validation constraint: the original 5–10 qualifying treasury/finance operator interview target was not reached, so no customer traction or product-market-fit claim is supported.
+- Preserved limited third-party payment-workflow research as domain evidence only, separate from operator validation.
+- Closed the polling-vs-streaming question for the current prototype by decision: streaming remains an observation signal; confirmation, `getTransaction`, and reconciliation remain authoritative.
+- Recorded the infrastructure decision to keep RPC Fast as an optional provider behind a provider-neutral adapter.
+- Corrected `npm run demo` to launch the Vite web demo instead of referencing the missing `scripts/demo-server.mjs`.
+- Updated README, SECURITY.md, CONTRIBUTING.md, the submission claims ledger, and the public release checklist for the release phase.
+- Added a GitHub Actions release-gate workflow covering typecheck, tests, web build, and an obvious-credential history scan.
+- Public visibility remains intentionally gated on exact-release verification, final history review, branch cleanup, and the final Private → Public change.
