@@ -360,3 +360,4 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Updated the Vite production configuration to emit both the main demo and feedback page as explicit HTML entry points.
 - Added a post-build verification that fails when either public HTML entry point is missing from `dist-web`.
 - Release Gate passed on the updated branch, and the updated Pages deployment completed successfully.
+- Follow-up public-beta work embeds the existing research form directly in `feedback.html`, while the structured technical-feedback Issue Form remains the path for reproducible bugs.
