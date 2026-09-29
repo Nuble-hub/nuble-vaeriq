@@ -4,7 +4,9 @@ VAERIQ is a financial-control product under active development. Security-sensiti
 
 ## Reporting
 
-During the private development period, report security issues directly to the project owner through the private project channel. Do not publish sensitive vulnerabilities, credentials, private keys, seed phrases, or exploit details in public issues.
+Please do not publish sensitive vulnerability details, credentials, private keys, seed phrases, or exploit instructions in public GitHub issues.
+
+When GitHub private vulnerability reporting is available for this repository, use that mechanism. Otherwise, open a minimal public issue without sensitive details and request a private reporting channel.
 
 ## Non-negotiable rules
 
@@ -18,7 +20,11 @@ During the private development period, report security issues directly to the pr
 
 ## Dependency and deployment hygiene
 
-- Keep dependencies pinned or lockfile-controlled.
-- Run typecheck and tests before merging meaningful changes.
+- Keep dependencies pinned or lockfile-controlled where practical.
+- Run typecheck, tests, and the web build before merging meaningful changes.
 - Treat deployment credentials as external secrets, never repository content.
 - Keep demo data synthetic until approved production-data controls exist.
+
+## Scope and limitations
+
+The current repository contains a hackathon/demo implementation. Browser-local audit persistence is not production treasury storage, the demonstrated Solana application path is Devnet, and the M04 streaming path is an observation prototype rather than a production-grade delivery system.
