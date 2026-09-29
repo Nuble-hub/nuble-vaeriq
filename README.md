@@ -181,6 +181,8 @@ Open the local Vite URL shown in the terminal. The demo runs on Solana Devnet an
 
 ### Public demo
 
-A GitHub Pages deployment workflow is configured for the repository. The public demo URL will be published here after the first successful Pages deployment.
+The GitHub Pages deployment workflow has completed successfully.
 
-The public demo is a prototype demonstration, not production custody or a production treasury service. Browser-local audit persistence is demo-grade, and the Devnet transaction path is intentionally kept separate from the M04 Mainnet infrastructure benchmark.
+**Demo:** https://nuble-hub.github.io/nuble-vaeriq/
+
+Open the demo in a browser with a Solana Devnet-compatible wallet. The demo is a prototype demonstration, not production custody or a production treasury service. Browser-local audit persistence is demo-grade, and the Devnet transaction path is intentionally kept separate from the M04 Mainnet infrastructure benchmark.

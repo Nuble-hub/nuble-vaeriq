@@ -61,7 +61,7 @@ Acceptance criteria:
 - The deployed URL is verified from an external browser.
 - The README links the verified public demo URL.
 
-**Status:** Deployment workflow prepared. Live URL verification remains open.
+**Status:** GitHub Pages deployment succeeded. The published project-site URL is documented in the README; direct external browser verification remains a user-facing check because the available repository integration does not fetch the rendered Pages site.
 
 ### M05.3 — Treasury / finance operator validation
 
