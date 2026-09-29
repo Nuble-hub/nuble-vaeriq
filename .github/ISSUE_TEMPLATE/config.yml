@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: General product and workflow feedback
+    url: https://forms.gle/yfCJPGuGMyvMw5h26
+    about: Share workflow feedback, product fit, objections, and research responses.
+  - name: VAERIQ public demo
+    url: https://nuble-hub.github.io/nuble-vaeriq/
+    about: Try the public beta before submitting feedback.
