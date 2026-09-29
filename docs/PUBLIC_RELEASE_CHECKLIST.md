@@ -27,7 +27,7 @@ Repository remains **private** while the release gate is being completed. M04 is
 | Release-gate CI | Added | `.github/workflows/release-gate.yml` runs typecheck, tests, web build, and an obvious-credential history scan |
 | Final exact-release verification | Open | Must pass on the final release commit |
 | Full credential-history review | In progress | CI scans for obvious credential patterns; deeper local/manual review is still prudent before public visibility |
-| Final branch history | Open | M04 is merged to `main`; review stale feature branches before publishing |
+| Final branch history | Preserve | Keep M02/M03/M04 feature branches as historical development records so judges can inspect milestone implementation history and evidence paths |
 | Repository visibility | Open | Change Private → Public only after all preceding gates pass |
 
 ## Public-release gates
@@ -46,7 +46,7 @@ Repository remains **private** while the release gate is being completed. M04 is
 - [ ] Run final typecheck/tests/web build on the exact release commit.
 - [ ] Complete the credential-history review before visibility changes.
 - [x] Merge the release candidate to `main` (merge commit `e38c0063f5e6fe3052c4f47071c28e8b5ce660f4`).
-- [ ] Decide which historical branches remain visible after release.
+- [x] Decide historical branch policy: preserve the M02/M03/M04 feature branches for auditability and judge inspection.
 - [ ] Change repository visibility to Public.
 
 ## Public-release principle
