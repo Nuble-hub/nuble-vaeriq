@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="VAERIQ public beta feedback — tell us what fits your payment-control workflow."
+      content="VAERIQ public beta feedback — try the demo, share workflow feedback, or report a technical issue."
     />
     <title>VAERIQ — Public Beta Feedback</title>
     <link rel="stylesheet" href="./feedback.css" />
@@ -17,55 +17,63 @@
           <div class="eyebrow">NUBLE / VAERIQ</div>
           <h1>Public beta feedback.</h1>
           <p class="subtitle">
-            You just tried the control flow. Tell us what worked, what did not,
-            and where this would fit into a real payment workflow.
+            You tried the control flow. Tell us what worked, what did not,
+            and where this would or would not fit into a real payment workflow.
           </p>
         </div>
         <a class="back-link" href="./">← Back to demo</a>
       </header>
 
+      <section class="card research-card">
+        <div class="card-kicker">GENERAL PRODUCT + WORKFLOW FEEDBACK</div>
+        <h2>Leave feedback without leaving the demo</h2>
+        <p>
+          This embedded research form is the primary public-beta feedback path.
+          It helps us learn about real treasury, finance, stablecoin, and payment
+          workflows—not just whether the interface looks good.
+        </p>
+
+        <div class="callout">
+          <strong>What is most useful</strong>
+          <span>
+            Tell us what you actually do today, what controls you already use,
+            where the process becomes manual or error-prone, and where VAERIQ
+            would or would not fit.
+          </span>
+        </div>
+
+        <div class="form-frame">
+          <iframe
+            title="VAERIQ public beta feedback form"
+            src="https://forms.gle/yfCJPGuGMyvMw5h26"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+
+        <a
+          class="primary-button"
+          href="https://forms.gle/yfCJPGuGMyvMw5h26"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open form in a new tab ↗
+        </a>
+
+        <div class="privacy-note">
+          Please do not submit private keys, wallet credentials, transaction
+          secrets, confidential company information, or sensitive customer /
+          financial data.
+        </div>
+      </section>
+
       <section class="grid">
-        <article class="card">
-          <div class="card-kicker">GENERAL PRODUCT FEEDBACK</div>
-          <h2>Tell us what you think</h2>
-          <p>
-            Use the short research form for workflow feedback, confusing parts,
-            missing controls, and whether the prototype matches how you handle
-            stablecoin or on-chain payments today.
-          </p>
-
-          <div class="callout">
-            <strong>Best signal</strong>
-            <span>
-              Describe what you actually do today and where VAERIQ would or
-              would not fit. Specific workflow examples are more useful than
-              a generic “looks good”.
-            </span>
-          </div>
-
-          <a
-            class="primary-button"
-            href="https://forms.gle/yfCJPGuGMyvMw5h26"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Open feedback form ↗
-          </a>
-
-          <div class="privacy-note">
-            Please do not submit private keys, wallet credentials, transaction
-            secrets, confidential company information, or sensitive customer
-            / financial data.
-          </div>
-        </article>
-
         <article class="card">
           <div class="card-kicker">TECHNICAL FEEDBACK</div>
           <h2>Found a bug or technical issue?</h2>
           <p>
-            Open the structured GitHub technical-feedback form so the issue can
-            be reproduced and triaged without turning general product research
-            into a bug report.
+            Use the structured GitHub Issue Form for reproducible bugs, broken
+            demo behavior, or integration issues.
           </p>
 
           <div class="signal-list">
@@ -86,6 +94,30 @@
           <div class="privacy-note">
             Never include secrets or real customer/payment data in a GitHub
             issue. Use synthetic values only.
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-kicker">OPTIONAL FOLLOW-UP</div>
+          <h2>Want to talk through a workflow?</h2>
+          <p>
+            The form includes an optional contact field. Leave an X, Telegram,
+            or email only when you want a follow-up about your workflow or a
+            deeper prototype discussion.
+          </p>
+
+          <div class="signal-list">
+            <div><strong>Research conversation</strong><span>15–20 minutes focused on your current process.</span></div>
+            <div><strong>Specific workflow discussion</strong><span>Walk through one non-production payment-control flow.</span></div>
+            <div><strong>Concrete test</strong><span>Only after the workflow and trust boundary are clear.</span></div>
+          </div>
+
+          <div class="callout compact">
+            <strong>Evidence matters</strong>
+            <span>
+              Feedback, demo usage, and interest are recorded separately from
+              qualified workflow commitments.
+            </span>
           </div>
         </article>
       </section>

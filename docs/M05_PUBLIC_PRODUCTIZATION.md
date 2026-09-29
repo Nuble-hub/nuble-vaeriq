@@ -71,12 +71,12 @@ Use the existing research protocol and written form before live calls.
 
 The public demo now exposes a dedicated feedback center at `feedback.html`.
 
-**Status:** Complete. The feedback center is included in the production Pages build and routed from the main demo.
+**Status:** Complete on the current public branch. The feedback center is included in the production Pages build, routed from the main demo, and now embeds the research form directly so users can submit feedback without leaving the VAERIQ site.
 
 The feedback center separates two evidence paths:
 
-- **General product/workflow research** → existing Google Form
-- **Technical bugs and reproducible demo issues** → structured GitHub Issue Form
+- **General product/workflow research** → embedded existing Google Form
+- **Technical bugs and reproducible demo issues** → structured GitHub Issue Form opened in GitHub
 
 The public beta flow is:
 
