@@ -109,7 +109,7 @@ No external human builder is part of the core VAERIQ team. External community co
 - [x] Persisted execution recovery state and safe retry gating (runtime verified)
 - [x] Milestone 03 — intent/context/evidence control proof (engineering/runtime verified)
 - [x] Milestone 04 — operating-layer evidence and RPC benchmark (market validation constrained)
-- [ ] Public demo URL
+- [x] Public demo URL
 - [ ] Customer discovery / user validation target completion
 - [x] Final technical evidence package
 - [ ] Final Colosseum submission
@@ -141,6 +141,8 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
 - `docs/PUBLIC_RELEASE_CHECKLIST.md` — completed public-release gate record
 - `docs/SUBMISSION_CLAIMS_LEDGER.md` — supported vs open public claims
+- `docs/FEEDBACK_EVIDENCE_INTAKE.md` — public-beta feedback classification and evidence rules
+- `docs/FEEDBACK_EVIDENCE_LOG.md` — traceable feedback and batch-review log template
 
 ## License
 
