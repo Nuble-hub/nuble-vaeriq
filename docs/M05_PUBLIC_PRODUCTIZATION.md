@@ -128,7 +128,7 @@ Implementation:
 
 The intake process is intentionally manual and traceable. The repository does not ingest private form responses automatically.
 
-**Status:** Implemented on `feature/m05-feedback-evidence-intake`. Runtime/public verification remains part of the release check before merge.
+**Status:** Complete on `main`. The intake protocol and log are part of the public repository, and blank GitHub Issues are disabled so technical feedback uses the structured template.
 
 ### M05.4 — Submission readiness
 
