@@ -186,3 +186,12 @@ The GitHub Pages deployment workflow has completed successfully.
 **Demo:** https://nuble-hub.github.io/nuble-vaeriq/
 
 Open the demo in a browser with a Solana Devnet-compatible wallet. The demo is a prototype demonstration, not production custody or a production treasury service. Browser-local audit persistence is demo-grade, and the Devnet transaction path is intentionally kept separate from the M04 Mainnet infrastructure benchmark.
+
+### Public beta feedback
+
+The demo includes a dedicated [feedback center](./feedback.html) for public-beta research.
+
+- **General product / workflow feedback:** use the research form in the feedback center.
+- **Technical feedback:** use the structured GitHub issue form from the feedback center.
+
+Feedback is treated as validation evidence, not automatically as customer traction or product-market-fit evidence. Please use synthetic values only and never submit private keys, credentials, transaction secrets, or confidential customer / financial data.

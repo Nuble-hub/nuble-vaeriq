@@ -205,6 +205,7 @@ function render() {
         </div>
         <div class="wallet-box">
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
+          <a class="feedback-nav" href="./feedback.html">Feedback ↗</a>
           ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${connectLabel}</button>`}
         </div>
       </header>
@@ -304,6 +305,15 @@ function render() {
         <div class="recent-events">
           ${auditStore.list(10).slice().reverse().map((event) => `<div class="recent-event"><strong>${event.type}</strong><span>${event.intentId}</span><code>${event.payloadRef ?? ""}</code></div>`).join("") || `<div class="muted">No persisted audit events yet.</div>`}
         </div>
+      </section>
+
+      <section class="feedback-cta card">
+        <div>
+          <div class="card-title">Public beta</div>
+          <h2>Tell us what matched your workflow.</h2>
+          <p class="hint">General product feedback goes to the research form. Technical issues can be opened as a structured GitHub issue.</p>
+        </div>
+        <a class="feedback-cta-link" href="./feedback.html">Open feedback center ↗</a>
       </section>
     </main>
   `;
