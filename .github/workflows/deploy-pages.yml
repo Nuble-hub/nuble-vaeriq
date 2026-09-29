@@ -25,7 +25,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -34,7 +34,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Build Vite app for GitHub Pages
-        run: npm run web:build -- --mode github-pages
+        run: npm run web:build:pages
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
