@@ -327,3 +327,13 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Updated README, SECURITY.md, CONTRIBUTING.md, the submission claims ledger, and the public release checklist for the release phase.
 - Added a GitHub Actions release-gate workflow covering typecheck, tests, web build, and an obvious-credential history scan.
 - Public visibility remains intentionally gated on exact-release verification, final history review, branch cleanup, and the final Private → Public change.
+
+## 2026-09-29 — Public release and M05 opened
+
+- The repository was changed from private to public after the exact public-snapshot verification and scoped credential-history review.
+- The public snapshot retains the M02/M03/M04 development branches so the milestone history and evidence trail remain inspectable.
+- Opened `feature/m05-public-productization` for public-surface cleanup, demo deployment, external validation, and final submission preparation.
+- Removed stale private-release messaging from the active public-facing README and hackathon notes.
+- Added a GitHub Pages deployment workflow for the Vite web demo and a GitHub Pages build mode in the Vite configuration.
+- Added `docs/M05_PUBLIC_PRODUCTIZATION.md` with acceptance criteria, evidence boundaries, validation progression, and explicit out-of-scope items.
+- The public demo URL remains open until the first successful Pages deployment is externally verified.
