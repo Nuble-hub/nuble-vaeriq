@@ -8,7 +8,7 @@
     "build": "tsc",
     "test": "npm run build && node tests/run-tests.mjs && node tests/audit-store.mjs && node tests/reconciliation.mjs && node tests/execution-recovery.mjs && node tests/context-evidence.mjs && node tests/stream-observation.mjs",
     "check": "npm run typecheck && npm test",
-    "demo": "npm run build && node scripts/demo-server.mjs",
+    "demo": "npm run web:dev",
     "solana:probe": "node scripts/solana-devnet-probe.mjs",
     "benchmark:rpc": "node scripts/rpc-benchmark.mjs",
     "web:dev": "vite --config vite.config.ts",
