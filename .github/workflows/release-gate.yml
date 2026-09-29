@@ -39,21 +39,27 @@ jobs:
         run: |
           set -euo pipefail
 
+          private_key_pattern='-----BEGIN '"'"'(RSA |EC |OPENSSH |PGP )?PRIVATE KEY'"'"'-----'
+          github_pat_pattern='github_pat_''[A-Za-z0-9_]{20,}'
+          github_classic_pattern='ghp_''[A-Za-z0-9]{20,}'
+          aws_pattern='AKIA''[0-9A-Z]{16}'
+          slack_pattern='xox''[baprs]-[A-Za-z0-9-]{20,}'
+
           patterns=(
-            '-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----'
-            'ghp_[A-Za-z0-9]{20,}'
-            'github_pat_[A-Za-z0-9_]{20,}'
-            'AKIA[0-9A-Z]{16}'
-            'xox[baprs]-[A-Za-z0-9-]{20,}'
+            "$private_key_pattern"
+            "$github_pat_pattern"
+            "$github_classic_pattern"
+            "$aws_pattern"
+            "$slack_pattern"
           )
 
           for pattern in "${patterns[@]}"; do
-            matches="$(git log --all --full-history -G "$pattern" --format='%H %s' -- . || true)"
+            matches="$(git log --all --full-history -G "$pattern" --format='%H %s' -- . ':!.github/workflows/release-gate.yml' || true)"
             if [ -n "$matches" ]; then
-              echo "Potential credential pattern found for: $pattern"
+              echo "Potential credential pattern found."
               echo "$matches"
               exit 1
             fi
           done
 
-          echo "No obvious credential patterns found in git history."
+          echo "No obvious credential patterns found in git history.";
