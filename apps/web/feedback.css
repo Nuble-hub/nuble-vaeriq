@@ -121,6 +121,26 @@ h1 {
   line-height: 1.5;
 }
 
+.form-frame {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.form-frame iframe {
+  display: block;
+  width: 100%;
+  min-height: 920px;
+  border: 0;
+  background: #ffffff;
+}
+
+.compact {
+  margin-top: 14px;
+}
+
 .primary-button,
 .secondary-button {
   display: inline-flex;
@@ -218,6 +238,12 @@ h1 {
 
   .back-link {
     order: -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .form-frame iframe {
+    min-height: 980px;
   }
 }
 
