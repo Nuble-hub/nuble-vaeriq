@@ -1,6 +1,6 @@
 # Contributing to VAERIQ
 
-VAERIQ is currently a founder-led, private development project. These conventions keep the codebase auditable and safe while it moves quickly during the hackathon.
+VAERIQ is an open-source hackathon project led by NUBLE. Contributions should keep the control layer auditable, deterministic, and safe around financial execution.
 
 ## Change discipline
 
@@ -20,7 +20,16 @@ fix/<area>-<short-name>
 docs/<short-name>
 ```
 
-The `main` branch should remain in a demonstrable state.
+Keep `main` in a demonstrable, buildable state.
+
+## Pull requests
+
+For non-trivial changes:
+
+1. Explain the problem and the intended behavior.
+2. Include tests or runtime evidence for behavior changes.
+3. Call out security or execution-boundary implications.
+4. Keep public claims aligned with repository evidence.
 
 ## Commit messages
 
@@ -63,8 +72,12 @@ At minimum, changes affecting decision logic should cover:
 - execution boundary rejection
 - audit linkage
 
-Before merging meaningful changes, run the project's typecheck, tests, and build commands defined in `package.json`.
+Before merging meaningful changes, run the project's typecheck, tests, and web build commands defined in `package.json`.
 
 ## Documentation
 
 Record important architectural or scope decisions in `docs/` and material development milestones in `DEVELOPMENT_HISTORY.md`.
+
+## Scope discipline
+
+Avoid adding new chains, production custody, ERP replacement, autonomous AI authorization, or provider lock-in without a separately documented product decision.
