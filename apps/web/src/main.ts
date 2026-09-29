@@ -528,3 +528,5 @@ if (persistedMode === "APPROVE" || persistedMode === "BLOCK" || persistedMode ==
 restoreLatestAuditState();
 client.wallet.subscribe(render);
 render();
+
+(window as Window & { __VAERIQ_BOOT_READY__?: () => void }).__VAERIQ_BOOT_READY__?.();
