@@ -5,6 +5,12 @@ export default defineConfig(({ mode }) => ({
   base: mode === "github-pages" ? "/nuble-vaeriq/" : "/",
   build: {
     outDir: "../../dist-web",
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        feedback: "feedback.html"
+      }
+    }
   }
 }));
