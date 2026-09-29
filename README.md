@@ -10,7 +10,7 @@
 **Expansion path:** Additional chains through adapters  \
 **Master brand:** NUBLE  \
 **Product:** VAERIQ  \
-**Status:** Colosseum Crypto World's Fair — build, evidence, and release preparation
+**Status:** Public bounded prototype — Colosseum Crypto World's Fair / Build & Submit
 
 ## Product thesis
 
@@ -34,9 +34,9 @@ AI is used for contextual reasoning and explanation. Financial enforcement remai
 
 ## Repository status
 
-This repository is the active development source for VAERIQ during the hackathon. It remains private until the final release gate is completed.
+This is the public development repository for the VAERIQ bounded hackathon prototype.
 
-Milestones 01–03 are engineering/runtime verified. Milestone 04 is finalized for the bounded prototype with consolidated infrastructure evidence and an explicit operator-validation constraint. See `docs/M04_FINALIZATION_DECISION.md`.
+Milestones 01–03 are engineering/runtime verified. Milestone 04 is finalized with consolidated infrastructure evidence and an explicit operator-validation constraint. The next workstream is public productization and external validation rather than feature expansion. See `docs/M04_FINALIZATION_DECISION.md` and `docs/M05_PUBLIC_PRODUCTIZATION.md`.
 
 No customer traction or product-market-fit claim is made unless attributable evidence supports it.
 
@@ -134,11 +134,12 @@ No external human builder is part of the core VAERIQ team. External community co
 - `docs/evidence/M03_FINAL_EVIDENCE.md` — consolidated M03 runtime verification matrix and evidence narrative
 - `docs/evidence/M04_FINAL_EVIDENCE.md` — consolidated M04 infrastructure evidence and validation boundary
 - `docs/M04_FINAL_DEMO_RUNBOOK.md` — final demo sequence
+- `docs/M05_PUBLIC_PRODUCTIZATION.md` — public demo, validation, and submission workstream
 - `docs/OPERATOR_VALIDATION_FORM.md` — short written operator-research form
 - `docs/M04_OPERATOR_RESPONSE_INTAKE.md` — response evidence intake and analysis template
 - `docs/CUSTOMER_VALIDATION.md` — customer discovery protocol and evidence standards
 - `docs/CUSTOMER_VALIDATION_LOG.md` — structured interview log and consolidated evidence template
-- `docs/PUBLIC_RELEASE_CHECKLIST.md` — public-release gate checklist
+- `docs/PUBLIC_RELEASE_CHECKLIST.md` — completed public-release gate record
 - `docs/SUBMISSION_CLAIMS_LEDGER.md` — supported vs open public claims
 
 ## License
@@ -167,6 +168,8 @@ The harness is designed to measure VAERIQ-relevant read and verification workloa
 
 ## Demo
 
+### Run locally
+
 The web demo uses Vite:
 
 ```bash
@@ -174,4 +177,10 @@ npm install
 npm run demo
 ```
 
-`npm run demo` starts the same Vite development server as `npm run web:dev`.
+Open the local Vite URL shown in the terminal. The demo runs on Solana Devnet and uses the connected browser wallet as the signer.
+
+### Public demo
+
+A GitHub Pages deployment workflow is configured for the repository. The public demo URL will be published here after the first successful Pages deployment.
+
+The public demo is a prototype demonstration, not production custody or a production treasury service. Browser-local audit persistence is demo-grade, and the Devnet transaction path is intentionally kept separate from the M04 Mainnet infrastructure benchmark.
