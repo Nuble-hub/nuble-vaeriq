@@ -1,7 +1,7 @@
 # Milestone 04 — Prove the Operating Layer
 
-**Status:** In progress  \
-**Started:** 2026-09-23  \
+**Status:** Finalized — engineering evidence complete; operator validation constrained  \
+**Decision date:** 2026-09-29  \
 **Product:** NUBLE / VAERIQ  \
 **Base:** M03 complete and merged into `main`
 
@@ -9,10 +9,10 @@
 
 Test whether VAERIQ fits a real operating environment rather than adding product breadth for its own sake.
 
-M04 has two parallel evidence tracks:
+M04 ran two parallel evidence tracks:
 
-1. **Infrastructure proof** — benchmark the Solana RPC path under a repeatable VAERIQ-specific workload and determine whether RPC Fast Focus improves the read/verification path.
-2. **Market proof** — validate the payment-control workflow with real treasury/finance operators.
+1. **Infrastructure proof** — characterize the Solana read/verification path with repeatable workload measurements.
+2. **Market/workflow proof** — test the control model against real treasury/finance/payment workflows without overstating limited evidence.
 
 ## Core question
 
@@ -28,37 +28,48 @@ M04 has two parallel evidence tracks:
 - [x] Record run date, workload configuration, and observed results.
 - [x] Decide whether RPC Fast should remain an optional provider rather than a core dependency.
 
+**Result:** RPC Fast did not show a consistent raw-latency advantage in the tested local workloads. Repeated 30-request runs showed HTTP 429 responses from the public baseline while RPC Fast completed the measured requests. The engineering decision is to keep RPC Fast optional and provider-neutral.
+
 The benchmark is comparative evidence for VAERIQ's workload. It does not convert RPC Fast's public benchmarks into VAERIQ performance claims.
 
 ## Workstream B — Transaction observation spike
 
 - [x] Add a minimal streaming observation probe using Mainnet `slotSubscribe`.
 - [x] Keep chain confirmation/reconciliation as the source of execution truth.
-- [ ] Compare polling lookup with streaming observation latency where measurable.
+- [x] Decide how streaming should fit beside confirmation and reconciliation.
 - [x] Run and preserve the Mainnet slot-observation results.
 - [x] Add explicit duplicate/gap accounting and reconnect-capable stream handling to the observation probe.
 - [x] Runtime-test forced reconnect and observe post-reconnect slot continuity before treating reconnect/gap handling as verified.
 - [x] Handle duplicate delivery, reconnects, and stream gaps explicitly before production claims.
 
-The current stream probe is intentionally an observation layer. Confirmation, `getTransaction`, and reconciliation remain authoritative.
+**Result:** the clean 30-slot observation run recorded 30 matched slots with zero duplicates and zero WebSocket errors. The canonical forced-reconnect run re-established both subscriptions and resumed matched-slot collection after a deterministic disconnect.
 
-## Workstream C — Operator validation
+A strict end-to-end polling-vs-streaming latency benchmark was not required for the bounded prototype because streaming is not the execution-truth path. The repository therefore does not claim that streaming is superior to polling for reconciliation.
 
-- [ ] Conduct 5–10 relevant treasury/finance operator interviews.
-- [ ] Record current approval workflows and failure modes.
-- [ ] Validate the business context fields used in M03.
-- [ ] Test whether the PaymentIntent vocabulary matches real workflows.
-- [ ] Identify concrete design-partner candidates only where evidence supports it.
-- [ ] Record any workflow commitment separately from general interest.
+The current stream probe remains an observation layer. Confirmation, `getTransaction`, and reconciliation remain authoritative.
 
-No customer traction or product-market-fit claim should be made without attributable evidence.
+## Workstream C — Operator / workflow validation
 
-## Workstream D — Demo/evidence
+The original target was 5–10 relevant treasury/finance operator interviews. That target was **not reached** during M04.
+
+- [x] Publish the written operator-research form.
+- [x] Perform targeted outreach using the written-first workflow.
+- [x] Preserve limited external workflow/domain evidence separately from customer validation.
+- [x] Record the validation limitation explicitly and prevent traction / PMF overclaiming.
+- [ ] 5–10 qualifying operator interviews — not completed in this milestone.
+- [ ] Broad recurring-pattern synthesis from qualifying operator interviews — remains open.
+- [ ] Design-partner candidate / workflow commitment evidence — remains open.
+
+Available third-party workflow research is useful for vocabulary and control-model comparison, but it does not establish customer demand, adoption, traction, design-partner status, or product-market fit.
+
+See `docs/M04_FINALIZATION_DECISION.md` for the final evidence boundary.
+
+## Workstream D — Demo / evidence
 
 - [x] Add a concise benchmark result to the final technical evidence.
-- [ ] Show the M03 context decision proof in the final demo sequence.
-- [ ] Preserve M02 recovery behavior.
-- [ ] Update submission narrative from measured evidence only.
+- [x] Show the M03 context decision proof in the final demo sequence.
+- [x] Preserve the M02 recovery behavior.
+- [x] Update the submission narrative boundary from measured evidence only.
 
 ## Explicit non-goals
 
@@ -71,9 +82,17 @@ No customer traction or product-market-fit claim should be made without attribut
 
 ## M04 completion test
 
-M04 is complete when we can state, with evidence:
+M04 is complete for the bounded prototype when we can state, with evidence:
 
 - what infrastructure characteristics VAERIQ actually needs,
-- whether RPC Fast materially changes the measured workload,
-- how transaction observation should fit beside confirmation/reconciliation,
-- and which parts of the M03 control model map to real operator workflows.
+- how RPC Fast changes the measured workload in the tested environment,
+- how transaction observation fits beside confirmation/reconciliation,
+- and which parts of the M03 control model can be compared against real payment-workflow evidence.
+
+**M04 completion outcome:** engineering evidence is consolidated and the product scope remains intentionally frozen. Market validation is explicitly constrained because the qualifying operator-interview target was not reached.
+
+## Final decision
+
+Close M04 as an engineering-and-evidence milestone with constrained market validation.
+
+No additional product scope is justified by the current M04 evidence.
