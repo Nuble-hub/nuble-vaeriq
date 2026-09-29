@@ -2,7 +2,7 @@
 
 ## Final release status
 
-The VAERIQ repository was released publicly from `main) after the final exact-commit verification and scoped credential-history review.
+The VAERIQ repository was released publicly from `main` after the final exact-commit verification and scoped credential-history review.
 
 **Release status:** Public prototype is live on GitHub.  
 **Release date:** 2026-09-29  
