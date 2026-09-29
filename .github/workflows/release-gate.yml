@@ -39,7 +39,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          private_key_pattern='-----BEGIN '"'"'(RSA |EC |OPENSSH |PGP )?PRIVATE KEY'"'"'-----'
+          private_key_pattern="-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----"
           github_pat_pattern='github_pat_''[A-Za-z0-9_]{20,}'
           github_classic_pattern='ghp_''[A-Za-z0-9]{20,}'
           aws_pattern='AKIA''[0-9A-Z]{16}'
