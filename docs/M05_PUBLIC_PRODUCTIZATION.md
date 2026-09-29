@@ -71,6 +71,8 @@ Use the existing research protocol and written form before live calls.
 
 The public demo now exposes a dedicated feedback center at `feedback.html`.
 
+**Status:** Complete. The feedback center is included in the production Pages build and routed from the main demo.
+
 The feedback center separates two evidence paths:
 
 - **General product/workflow research** → existing Google Form
