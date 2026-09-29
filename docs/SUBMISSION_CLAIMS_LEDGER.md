@@ -4,6 +4,14 @@
 
 This is the working claim boundary for the hackathon submission. Every externally stated claim should be traceable to repository evidence or explicitly identified as open.
 
+## M04 finalization status
+
+M04 is finalized for the bounded hackathon prototype. Engineering evidence is consolidated; qualifying treasury/finance operator validation did not reach the original 5–10 target.
+
+Available third-party payment-workflow research is retained as domain evidence only. It must not be presented as customer validation, traction, a design partnership, willingness to pay, or product-market fit.
+
+See `docs/M04_FINALIZATION_DECISION.md` for the final evidence boundary.
+
 ## Claims currently supported by engineering evidence
 
 | Claim | Evidence source | Boundary |
@@ -23,18 +31,19 @@ This is the working claim boundary for the hackathon submission. Every externall
 
 | Claim | Why open |
 |---|---|
-| Treasury/finance operators have a recurring need for VAERIQ's control model | Operator validation is still in progress |
-| M03 context fields match real-world treasury workflows | Requires respondent evidence |
+| Treasury/finance operators have a recurring need for VAERIQ's control model | Qualifying operator-interview evidence is insufficient |
+| M03 context fields match real-world treasury workflows across operators | Requires broader respondent evidence |
 | Organizations would adopt VAERIQ in production | No production adoption evidence |
-| VAERIQ has customer traction or product-market fit | No supporting evidence yet |
+| VAERIQ has customer traction or product-market fit | No supporting evidence |
 | RPC Fast is generally faster or more reliable than public Solana RPC | Current measurements are local and workload-specific |
 | WebSocket observation is lossless or production-grade | Current probe is bounded and does not establish lossless delivery |
-| Streaming is superior to polling for reconciliation | Polling-vs-streaming comparison is not yet measured end-to-end |
+| Streaming is superior to polling for reconciliation | No strict end-to-end comparison was required for the bounded prototype |
 
 ## Public wording rules
 
 - Prefer "in our tested workload" over universal provider claims.
 - Prefer "prototype" or "demo path" where production durability has not been verified.
 - Prefer "we are validating" when customer evidence is open.
-- Do not describe form responses, positive comments, demos, or introductions as customers, traction, or product-market fit by themselves.
+- Do not describe form responses, positive comments, demos, introductions, or third-party product research as customers, traction, or product-market fit by themselves.
 - Keep AI positioning explicit: AI may assist context/reasoning/explanation, while financial enforcement remains deterministic.
+- Keep Devnet execution evidence separate from Mainnet infrastructure benchmark evidence.
