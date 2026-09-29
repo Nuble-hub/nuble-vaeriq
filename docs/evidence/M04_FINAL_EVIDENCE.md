@@ -1,31 +1,32 @@
 # M04 Final Evidence — Operating Layer
 
-Status: Engineering evidence consolidated; operator validation in progress
-Branch: feature/m04-validation-rpc-benchmark
-Base: M03 complete and merged into main
+**Status:** Finalized — engineering evidence complete; operator validation constrained  
+**Decision date:** 2026-09-29  
+**Branch:** feature/m04-validation-rpc-benchmark  
+**Base:** M03 complete and merged into `main`
 
 ## Scope
 
-M04 tests two things in parallel:
+M04 tested two things in parallel:
 
 1. Whether VAERIQ's relevant Solana read/verification infrastructure can be characterized with repeatable measurements.
-2. Whether the M03 intent/context/evidence control model maps to real treasury/finance/payment workflows.
+2. Whether the M03 intent/context/evidence control model can be compared with real treasury/finance/payment workflows without overstating limited evidence.
 
-This document records measured engineering evidence. It does not claim customer traction or product-market fit.
+This document records measured engineering evidence and the final validation boundary. It does not claim customer traction or product-market fit.
 
 ## Evidence matrix
 
 | Area | Evidence | Status | Boundary |
 |---|---|---|---|
 | JSON-RPC benchmark | Provider-neutral harness with matched Mainnet workloads | Complete | Local workload evidence only |
-| getTransaction | Isolated sequential and concurrent runs | Complete | Tail comparisons are workload-specific |
+| `getTransaction` | Isolated sequential and concurrent runs | Complete | Tail comparisons are workload-specific |
 | Rate-limit observation | Repeated public-baseline HTTP 429s under tested load | Complete | Not a universal provider reliability claim |
-| WebSocket observation | Mainnet slotSubscribe, matched-slot comparison | Complete | Client-observed timing only |
+| WebSocket observation | Mainnet `slotSubscribe`, matched-slot comparison | Complete | Client-observed timing only |
 | Duplicate/gap accounting | Explicit duplicate and observed-gap reporting | Complete | Gaps are not provider-loss attribution |
 | Reconnect handling | Bounded reconnect implementation | Complete | Prototype-level resilience only |
 | Forced reconnect runtime | 5-second forced disconnect; both streams reconnected and resumed | Complete | Does not prove production durability |
-| Polling vs streaming | Not yet measured end-to-end | Open | Deferred until it can answer a concrete product question |
-| Operator validation | Written form published; interviews pending | Open | No customer claim yet |
+| Polling vs streaming | No strict end-to-end benchmark required for bounded prototype | Closed by decision | Streaming is not execution truth |
+| Operator validation | Written form/outreach plus limited domain research | Constrained | No customer / PMF claim |
 
 ## HTTP benchmark evidence
 
@@ -56,7 +57,7 @@ Interpretation: both endpoints completed the sequential run. The observed p50 di
 
 ### Engineering decision
 
-Keep RPC Fast as an optional infrastructure provider, not a core VAERIQ dependency. The adapter remains provider-neutral.
+Keep RPC Fast as an optional infrastructure provider, not a core VAERIQ dependency. The Solana adapter remains provider-neutral.
 
 ## WebSocket observation evidence
 
@@ -93,6 +94,7 @@ The canonical resilience-run same-slot timing was p50 +4.46 ms, p95 +291.29 ms, 
 
 Measured work supports the following operating shape:
 
+```text
 VAERIQ
   ↓
 Execution Provider
@@ -100,9 +102,11 @@ Execution Provider
 Wallet / Custody
   ↓
 Solana
+```
 
 For transaction observation:
 
+```text
 Observation signal
       ↓
 Confirmation
@@ -110,30 +114,52 @@ Confirmation
 getTransaction
       ↓
 Reconciliation
+```
 
 Observation is not execution truth.
 
-## Operator validation — open
+## Operator / workflow validation — constrained
 
-A written operator-research form is now available and is intended to reduce dependence on live English listening/transcription. The primary evidence record should remain the respondent's written answers.
+The written operator-research form was prepared and targeted outreach was performed. The original M04 target of 5–10 qualifying treasury/finance operator interviews was not reached.
 
-The next evidence needed is:
+Available third-party workflow research is retained as **domain evidence only**. One external crypto payroll/payment workflow was examined in a test environment. Observed or reported patterns included:
 
-- 5–10 relevant operator responses/conversations
-- recurring workflow and failure patterns
-- validation or mismatch of M03 context fields
-- concrete objections and integration requirements
-- any design-partner discussion or workflow commitment, recorded separately
+- destination/address checks before payment,
+- configurable human approval thresholds,
+- payment records retained in a dashboard,
+- re-approval after a material amount or wallet change, as reported by the product team.
 
-No customer traction, design-partner status, or product-market-fit claim should be made until supporting evidence exists.
+This is a single external product/test configuration, not independent customer validation. It does not establish demand, adoption, traction, design-partner status, willingness to pay, or product-market fit.
+
+No product-scope change was made from this evidence.
+
+## Final evidence boundary
+
+### Supported by M04
+
+- repeatable local Mainnet RPC measurements for VAERIQ-relevant read/verification workloads;
+- a bounded Mainnet WebSocket observation probe;
+- deterministic forced-reconnect behavior in the tested runtime;
+- a provider-neutral decision to keep RPC Fast optional;
+- a documented operating architecture where confirmation and reconciliation remain authoritative.
+
+### Not supported by M04
+
+- universal RPC provider performance claims;
+- production-grade or lossless streaming;
+- streaming superiority over polling for reconciliation;
+- customer traction or product-market fit;
+- production custody or production SLA claims.
 
 ## Source files
 
-- docs/M04_RPC_BENCHMARK_RESULTS.md
-- docs/M04_STREAM_BENCHMARK_RESULTS.md
-- docs/MILESTONE_04.md
-- docs/MILESTONE_04_RUNBOOK.md
-- docs/CUSTOMER_VALIDATION.md
-- docs/CUSTOMER_VALIDATION_INTERVIEW_01.md
-- docs/OPERATOR_VALIDATION_FORM.md
-- docs/CUSTOMER_VALIDATION_LOG.md
+- `docs/M04_FINALIZATION_DECISION.md`
+- `docs/M04_RPC_BENCHMARK_RESULTS.md`
+- `docs/M04_STREAM_BENCHMARK_RESULTS.md`
+- `docs/MILESTONE_04.md`
+- `docs/MILESTONE_04_RUNBOOK.md`
+- `docs/M04_FINAL_DEMO_RUNBOOK.md`
+- `docs/CUSTOMER_VALIDATION.md`
+- `docs/CUSTOMER_VALIDATION_INTERVIEW_01.md`
+- `docs/OPERATOR_VALIDATION_FORM.md`
+- `docs/CUSTOMER_VALIDATION_LOG.md` 
