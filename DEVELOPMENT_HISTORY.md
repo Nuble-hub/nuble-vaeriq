@@ -361,3 +361,15 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added a post-build verification that fails when either public HTML entry point is missing from `dist-web`.
 - Release Gate passed on the updated branch, and the updated Pages deployment completed successfully.
 - Follow-up public-beta work embeds the existing research form directly in `feedback.html`, while the structured technical-feedback Issue Form remains the path for reproducible bugs.
+
+## 2026-09-29 — Public demo boot failure diagnosed and fixed
+
+- Founder browser verification found the GitHub Pages demo rendering a blank white page.
+- Inspection of the actual Pages artifact for the deployed commit showed root-absolute asset references (/assets/...) even though the site is hosted under /nuble-vaeriq/.
+- The deployment command used `npm run web:build -- --mode github-pages` against a multi-command npm script; the mode argument did not bind reliably to the Vite command.
+- Added a dedicated `web:build:pages` script that passes `--mode github-pages` directly to Vite.
+- Switched the GitHub Pages build base to a relative path so generated HTML references resolve from the project-site location.
+- Added a visible application boot guard so a failed client bootstrap cannot silently present a blank page.
+- Added Pages-specific CI verification that rejects root-absolute HTML asset paths.
+- The corrected Pages deployment for commit `14ec5ce6010044ea3a8842cf039e2d33448467b2` completed successfully.
+- Direct inspection of the resulting Pages artifact confirmed `./assets/...` references in both the main and feedback HTML entry points.
