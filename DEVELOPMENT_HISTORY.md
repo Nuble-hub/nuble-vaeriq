@@ -337,3 +337,14 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added a GitHub Pages deployment workflow for the Vite web demo and a GitHub Pages build mode in the Vite configuration.
 - Added `docs/M05_PUBLIC_PRODUCTIZATION.md` with acceptance criteria, evidence boundaries, validation progression, and explicit out-of-scope items.
 - The public demo URL remains open until the first successful Pages deployment is externally verified.
+
+
+## 2026-09-29 — M05 public demo deployment verified by GitHub Actions
+
+- GitHub Pages was enabled with the GitHub Actions publishing source.
+- The first deployment attempt initially failed because Pages had not yet been enabled; no application build was reached.
+- After Pages was enabled, the deployment workflow was rerun successfully.
+- The Pages build completed successfully, the Vite production artifact was uploaded successfully, and the deployment job completed successfully.
+- The expected GitHub Pages project URL is `https://nuble-hub.github.io/nuble-vaeriq/`.
+- The external rendered-site check remains a manual browser verification because the available repository integration cannot fetch the rendered Pages site directly.
+- Updated the public README to surface the demo URL and kept the prototype / Devnet / browser-local persistence limitations explicit.
