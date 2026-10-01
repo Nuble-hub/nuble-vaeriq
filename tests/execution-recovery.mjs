@@ -37,6 +37,7 @@ assert.equal(canStartExecution(null), true);
 assert.equal(isUserRejectedWalletError(new Error("User rejected the request.")), true);
 assert.equal(isUserRejectedWalletError({ code: 4001, message: "User rejected the request." }), true);
 assert.equal(isUserRejectedWalletError({ code: 11, context: { cause: { code: 4001 } } }), true);
+assert.equal(isUserRejectedWalletError({ code: 11, context: { causeMessage: ": User rejected the request." } }), true);
 assert.equal(isUserRejectedWalletError(new Error("RPC request timed out")), false);
 assert.equal(isUserRejectedWalletError({ code: 11, context: { cause: new Error("RPC request timed out") } }), false);
 
