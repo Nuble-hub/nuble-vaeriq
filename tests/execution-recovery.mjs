@@ -6,6 +6,7 @@ import {
   isRetryableExecutionState,
   nextExecutionAttemptState
 } from "../dist/packages/execution/index.js";
+import { isUserRejectedWalletError } from "../dist/adapters/solana/index.js";
 
 const storage = new Map();
 const adapter = {
@@ -32,6 +33,11 @@ const intent = {
 };
 
 assert.equal(canStartExecution(null), true);
+
+assert.equal(isUserRejectedWalletError(new Error("User rejected the request.")), true);
+assert.equal(isUserRejectedWalletError({ code: 4001, message: "User rejected the request." }), true);
+assert.equal(isUserRejectedWalletError({ code: 11, cause: { message: "User rejected the request." } }), true);
+assert.equal(isUserRejectedWalletError(new Error("RPC request timed out")), false);
 
 const started = createExecutionAttempt(intent, "2026-09-21T00:01:00.000Z");
 assert.equal(started.intentId, intent.id);
