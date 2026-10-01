@@ -224,12 +224,28 @@ export function isUserRejectedWalletError(error: unknown): boolean {
       continue;
     }
 
-    if (typeof value !== "object" || depth > 4) continue;
+    if (typeof value !== "object" || depth > 5) continue;
     if (seen.has(value)) continue;
     seen.add(value);
 
     const record = value as Record<string, unknown>;
     if (record.code === 4001 || record.code === "4001") return true;
+
+    if (value instanceof Error) {
+      queue.push({ value: value.message, depth: depth + 1 });
+      if ("cause" in value) {
+        queue.push({ value: value.cause, depth: depth + 1 });
+      }
+    }
+
+    for (const key of Object.getOwnPropertyNames(value)) {
+      try {
+        const nested = (value as Record<string, unknown>)[key];
+        if (key !== "stack" && nested !== value) queue.push({ value: nested, depth: depth + 1 });
+      } catch {
+        // Ignore inaccessible error properties and continue classification.
+      }
+    }
 
     for (const nested of Object.values(record)) {
       if (nested !== value) queue.push({ value: nested, depth: depth + 1 });
