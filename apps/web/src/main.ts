@@ -291,9 +291,10 @@ function render() {
           <button class="execute" id="execute" ${canExecute ? "" : "disabled"}>${executeLabel}</button>
           <div class="execution-status ${executionState.toLowerCase()}"><span>Execution state</span><strong>${executionState}</strong></div>
           ${executionAttempt ? `<div class="execution-meta">Attempt <code>${executionAttempt.id}</code><br/>Idempotency key <code>${executionAttempt.idempotencyKey}</code></div>` : ""}
-          ${executionState === "FAILED_BEFORE_SUBMISSION" ? `<div class="recovery-note">Retry is allowed because failure was recorded before transaction submission.</div>` : ""}
+          ${executionState === "FAILED_BEFORE_SUBMISSION" && state.error !== "USER_REJECTED" ? `<div class="recovery-note">Retry is allowed because failure was recorded before transaction submission.</div>` : ""}
           ${executionState === "UNKNOWN_AFTER_SUBMISSION" ? `<div class="recovery-warning">Execution outcome is uncertain. VAERIQ blocks an automatic retry to avoid duplicate payment.</div>` : ""}
-          ${state.error ? `<div class="error">${state.error}</div>` : ""}
+          ${state.error === "USER_REJECTED" ? `<div class="recovery-note">Transaction cancelled in the wallet before submission. No transaction was sent. You can retry when ready.</div>` : ""}
+          ${state.error && state.error !== "USER_REJECTED" ? `<div class="error">${state.error}</div>` : ""}
           ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
         </div>
       </section>
@@ -540,13 +541,16 @@ function render() {
       render();
     } catch (error) {
       const message = error instanceof Error ? error.message : "EXECUTION_FAILED";
-      state.error = message === "SIMULATED_POST_SUBMISSION_UNCERTAINTY"
-        ? "Execution outcome could not be verified safely."
-        : message;
+      const userRejected = message === "USER_REJECTED";
+      state.error = userRejected
+        ? "USER_REJECTED"
+        : message === "SIMULATED_POST_SUBMISSION_UNCERTAINTY"
+          ? "Execution outcome could not be verified safely."
+          : message;
 
       if (executionStarted && approvedIntent && state.executionAttempt && adapterExecutionEntered) {
         const attempt = state.executionAttempt;
-        const beforeSubmission = message === "INSUFFICIENT_USDC_BALANCE";
+        const beforeSubmission = message === "INSUFFICIENT_USDC_BALANCE" || userRejected;
         const failureState = beforeSubmission ? "FAILED_BEFORE_SUBMISSION" : "UNKNOWN_AFTER_SUBMISSION";
         const next = nextExecutionAttemptState(attempt, failureState, { error: message });
         executionStore.replace(next);
