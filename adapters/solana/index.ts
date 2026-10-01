@@ -235,6 +235,9 @@ export function isUserRejectedWalletError(error: unknown): boolean {
     const message = record.message;
     if (typeof message === "string" && matchesRejectionText(message)) return true;
 
+    const causeMessage = record.causeMessage;
+    if (typeof causeMessage === "string" && matchesRejectionText(causeMessage)) return true;
+
     const cause = record.cause;
     if (cause !== undefined) queue.push({ value: cause, depth: item.depth + 1 });
 
