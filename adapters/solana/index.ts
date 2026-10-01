@@ -205,7 +205,7 @@ type RpcTransactionSnapshot = {
   };
 };
 
-function isUserRejectedWalletError(error: unknown): boolean {
+export function isUserRejectedWalletError(error: unknown): boolean {
   const seen = new Set<object>();
   const queue: Array<{ value: unknown; depth: number }> = [{ value: error, depth: 0 }];
 
@@ -215,9 +215,9 @@ function isUserRejectedWalletError(error: unknown): boolean {
 
     if (typeof value === "string") {
       if (
-        /\\buser\\s+(?:rejected|denied|cancelled|canceled)\\b/i.test(value) ||
-        /\\b(?:rejected|denied)\\s+by\\s+(?:the\\s+)?user\\b/i.test(value) ||
-        /\\btransaction\\s+(?:was\\s+)?(?:rejected|cancelled|canceled)\\b/i.test(value)
+        /\buser\\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
+        /\b(?:rejected|denied)\\s+by\\s+(?:the\\s+)?user\b/i.test(value) ||
+        /\btransaction\\s+(?:was\\s+)?(?:rejected|cancelled|canceled)\b/i.test(value)
       ) {
         return true;
       }
