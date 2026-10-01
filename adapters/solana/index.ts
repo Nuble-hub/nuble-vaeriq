@@ -105,8 +105,13 @@ export class SolanaAdapter implements ChainAdapter {
       decimals: USDC_DECIMALS
     });
 
-    const result = await client.sendTransaction([createDestinationAta, transfer]);
-    return { txHash: result.context.signature, confirmed: true };
+    try {
+      const result = await client.sendTransaction([createDestinationAta, transfer]);
+      return { txHash: result.context.signature, confirmed: true };
+    } catch (error) {
+      if (isUserRejectedWalletError(error)) throw new Error("USER_REJECTED");
+      throw error;
+    }
   }
 
   async getTransaction(hash: string): Promise<Transaction> {
@@ -199,6 +204,56 @@ type RpcTransactionSnapshot = {
     };
   };
 };
+
+export function isUserRejectedWalletError(error: unknown): boolean {
+  const seen = new Set<object>();
+  const queue: Array<{ value: unknown; depth: number }> = [{ value: error, depth: 0 }];
+
+  const matchesRejectionText = (value: string): boolean =>
+    /\buser\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
+    /\b(?:rejected|denied)\s+by\s+(?:the\s+)?user\b/i.test(value) ||
+    /\btransaction\s+(?:was\s+)?(?:rejected|cancelled|canceled)\b/i.test(value);
+
+  while (queue.length) {
+    const item = queue.shift()!;
+    const value = item.value;
+
+    if (value === null || value === undefined) continue;
+
+    if (typeof value === "string") {
+      if (matchesRejectionText(value)) return true;
+      continue;
+    }
+
+    if (typeof value !== "object" || item.depth > 5) continue;
+    if (seen.has(value)) continue;
+    seen.add(value);
+
+    const record = value as Record<string, unknown>;
+    if (record.code === 4001 || record.code === "4001") return true;
+
+    const message = record.message;
+    if (typeof message === "string" && matchesRejectionText(message)) return true;
+
+    const causeMessage = record.causeMessage;
+    if (typeof causeMessage === "string" && matchesRejectionText(causeMessage)) return true;
+
+    const cause = record.cause;
+    if (cause !== undefined) queue.push({ value: cause, depth: item.depth + 1 });
+
+    const context = record.context;
+    if (context !== undefined) queue.push({ value: context, depth: item.depth + 1 });
+
+    const errorValue = record.error;
+    if (errorValue !== undefined) queue.push({ value: errorValue, depth: item.depth + 1 });
+
+    if (value instanceof Error && value.cause !== undefined) {
+      queue.push({ value: value.cause, depth: item.depth + 1 });
+    }
+  }
+
+  return false;
+}
 
 function readString(value: unknown): string | undefined {
   if (typeof value === "string") return value;
