@@ -105,8 +105,13 @@ export class SolanaAdapter implements ChainAdapter {
       decimals: USDC_DECIMALS
     });
 
-    const result = await client.sendTransaction([createDestinationAta, transfer]);
-    return { txHash: result.context.signature, confirmed: true };
+    try {
+      const result = await client.sendTransaction([createDestinationAta, transfer]);
+      return { txHash: result.context.signature, confirmed: true };
+    } catch (error) {
+      if (isUserRejectedWalletError(error)) throw new Error("USER_REJECTED");
+      throw error;
+    }
   }
 
   async getTransaction(hash: string): Promise<Transaction> {
@@ -199,6 +204,40 @@ type RpcTransactionSnapshot = {
     };
   };
 };
+
+function isUserRejectedWalletError(error: unknown): boolean {
+  const seen = new Set<object>();
+  const queue: Array<{ value: unknown; depth: number }> = [{ value: error, depth: 0 }];
+
+  while (queue.length) {
+    const { value, depth } = queue.shift()!;
+    if (value === null || value === undefined) continue;
+
+    if (typeof value === "string") {
+      if (
+        /\\buser\\s+(?:rejected|denied|cancelled|canceled)\\b/i.test(value) ||
+        /\\b(?:rejected|denied)\\s+by\\s+(?:the\\s+)?user\\b/i.test(value) ||
+        /\\btransaction\\s+(?:was\\s+)?(?:rejected|cancelled|canceled)\\b/i.test(value)
+      ) {
+        return true;
+      }
+      continue;
+    }
+
+    if (typeof value !== "object" || depth > 4) continue;
+    if (seen.has(value)) continue;
+    seen.add(value);
+
+    const record = value as Record<string, unknown>;
+    if (record.code === 4001 || record.code === "4001") return true;
+
+    for (const nested of Object.values(record)) {
+      if (nested !== value) queue.push({ value: nested, depth: depth + 1 });
+    }
+  }
+
+  return false;
+}
 
 function readString(value: unknown): string | undefined {
   if (typeof value === "string") return value;
