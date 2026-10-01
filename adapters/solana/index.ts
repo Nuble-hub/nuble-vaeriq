@@ -215,9 +215,9 @@ export function isUserRejectedWalletError(error: unknown): boolean {
 
     if (typeof value === "string") {
       if (
-        /\buser\\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
-        /\b(?:rejected|denied)\\s+by\\s+(?:the\\s+)?user\b/i.test(value) ||
-        /\btransaction\\s+(?:was\\s+)?(?:rejected|cancelled|canceled)\b/i.test(value)
+        /\buser\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
+        /\b(?:rejected|denied)\s+by\s+(?:the\s+)?user\b/i.test(value) ||
+        /\btransaction\s+(?:was\s+)?(?:rejected|cancelled|canceled)\b/i.test(value)
       ) {
         return true;
       }
