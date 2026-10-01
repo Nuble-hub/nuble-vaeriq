@@ -209,46 +209,43 @@ export function isUserRejectedWalletError(error: unknown): boolean {
   const seen = new Set<object>();
   const queue: Array<{ value: unknown; depth: number }> = [{ value: error, depth: 0 }];
 
+  const matchesRejectionText = (value: string): boolean =>
+    /\buser\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
+    /\b(?:rejected|denied)\s+by\s+(?:the\s+)?user\b/i.test(value) ||
+    /\btransaction\s+(?:was\s+)?(?:rejected|cancelled|canceled)\b/i.test(value);
+
   while (queue.length) {
-    const { value, depth } = queue.shift()!;
+    const item = queue.shift()!;
+    const value = item.value;
+
     if (value === null || value === undefined) continue;
 
     if (typeof value === "string") {
-      if (
-        /\buser\s+(?:rejected|denied|cancelled|canceled)\b/i.test(value) ||
-        /\b(?:rejected|denied)\s+by\s+(?:the\s+)?user\b/i.test(value) ||
-        /\btransaction\s+(?:was\s+)?(?:rejected|cancelled|canceled)\b/i.test(value)
-      ) {
-        return true;
-      }
+      if (matchesRejectionText(value)) return true;
       continue;
     }
 
-    if (typeof value !== "object" || depth > 5) continue;
+    if (typeof value !== "object" || item.depth > 5) continue;
     if (seen.has(value)) continue;
     seen.add(value);
 
     const record = value as Record<string, unknown>;
     if (record.code === 4001 || record.code === "4001") return true;
 
-    if (value instanceof Error) {
-      queue.push({ value: value.message, depth: depth + 1 });
-      if ("cause" in value) {
-        queue.push({ value: value.cause, depth: depth + 1 });
-      }
-    }
+    const message = record.message;
+    if (typeof message === "string" && matchesRejectionText(message)) return true;
 
-    for (const key of Object.getOwnPropertyNames(value)) {
-      try {
-        const nested = (value as Record<string, unknown>)[key];
-        if (key !== "stack" && nested !== value) queue.push({ value: nested, depth: depth + 1 });
-      } catch {
-        // Ignore inaccessible error properties and continue classification.
-      }
-    }
+    const cause = record.cause;
+    if (cause !== undefined) queue.push({ value: cause, depth: item.depth + 1 });
 
-    for (const nested of Object.values(record)) {
-      if (nested !== value) queue.push({ value: nested, depth: depth + 1 });
+    const context = record.context;
+    if (context !== undefined) queue.push({ value: context, depth: item.depth + 1 });
+
+    const errorValue = record.error;
+    if (errorValue !== undefined) queue.push({ value: errorValue, depth: item.depth + 1 });
+
+    if (value instanceof Error && value.cause !== undefined) {
+      queue.push({ value: value.cause, depth: item.depth + 1 });
     }
   }
 
