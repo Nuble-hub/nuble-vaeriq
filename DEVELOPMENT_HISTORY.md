@@ -316,6 +316,15 @@ The next open work remains execution failure handling, transaction reconciliatio
 - The reconnect implementation is runtime-verified for the current bounded prototype; production-grade stream durability remains outside M04 scope.
 - Forced reconnect is reported separately from actual WebSocket error counts in the benchmark output.
 
+
+## 2026-10-01 — Public demo wallet-cancellation handling
+
+- Founder runtime testing found that manually cancelling an APPROVE transaction in the wallet was being classified as `UNKNOWN_AFTER_SUBMISSION` because the web execution path only recognized insufficient balance as a known pre-submission outcome.
+- Updated the Solana adapter to recognize explicit wallet/user rejection signals and normalize them to `USER_REJECTED`.
+- The web demo now records the cancellation as a known pre-submission outcome, shows a user-facing cancellation message, keeps the manual retry path available, and avoids exposing the raw Solana error decoder string in the main UI.
+- Added regression coverage for direct, coded, and nested wallet-rejection error shapes.
+- The uncertain-execution path remains reserved for cases where the post-boundary outcome cannot be established.
+
 ## 2026-09-29 — M04 finalized and public release gate opened
 
 - Finalized M04 for the bounded hackathon prototype with engineering evidence consolidated.
