@@ -14,7 +14,9 @@
     "web:dev": "vite --config vite.config.ts",
     "web:build": "vite build --config vite.config.ts && node scripts/verify-web-build.mjs",
     "benchmark:stream": "node scripts/rpc-stream-benchmark.mjs",
-    "web:build:pages": "vite build --config vite.config.ts --mode github-pages && node scripts/verify-web-build.mjs --mode github-pages"
+    "web:build:pages": "vite build --config vite.config.ts --mode github-pages && node scripts/verify-web-build.mjs --mode github-pages",
+    "poc:elfa": "npm run build && npm run test:poc:elfa",
+    "test:poc:elfa": "node tests/external-intelligence.mjs"
   },
   "dependencies": {
     "@solana/kit": "8.3.0",
