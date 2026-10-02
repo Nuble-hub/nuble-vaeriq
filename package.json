@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "test": "npm run build && node tests/run-tests.mjs && node tests/audit-store.mjs && node tests/reconciliation.mjs && node tests/execution-recovery.mjs && node tests/context-evidence.mjs && node tests/stream-observation.mjs",
+    "test": "npm run build && node tests/run-tests.mjs && node tests/audit-store.mjs && node tests/reconciliation.mjs && node tests/execution-recovery.mjs && node tests/context-evidence.mjs && node tests/stream-observation.mjs && node tests/external-intelligence.mjs",
     "check": "npm run typecheck && npm test",
     "demo": "npm run web:dev",
     "solana:probe": "node scripts/solana-devnet-probe.mjs",
@@ -14,7 +14,9 @@
     "web:dev": "vite --config vite.config.ts",
     "web:build": "vite build --config vite.config.ts && node scripts/verify-web-build.mjs",
     "benchmark:stream": "node scripts/rpc-stream-benchmark.mjs",
-    "web:build:pages": "vite build --config vite.config.ts --mode github-pages && node scripts/verify-web-build.mjs --mode github-pages"
+    "web:build:pages": "vite build --config vite.config.ts --mode github-pages && node scripts/verify-web-build.mjs --mode github-pages",
+    "poc:elfa": "npm run build && npm run test:poc:elfa",
+    "test:poc:elfa": "node tests/external-intelligence.mjs"
   },
   "dependencies": {
     "@solana/kit": "8.3.0",
