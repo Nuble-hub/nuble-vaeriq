@@ -39,6 +39,18 @@ See `docs/M04_FINALIZATION_DECISION.md` for the final evidence boundary.
 | WebSocket observation is lossless or production-grade | Current probe is bounded and does not establish lossless delivery |
 | Streaming is superior to polling for reconciliation | No strict end-to-end comparison was required for the bounded prototype |
 
+## Commercial model status
+
+The following are current planning hypotheses, not validated market facts:
+
+- VAERIQ's initial ICP is Web3 organizations with recurring stablecoin treasury/payment workflows.
+- The initial monetization model is organization subscription + usage.
+- Enterprise/API expansion is a longer-term monetization and distribution path.
+- Autonomous-agent spending is a secondary growth surface.
+- Solana is the primary current product and submission chain; additional chains are future adapter-based expansion.
+
+These hypotheses require evidence from qualified operators before they should be presented as customer demand, willingness to pay, revenue, or product-market fit.
+
 ## Public wording rules
 
 - Prefer "in our tested workload" over universal provider claims.
