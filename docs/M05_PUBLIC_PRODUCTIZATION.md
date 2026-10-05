@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Start date:** 2026-09-29  
-**Base:** Public `main` snapshot `c152dc0`
+**Base:** Public `main` snapshot `99b73b7`
 
 ## Goal
 
@@ -146,9 +146,25 @@ The intake process is intentionally manual and traceable. The repository does no
 
 **Status:** Complete on `main`. The intake protocol and log are part of the public repository, and blank GitHub Issues are disabled so technical feedback uses the structured template.
 
-### M05.4 — Submission readiness
+### M05.4 — Commercial and startup readiness
 
-After the public demo and validation pass:
+The product/business layer is now documented in `docs/VAERIQ_COMMERCIAL_STARTUP_BLUEPRINT.md`.
+
+Acceptance criteria:
+
+- current ICP is explicitly stated;
+- the value proposition is tied to the actual control boundary;
+- the initial business model is stated as a hypothesis, not as validated revenue;
+- pricing remains evidence-dependent rather than invented;
+- the founder-led GTM path is documented;
+- the validation ladder separates problem evidence, workflow fit, interest, pilot commitment, and production adoption;
+- post-hackathon expansion is explicitly evidence-dependent.
+
+**Status:** Complete as a planning artifact. External demand, willingness to pay, pilot conversion, and production adoption remain open.
+
+### M05.5 — Submission readiness
+
+After the public demo, current commercial alignment, and validation pass:
 
 - consolidate current evidence
 - refresh the claims ledger
@@ -184,4 +200,5 @@ M05 is complete when:
 2. a verified public demo URL is available;
 3. operator validation evidence has been collected and logged, or the remaining gap is explicitly documented;
 4. claims are updated without overstatement;
-5. the final submission package is reproducible from the public repository.
+5. the final submission package is reproducible from the public repository;
+6. the current product and commercial source-of-truth documents are aligned with the actual Solana-first implementation.
