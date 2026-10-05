@@ -84,6 +84,32 @@ Final submission
 
 M05 does not authorize broad feature expansion. New product scope should be justified by new external evidence.
 
+## Commercial model and real-product posture
+
+VAERIQ is being developed as a real B2B software product, not as a disposable hackathon prototype.
+
+Current commercial hypothesis:
+
+- Primary ICP: Web3 organizations with recurring stablecoin treasury/payment workflows.
+- Economic buyer: treasury, finance, payments, operations, or a founder at a smaller organization.
+- Value proposition: a deterministic control layer between payment intent and on-chain execution.
+- Initial monetization hypothesis: organization subscription + usage.
+- Expansion hypothesis: enterprise controls, integrations, API access, and agent-control workflows.
+
+Pricing and willingness to pay remain unvalidated. The submission should describe this as a commercial hypothesis, not as established traction.
+
+See `docs/VAERIQ_COMMERCIAL_STARTUP_BLUEPRINT.md` for the current product/business model, GTM, validation ladder, and post-hackathon roadmap.
+
+## Submission posture
+
+The final submission should present three evidence layers separately:
+
+1. **Proven:** the current Solana Devnet product and engineering/runtime evidence.
+2. **Hypothesized:** the commercial model, ICP, pricing, and long-term expansion.
+3. **To validate:** recurring customer pain, workflow fit, willingness to pilot/pay, and production adoption.
+
+Do not use public beta responses, social comments, ecosystem introductions, or third-party research as substitutes for qualified customer evidence.
+
 ## Accelerator posture
 
 VAERIQ is being developed as a long-term NUBLE product, not only as a competition prototype. Accelerator application materials should accurately describe current stage, production-user status, business model hypotheses, founder status, and any customer validation achieved by submission time.
