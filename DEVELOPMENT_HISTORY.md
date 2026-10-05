@@ -1,5 +1,15 @@
 # VAERIQ Development History
 
+## 2026-10-05 — Product and commercial source-of-truth alignment
+
+- Added `docs/PRODUCT_BLUEPRINT.md` as the current public product source of truth, with Solana as the primary chain and Solana Devnet as the current application network.
+- Added `docs/VAERIQ_COMMERCIAL_STARTUP_BLUEPRINT.md` covering ICP, structural problem, value proposition, business-model hypothesis, GTM, validation ladder, trust requirements, and post-hackathon roadmap.
+- Updated public submission notes, M05, README, and claims ledger so commercial assumptions are clearly separated from proven engineering evidence.
+- Reconfirmed the initial monetization hypothesis as B2B organization subscription + usage, with enterprise/API expansion as an evidence-dependent path.
+- Kept customer traction, willingness to pay, production adoption, and product-market fit explicitly unproven until qualified evidence exists.
+- Repository audit found the current GitHub product/docs surface already consistently identifies Solana as the primary chain. The earlier `NUBLE_VAERIQ_Product_Blueprint_v0.1.docx` is not stored in the GitHub repository and is therefore treated as a historical planning artifact outside the current public repository source of truth.
+
+
 This document records the development timeline of NUBLE / VAERIQ for product traceability and hackathon disclosure.
 
 ## 2026-09-17 — Product direction established
