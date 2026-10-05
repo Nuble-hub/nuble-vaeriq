@@ -392,3 +392,13 @@ The next open work remains execution failure handling, transaction reconciliatio
 - Added Pages-specific CI verification that rejects root-absolute HTML asset paths.
 - The corrected Pages deployment for commit `14ec5ce6010044ea3a8842cf039e2d33448467b2` completed successfully.
 - Direct inspection of the resulting Pages artifact confirmed `./assets/...` references in both the main and feedback HTML entry points.
+
+
+## 2026-10-02 — VAERIQ × Elfa external-intelligence POC
+
+- Started a separate provider-neutral external-intelligence experiment to test whether public external signals can enrich VAERIQ payment context without gaining decision or execution authority.
+- Added `ExternalIntelligenceProvider` and an Elfa V2 keyword-mentions adapter with normalized `ExternalSignal` records.
+- Added an offline regression test and a local CLI that reads `ELFA_API_KEY` only from the environment.
+- Added a POC document and safe `.env.example` placeholder; no real credential is stored.
+- Kept the experiment outside the public demo and outside the deterministic decision/execution path.
+- Real Elfa query evidence and the future integration go/no-go decision remain open.
