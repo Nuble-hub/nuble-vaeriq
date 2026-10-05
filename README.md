@@ -88,7 +88,7 @@ No external human builder is part of the core VAERIQ team. External community co
 ## Current roadmap
 
 - [x] Product thesis and positioning
-- [x] Product Blueprint v0.1
+- [x] Current Product Blueprint v1.0 (Solana-first)
 - [x] Builder Specification v0.1
 - [x] Hackathon Execution Board v0.1
 - [x] Repository foundation
@@ -120,6 +120,8 @@ No external human builder is part of the core VAERIQ team. External community co
 - `CONTRIBUTING.md` — repository and engineering conventions
 - `SECURITY.md` — security reporting and safe-development rules
 - `docs/ARCHITECTURE.md` — system boundaries and technical decisions
+- `docs/PRODUCT_BLUEPRINT.md` — current Solana-first product source of truth
+- `docs/VAERIQ_COMMERCIAL_STARTUP_BLUEPRINT.md` — commercial model, GTM, validation, and startup roadmap
 - `docs/HACKATHON.md` — Colosseum scope, demo and submission notes
 - `docs/MILESTONE_01.md` — acceptance criteria and runtime evidence for the first chain-connected milestone
 - `docs/DIRECTION_AUDIT_V2.md` — post-Milestone-01 strategic direction audit and Milestone 02 direction
