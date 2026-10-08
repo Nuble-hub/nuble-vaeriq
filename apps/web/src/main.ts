@@ -11,6 +11,7 @@ import { JsonExecutionAttemptStore, canStartExecution, createExecutionAttempt, n
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
 import type { ApprovedIntent, PaymentIntent } from "../../../packages/domain/index.js";
 import { BLOCK_DESTINATION, DEMO_DESTINATION, createDemoPolicy, createDemoContext } from "../../../packages/demo-fixtures/index.js";
+import { escapeHtml } from "./escape-html.js";
 import "./styles.css";
 
 const USDC_DECIMALS = 6;
@@ -211,7 +212,7 @@ function render() {
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
           <button class="guide-nav" id="guide-toggle" aria-expanded="${state.guideOpen}">Guide</button>
           <a class="feedback-nav" href="./feedback.html">Feedback ↗</a>
-          ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${connectLabel}</button>`}
+          ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${escapeHtml(connectLabel)}</button>`}
         </div>
       </header>
 
@@ -228,16 +229,16 @@ function render() {
           </div>
 
           <label for="recipient">Recipient</label>
-          <input id="recipient" value="${state.intent?.recipient ?? (state.mode === "BLOCK" ? BLOCK_DESTINATION : DEMO_DESTINATION)}" />
+          <input id="recipient" value="${escapeHtml(state.intent?.recipient ?? (state.mode === "BLOCK" ? BLOCK_DESTINATION : DEMO_DESTINATION))}" />
 
           <div class="two-col">
             <div>
               <label for="amount">Amount (USDC)</label>
-              <input id="amount" value="${state.intent?.amountDisplay ?? (state.mode === "BLOCK" ? "8500" : "12")}" inputmode="decimal" />
+              <input id="amount" value="${escapeHtml(state.intent?.amountDisplay ?? (state.mode === "BLOCK" ? "8500" : "12"))}" inputmode="decimal" />
             </div>
             <div>
               <label for="invoice">Invoice ref</label>
-              <input id="invoice" value="${state.intent ? (state.intent.invoiceRef ?? "") : (state.mode === "BLOCK" ? "" : "INV-001")}" />
+              <input id="invoice" value="${escapeHtml(state.intent ? (state.intent.invoiceRef ?? "") : (state.mode === "BLOCK" ? "" : "INV-001"))}" />
             </div>
           </div>
 
@@ -252,16 +253,16 @@ function render() {
             <span>Intent</span><b>→</b><span>Policy</span><b>→</b><span>Risk</span><b>→</b><strong class="decision ${(decision ?? "idle").toLowerCase()}">${decision ?? "WAITING"}</strong>
           </div>
           <div class="reason-box">
-            ${reasons.length ? reasons.map((x) => `<div>• ${x}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
+            ${reasons.length ? reasons.map((x) => `<div>• ${escapeHtml(x)}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
           </div>
           <button class="execute" id="execute" ${canExecute ? "" : "disabled"}>${executeLabel}</button>
           <div class="execution-status ${executionState.toLowerCase()}"><span>Execution state</span><strong>${executionState}</strong></div>
-          ${executionAttempt ? `<div class="execution-meta">Attempt <code>${executionAttempt.id}</code><br/>Idempotency key <code>${executionAttempt.idempotencyKey}</code></div>` : ""}
+          ${executionAttempt ? `<div class="execution-meta">Attempt <code>${escapeHtml(executionAttempt.id)}</code><br/>Idempotency key <code>${escapeHtml(executionAttempt.idempotencyKey)}</code></div>` : ""}
           ${executionState === "FAILED_BEFORE_SUBMISSION" && state.error !== "USER_REJECTED" ? `<div class="recovery-note">Retry is allowed because failure was recorded before transaction submission.</div>` : ""}
           ${executionState === "UNKNOWN_AFTER_SUBMISSION" ? `<div class="recovery-warning">Execution outcome is uncertain. VAERIQ blocks an automatic retry to avoid duplicate payment.</div>` : ""}
           ${state.error === "USER_REJECTED" ? `<div class="recovery-note">Transaction cancelled in the wallet before submission. No transaction was sent. You can retry when ready.</div>` : ""}
-          ${state.error && state.error !== "USER_REJECTED" ? `<div class="error">${state.error}</div>` : ""}
-          ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
+          ${state.error && state.error !== "USER_REJECTED" ? `<div class="error">${escapeHtml(state.error)}</div>` : ""}
+          ${signature ? `<div class="success">Executed · ${escapeHtml(signature.slice(0, 12))}…</div><a href="https://explorer.solana.com/tx/${escapeHtml(encodeURIComponent(signature))}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
         </div>
       </section>
 
@@ -276,9 +277,9 @@ function render() {
 
         ${contextSnapshot ? `
           <div class="context-grid">
-            <div class="context-item"><span>Purpose</span><strong>${contextSnapshot.purpose || "—"}</strong></div>
-            <div class="context-item"><span>Counterparty</span><strong>${contextSnapshot.counterpartyId || "—"}</strong></div>
-            <div class="context-item"><span>Invoice</span><strong>${contextSnapshot.invoiceRef || "—"}</strong></div>
+            <div class="context-item"><span>Purpose</span><strong>${escapeHtml(contextSnapshot.purpose || "—")}</strong></div>
+            <div class="context-item"><span>Counterparty</span><strong>${escapeHtml(contextSnapshot.counterpartyId || "—")}</strong></div>
+            <div class="context-item"><span>Invoice</span><strong>${escapeHtml(contextSnapshot.invoiceRef || "—")}</strong></div>
             <div class="context-item"><span>Destination</span><strong>${contextSnapshot.destinationKnown ? "Known destination" : "New destination"}</strong></div>
             <div class="context-item"><span>Counterparty context</span><strong>${contextSnapshot.counterpartyKnown ? "Known counterparty" : "Unknown counterparty"}</strong></div>
             <div class="context-item"><span>Asset</span><strong>${contextSnapshot.assetApproved ? "Approved asset" : "Unapproved asset"}</strong></div>
@@ -287,12 +288,12 @@ function render() {
           <div class="context-evidence">
             <div class="context-label">Evidence references</div>
             ${contextEvidenceRefs.length
-              ? contextEvidenceRefs.map((ref) => `<div class="evidence-row"><code>${ref}</code></div>`).join("")
+              ? contextEvidenceRefs.map((ref) => `<div class="evidence-row"><code>${escapeHtml(ref)}</code></div>`).join("")
               : `<div class="muted">No evidence references attached.</div>`}
           </div>
 
           ${contextCompleteness?.status === "INCOMPLETE"
-            ? `<div class="context-warning">Missing context: ${contextCompleteness.missing.join(", ")}.${decision === "REVIEW" ? " The incomplete context changed the decision to REVIEW." : ""}</div>`
+            ? `<div class="context-warning">Missing context: ${escapeHtml(contextCompleteness.missing.join(", "))}.${decision === "REVIEW" ? " The incomplete context changed the decision to REVIEW." : ""}</div>`
             : `<div class="context-note">This context snapshot is bound to the current PaymentIntent and is evaluated before execution.</div>`}
         ` : `<div class="muted context-empty">Run an evaluation to see the business context and evidence attached to this payment intent.</div>`}
       </section>
@@ -301,17 +302,17 @@ function render() {
         <div class="card-title">Audit Trail</div>
         <div class="audit-row"><span>Network</span><strong>Solana Devnet</strong></div>
         <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
-        <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId ?? "—"}</code></div>
+        <div class="audit-row"><span>Latest persisted intent</span><code>${escapeHtml(state.intent?.id ?? state.persistedLatestIntentId ?? "—")}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Execution state</span><strong class="execution-state-cell ${executionState.toLowerCase()}">${executionState}</strong></div>
-        <div class="audit-row"><span>Execution attempt</span><code>${executionAttempt?.id ?? "—"}</code></div>
-        <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
-        <div class="audit-row"><span>Last reconciled transaction</span><code>${state.lastReconciledTxSignature || "—"}</code></div>
+        <div class="audit-row"><span>Execution attempt</span><code>${escapeHtml(executionAttempt?.id ?? "—")}</code></div>
+        <div class="audit-row"><span>Transaction signature</span><code>${escapeHtml(signature || "—")}</code></div>
+        <div class="audit-row"><span>Last reconciled transaction</span><code>${escapeHtml(state.lastReconciledTxSignature || "—")}</code></div>
         <div class="audit-row"><span>Reconciliation</span><strong class="recon ${reconciliation?.status?.toLowerCase() ?? "idle"}">${reconciliation?.status ?? "—"}</strong></div>
-        <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ") : "—"}</code></div>
+        <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? escapeHtml(auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ")) : "—"}</code></div>
         <div class="card-title recent-title">Recent persisted events</div>
         <div class="recent-events">
-          ${auditStore.list(10).slice().reverse().map((event) => `<div class="recent-event"><strong>${event.type}</strong><span>${event.intentId}</span><code>${event.payloadRef ?? ""}</code></div>`).join("") || `<div class="muted">No persisted audit events yet.</div>`}
+          ${auditStore.list(10).slice().reverse().map((event) => `<div class="recent-event"><strong>${escapeHtml(event.type)}</strong><span>${escapeHtml(event.intentId)}</span><code>${escapeHtml(event.payloadRef ?? "")}</code></div>`).join("") || `<div class="muted">No persisted audit events yet.</div>`}
         </div>
       </section>
 
