@@ -42,12 +42,13 @@ Run from a clean profile or fresh browser state with a Solana Devnet-compatible 
 | Q10 | Set invoice input to a harmless string containing HTML syntax (e.g. `<b>sample</b>`); Evaluate | Markup appears as literal text; no unexpected new HTML element or code execution |
 | Q11 | Open Feedback center, then technical issue link | Both destinations work and no credentials are requested |
 | Q12 | Open the deployed GitHub Pages demo after merge | Deployed app matches approved commit and avoids blank / stale asset paths |
+| Q13 | Evaluate APPROVE, then edit recipient/amount/invoice without re-evaluating | Previous approval becomes stale; Execute disabled; UI asks to re-evaluate |
 
 For Q07/Q08, confirm the wallet prompt shows the intended Devnet recipient, mint and transfer amount before signing. **Do not sign** if the wallet shows unexpected information.
 
 ## 4. Recording prerequisites
 
-Only record the final Colosseum Demo Video after Q02, Q03, Q04, Q05 and Q08 succeed on the intended recording environment.
+Only record the final Colosseum Demo Video after Q02, Q03, Q04, Q05, Q08 and Q13 succeed on the intended recording environment.
 
 Suggested video story: one adverse BLOCK, one missing-evidence REVIEW (brief), one compliant APPROVE with signed Devnet execution and reconciliation. Recovery is optional only if it does not obscure the control story. Avoid saying that the public demo enforces wallet activity outside VAERIQ.
 
@@ -58,11 +59,11 @@ Suggested video story: one adverse BLOCK, one missing-evidence REVIEW (brief), o
 
 ## 5. Evidence capture and release decision
 
-Record: tester, UTC/local test date, browser version, wallet name/network, source commit, Q01–Q12 PASS/FAIL/SKIPPED, relevant Devnet signature where safe to disclose, screen capture for BLOCK/REVIEW/APPROVE/MATCHED, and any blockers.
+Record: tester, UTC/local test date, browser version, wallet name/network, source commit, Q01–Q13 PASS/FAIL/SKIPPED, relevant Devnet signature where safe to disclose, screen capture for BLOCK/REVIEW/APPROVE/MATCHED, and any blockers.
 
 Before merging:
 1. PR head Release Gate is green.
-2. No known regression remains in Q02–Q05.
+2. No known regression remains in Q02–Q05 or Q13.
 3. Approved execution is verified in at least one genuine Devnet wallet session, **or** this gap is explicitly disclosed and no new live-execution claim is made.
 4. No sensitive artifacts were added to Git.
 5. Founder reviews PR, merge, and deployed site.
