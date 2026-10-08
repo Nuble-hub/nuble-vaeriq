@@ -35,7 +35,8 @@ const state = {
   persistedLatestIntentId: "",
   lastReconciledTxSignature: "",
   error: "",
-  guideOpen: localStorage.getItem("vaeriq:demo:guide:v1") !== "closed"
+  guideOpen: localStorage.getItem("vaeriq:demo:guide:v1") !== "closed",
+  evaluationDirty: false
 };
 
 function parseUsdcAtomic(value: string): string {
@@ -138,8 +139,10 @@ function render() {
   const wallets = walletState.wallets;
   const walletStatus = walletState.status;
   const app = document.querySelector<HTMLDivElement>("#app")!;
-  const decision = state.result?.result.decision ?? state.decision;
-  const reasons = state.result?.result.reasons ?? [];
+  const decision = state.evaluationDirty ? null : (state.result?.result.decision ?? state.decision);
+  const reasons = state.evaluationDirty
+    ? ["Payment fields changed. Evaluate again before execution."]
+    : (state.result?.result.reasons ?? []);
   const contextSnapshot = state.result?.contextSnapshot ?? null;
   const contextCompleteness = state.result?.contextCompleteness ?? null;
   const contextEvidenceRefs = contextSnapshot?.evidenceRefs ?? [];
@@ -149,7 +152,7 @@ function render() {
   const executionAttempt = state.executionAttempt;
   const executionState = executionAttempt?.state ?? "IDLE";
   const executionLocked = executionAttempt ? !canStartExecution(executionAttempt) : false;
-  const canExecute = Boolean(state.intent && state.result && decision === "APPROVE" && !executionLocked);
+  const canExecute = Boolean(state.intent && state.result && !state.evaluationDirty && decision === "APPROVE" && !executionLocked);
   const executeLabel = executionState === "FAILED_BEFORE_SUBMISSION"
     ? "Retry approved payment"
     : executionState === "UNKNOWN_AFTER_SUBMISSION"
@@ -386,11 +389,30 @@ function render() {
     document.querySelector<HTMLButtonElement>("#block-mode")?.click();
     document.querySelector<HTMLInputElement>("#recipient")?.focus();
   });
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+
+  // Keep payment inputs bound to the evaluated PaymentIntent.
+  // Editing an approved payment must require a fresh evaluation.
+  for (const fieldId of ["recipient", "amount", "invoice"]) {
+    document.querySelector<HTMLInputElement>(`#${fieldId}`)?.addEventListener("input", () => {
+      if (!state.intent || !state.result) return;
+      state.evaluationDirty = true;
+      const executeButton = document.querySelector<HTMLButtonElement>("#execute");
+      if (executeButton) executeButton.disabled = true;
+      const decisionLabel = document.querySelector<HTMLElement>(".pipeline .decision");
+      if (decisionLabel) {
+        decisionLabel.className = "decision idle";
+        decisionLabel.textContent = "RE-EVALUATE";
+      }
+      const reasonBox = document.querySelector<HTMLElement>(".reason-box");
+      if (reasonBox) reasonBox.textContent = "Payment fields changed. Evaluate again before execution.";
+    });
+  }
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
+    state.evaluationDirty = false;
     state.error = "";
     localStorage.setItem("vaeriq:demo:mode:v1", state.mode);
     state.txSignature = "";
@@ -420,6 +442,7 @@ function render() {
 
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
+      if (state.evaluationDirty) throw new Error("PAYMENT_FIELDS_CHANGED_REEVALUATE");
       if (state.result.result.decision !== "APPROVE") throw new Error(`EXECUTION_NOT_AUTHORIZED:${state.result.result.decision}`);
       if (state.executionAttempt && !canStartExecution(state.executionAttempt)) {
         throw new Error(`EXECUTION_NOT_AUTHORIZED:EXECUTION_ATTEMPT_NOT_RETRYABLE:${state.executionAttempt.state}`);
