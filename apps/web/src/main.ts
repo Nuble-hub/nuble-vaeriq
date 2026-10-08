@@ -412,7 +412,11 @@ function render() {
   }
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
+    // Invalidate the previous evaluation before parsing new input.
+    // A malformed new request must never leave an old APPROVE executable.
     state.evaluationDirty = false;
+    state.intent = null;
+    state.result = null;
     state.error = "";
     localStorage.setItem("vaeriq:demo:mode:v1", state.mode);
     state.txSignature = "";
