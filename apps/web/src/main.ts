@@ -9,11 +9,10 @@ import type { AuditEvent } from "../../../packages/domain/index.js";
 import { reconcilePaymentTransaction, type TransactionReconciliation } from "../../../packages/reconciliation/index.js";
 import { JsonExecutionAttemptStore, canStartExecution, createExecutionAttempt, nextExecutionAttemptState, type ExecutionAttempt } from "../../../packages/execution/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
-import type { ApprovedIntent, PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
+import type { ApprovedIntent, PaymentIntent } from "../../../packages/domain/index.js";
+import { BLOCK_DESTINATION, DEMO_DESTINATION, createDemoPolicy, createDemoContext } from "../../../packages/demo-fixtures/index.js";
 import "./styles.css";
 
-const DEMO_DESTINATION = "HQVxiMVDoV9jzG4tpoxmDZsNfWvaHXm8DGGv93Gka75v";
-const BLOCK_DESTINATION = "11111111111111111111111111111111";
 const USDC_DECIMALS = 6;
 
 const client = createClient()
@@ -45,39 +44,6 @@ function parseUsdcAtomic(value: string): string {
   const atomic = BigInt(whole) * 1_000_000n + BigInt((fraction + "000000").slice(0, USDC_DECIMALS));
   if (atomic <= 0n) throw new Error("INVALID_USDC_AMOUNT");
   return atomic.toString();
-}
-
-function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
-  const approvedDestination = mode === "BLOCK" ? DEMO_DESTINATION : recipient;
-  return {
-    id: "policy_demo_m01",
-    version: 1,
-    active: true,
-    defaultEffect: "ALLOW",
-    rules: [
-      { id: "asset-usdc-only", type: "ASSET", operator: "IN", value: ["USDC"], effect: "ALLOW", message: "USDC is approved." },
-      { id: "destination-allowlist", type: "DESTINATION", operator: "NOT_IN", value: [approvedDestination], effect: "BLOCK", message: "Destination is outside the approved treasury allowlist." },
-      { id: "large-agent-review", type: "AMOUNT", operator: "GT", value: "5000000000", effect: "REVIEW", message: "Agent payments above 5,000 USDC require treasury review." }
-    ]
-  };
-}
-
-function contextFor(mode: typeof state.mode): PaymentContext {
-  const known = mode === "BLOCK" ? [DEMO_DESTINATION] : [state.intent?.recipient ?? DEMO_DESTINATION];
-  return {
-    knownDestinations: known,
-    knownCounterparties: ["vendor_demo"],
-    approvedAssets: ["USDC"],
-    historicalMedianAtomic: "2000000000",
-    recentIntents: [],
-    invoiceRequiredAboveAtomic: "1000000000",
-    agentSinglePaymentLimitAtomic: "5000000000",
-    agentDailyLimitAtomic: "20000000000",
-    agentSpentTodayAtomic: "1000000000",
-    evidence: state.intent?.invoiceRef
-      ? [{ id: `invoice:${state.intent.invoiceRef}`, type: "INVOICE", summary: `Invoice ${state.intent.invoiceRef} is attached.` }]
-      : []
-  };
 }
 
 function buildIntent(): PaymentIntent {
@@ -434,7 +400,7 @@ function render() {
     try {
       const intent = buildIntent();
       state.intent = intent;
-      state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode) });
+      state.result = evaluatePayment({ intent, policy: createDemoPolicy(), context: createDemoContext(intent) });
       state.decision = state.result.result.decision;
       state.auditEvents = state.result.auditEvents;
       auditStore.append(state.result.auditEvents);
