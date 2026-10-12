@@ -9,11 +9,11 @@ import type { AuditEvent } from "../../../packages/domain/index.js";
 import { reconcilePaymentTransaction, type TransactionReconciliation } from "../../../packages/reconciliation/index.js";
 import { JsonExecutionAttemptStore, canStartExecution, createExecutionAttempt, nextExecutionAttemptState, type ExecutionAttempt } from "../../../packages/execution/index.js";
 import { SolanaAdapter, SOLANA_DEVNET_RPC, SOLANA_DEVNET_USDC_MINT } from "../../../adapters/solana/index.js";
-import type { ApprovedIntent, PaymentContext, PaymentIntent, PolicySet } from "../../../packages/domain/index.js";
+import type { ApprovedIntent, PaymentIntent } from "../../../packages/domain/index.js";
+import { BLOCK_DESTINATION, DEMO_DESTINATION, createDemoPolicy, createDemoContext } from "../../../packages/demo-fixtures/index.js";
+import { escapeHtml } from "./escape-html.js";
 import "./styles.css";
 
-const DEMO_DESTINATION = "HQVxiMVDoV9jzG4tpoxmDZsNfWvaHXm8DGGv93Gka75v";
-const BLOCK_DESTINATION = "11111111111111111111111111111111";
 const USDC_DECIMALS = 6;
 
 const client = createClient()
@@ -35,7 +35,8 @@ const state = {
   persistedLatestIntentId: "",
   lastReconciledTxSignature: "",
   error: "",
-  guideOpen: localStorage.getItem("vaeriq:demo:guide:v1") !== "closed"
+  guideOpen: localStorage.getItem("vaeriq:demo:guide:v1") !== "closed",
+  evaluationDirty: false
 };
 
 function parseUsdcAtomic(value: string): string {
@@ -45,39 +46,6 @@ function parseUsdcAtomic(value: string): string {
   const atomic = BigInt(whole) * 1_000_000n + BigInt((fraction + "000000").slice(0, USDC_DECIMALS));
   if (atomic <= 0n) throw new Error("INVALID_USDC_AMOUNT");
   return atomic.toString();
-}
-
-function policyFor(mode: typeof state.mode, recipient: string): PolicySet {
-  const approvedDestination = mode === "BLOCK" ? DEMO_DESTINATION : recipient;
-  return {
-    id: "policy_demo_m01",
-    version: 1,
-    active: true,
-    defaultEffect: "ALLOW",
-    rules: [
-      { id: "asset-usdc-only", type: "ASSET", operator: "IN", value: ["USDC"], effect: "ALLOW", message: "USDC is approved." },
-      { id: "destination-allowlist", type: "DESTINATION", operator: "NOT_IN", value: [approvedDestination], effect: "BLOCK", message: "Destination is outside the approved treasury allowlist." },
-      { id: "large-agent-review", type: "AMOUNT", operator: "GT", value: "5000000000", effect: "REVIEW", message: "Agent payments above 5,000 USDC require treasury review." }
-    ]
-  };
-}
-
-function contextFor(mode: typeof state.mode): PaymentContext {
-  const known = mode === "BLOCK" ? [DEMO_DESTINATION] : [state.intent?.recipient ?? DEMO_DESTINATION];
-  return {
-    knownDestinations: known,
-    knownCounterparties: ["vendor_demo"],
-    approvedAssets: ["USDC"],
-    historicalMedianAtomic: "2000000000",
-    recentIntents: [],
-    invoiceRequiredAboveAtomic: "1000000000",
-    agentSinglePaymentLimitAtomic: "5000000000",
-    agentDailyLimitAtomic: "20000000000",
-    agentSpentTodayAtomic: "1000000000",
-    evidence: state.intent?.invoiceRef
-      ? [{ id: `invoice:${state.intent.invoiceRef}`, type: "INVOICE", summary: `Invoice ${state.intent.invoiceRef} is attached.` }]
-      : []
-  };
 }
 
 function buildIntent(): PaymentIntent {
@@ -171,8 +139,10 @@ function render() {
   const wallets = walletState.wallets;
   const walletStatus = walletState.status;
   const app = document.querySelector<HTMLDivElement>("#app")!;
-  const decision = state.result?.result.decision ?? state.decision;
-  const reasons = state.result?.result.reasons ?? [];
+  const decision = state.evaluationDirty ? null : (state.result?.result.decision ?? state.decision);
+  const reasons = state.evaluationDirty
+    ? ["Payment fields changed. Evaluate again before execution."]
+    : (state.result?.result.reasons ?? []);
   const contextSnapshot = state.result?.contextSnapshot ?? null;
   const contextCompleteness = state.result?.contextCompleteness ?? null;
   const contextEvidenceRefs = contextSnapshot?.evidenceRefs ?? [];
@@ -182,7 +152,7 @@ function render() {
   const executionAttempt = state.executionAttempt;
   const executionState = executionAttempt?.state ?? "IDLE";
   const executionLocked = executionAttempt ? !canStartExecution(executionAttempt) : false;
-  const canExecute = Boolean(state.intent && state.result && decision === "APPROVE" && !executionLocked);
+  const canExecute = Boolean(state.intent && state.result && !state.evaluationDirty && decision === "APPROVE" && !executionLocked);
   const executeLabel = executionState === "FAILED_BEFORE_SUBMISSION"
     ? "Retry approved payment"
     : executionState === "UNKNOWN_AFTER_SUBMISSION"
@@ -245,7 +215,7 @@ function render() {
           <span>${connected ? `Connected · ${connected.account.address.slice(0, 4)}…${connected.account.address.slice(-4)}` : "Wallet not connected"}</span>
           <button class="guide-nav" id="guide-toggle" aria-expanded="${state.guideOpen}">Guide</button>
           <a class="feedback-nav" href="./feedback.html">Feedback ↗</a>
-          ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${connectLabel}</button>`}
+          ${connected ? "" : `<button id="connect" ${connectInProgress || walletStatus !== "disconnected" ? "disabled" : ""}>${escapeHtml(connectLabel)}</button>`}
         </div>
       </header>
 
@@ -262,16 +232,16 @@ function render() {
           </div>
 
           <label for="recipient">Recipient</label>
-          <input id="recipient" value="${state.intent?.recipient ?? (state.mode === "BLOCK" ? BLOCK_DESTINATION : DEMO_DESTINATION)}" />
+          <input id="recipient" value="${escapeHtml(state.intent?.recipient ?? (state.mode === "BLOCK" ? BLOCK_DESTINATION : DEMO_DESTINATION))}" />
 
           <div class="two-col">
             <div>
               <label for="amount">Amount (USDC)</label>
-              <input id="amount" value="${state.intent?.amountDisplay ?? (state.mode === "BLOCK" ? "8500" : "12")}" inputmode="decimal" />
+              <input id="amount" value="${escapeHtml(state.intent?.amountDisplay ?? (state.mode === "BLOCK" ? "8500" : "12"))}" inputmode="decimal" />
             </div>
             <div>
               <label for="invoice">Invoice ref</label>
-              <input id="invoice" value="${state.intent ? (state.intent.invoiceRef ?? "") : (state.mode === "BLOCK" ? "" : "INV-001")}" />
+              <input id="invoice" value="${escapeHtml(state.intent ? (state.intent.invoiceRef ?? "") : (state.mode === "BLOCK" ? "" : "INV-001"))}" />
             </div>
           </div>
 
@@ -286,16 +256,16 @@ function render() {
             <span>Intent</span><b>→</b><span>Policy</span><b>→</b><span>Risk</span><b>→</b><strong class="decision ${(decision ?? "idle").toLowerCase()}">${decision ?? "WAITING"}</strong>
           </div>
           <div class="reason-box">
-            ${reasons.length ? reasons.map((x) => `<div>• ${x}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
+            ${reasons.length ? reasons.map((x) => `<div>• ${escapeHtml(x)}</div>`).join("") : `<div class="muted">Run an evaluation to see the control evidence.</div>`}
           </div>
           <button class="execute" id="execute" ${canExecute ? "" : "disabled"}>${executeLabel}</button>
           <div class="execution-status ${executionState.toLowerCase()}"><span>Execution state</span><strong>${executionState}</strong></div>
-          ${executionAttempt ? `<div class="execution-meta">Attempt <code>${executionAttempt.id}</code><br/>Idempotency key <code>${executionAttempt.idempotencyKey}</code></div>` : ""}
+          ${executionAttempt ? `<div class="execution-meta">Attempt <code>${escapeHtml(executionAttempt.id)}</code><br/>Idempotency key <code>${escapeHtml(executionAttempt.idempotencyKey)}</code></div>` : ""}
           ${executionState === "FAILED_BEFORE_SUBMISSION" && state.error !== "USER_REJECTED" ? `<div class="recovery-note">Retry is allowed because failure was recorded before transaction submission.</div>` : ""}
           ${executionState === "UNKNOWN_AFTER_SUBMISSION" ? `<div class="recovery-warning">Execution outcome is uncertain. VAERIQ blocks an automatic retry to avoid duplicate payment.</div>` : ""}
           ${state.error === "USER_REJECTED" ? `<div class="recovery-note">Transaction cancelled in the wallet before submission. No transaction was sent. You can retry when ready.</div>` : ""}
-          ${state.error && state.error !== "USER_REJECTED" ? `<div class="error">${state.error}</div>` : ""}
-          ${signature ? `<div class="success">Executed · ${signature.slice(0, 12)}…</div><a href="https://explorer.solana.com/tx/${signature}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
+          ${state.error && state.error !== "USER_REJECTED" ? `<div class="error">${escapeHtml(state.error)}</div>` : ""}
+          ${signature ? `<div class="success">Executed · ${escapeHtml(signature.slice(0, 12))}…</div><a href="https://explorer.solana.com/tx/${escapeHtml(encodeURIComponent(signature))}?cluster=devnet" target="_blank" rel="noreferrer">View Devnet transaction ↗</a>` : ""}
         </div>
       </section>
 
@@ -310,9 +280,9 @@ function render() {
 
         ${contextSnapshot ? `
           <div class="context-grid">
-            <div class="context-item"><span>Purpose</span><strong>${contextSnapshot.purpose || "—"}</strong></div>
-            <div class="context-item"><span>Counterparty</span><strong>${contextSnapshot.counterpartyId || "—"}</strong></div>
-            <div class="context-item"><span>Invoice</span><strong>${contextSnapshot.invoiceRef || "—"}</strong></div>
+            <div class="context-item"><span>Purpose</span><strong>${escapeHtml(contextSnapshot.purpose || "—")}</strong></div>
+            <div class="context-item"><span>Counterparty</span><strong>${escapeHtml(contextSnapshot.counterpartyId || "—")}</strong></div>
+            <div class="context-item"><span>Invoice</span><strong>${escapeHtml(contextSnapshot.invoiceRef || "—")}</strong></div>
             <div class="context-item"><span>Destination</span><strong>${contextSnapshot.destinationKnown ? "Known destination" : "New destination"}</strong></div>
             <div class="context-item"><span>Counterparty context</span><strong>${contextSnapshot.counterpartyKnown ? "Known counterparty" : "Unknown counterparty"}</strong></div>
             <div class="context-item"><span>Asset</span><strong>${contextSnapshot.assetApproved ? "Approved asset" : "Unapproved asset"}</strong></div>
@@ -321,12 +291,12 @@ function render() {
           <div class="context-evidence">
             <div class="context-label">Evidence references</div>
             ${contextEvidenceRefs.length
-              ? contextEvidenceRefs.map((ref) => `<div class="evidence-row"><code>${ref}</code></div>`).join("")
+              ? contextEvidenceRefs.map((ref) => `<div class="evidence-row"><code>${escapeHtml(ref)}</code></div>`).join("")
               : `<div class="muted">No evidence references attached.</div>`}
           </div>
 
           ${contextCompleteness?.status === "INCOMPLETE"
-            ? `<div class="context-warning">Missing context: ${contextCompleteness.missing.join(", ")}.${decision === "REVIEW" ? " The incomplete context changed the decision to REVIEW." : ""}</div>`
+            ? `<div class="context-warning">Missing context: ${escapeHtml(contextCompleteness.missing.join(", "))}.${decision === "REVIEW" ? " The incomplete context changed the decision to REVIEW." : ""}</div>`
             : `<div class="context-note">This context snapshot is bound to the current PaymentIntent and is evaluated before execution.</div>`}
         ` : `<div class="muted context-empty">Run an evaluation to see the business context and evidence attached to this payment intent.</div>`}
       </section>
@@ -335,17 +305,17 @@ function render() {
         <div class="card-title">Audit Trail</div>
         <div class="audit-row"><span>Network</span><strong>Solana Devnet</strong></div>
         <div class="audit-row"><span>USDC mint</span><code>${SOLANA_DEVNET_USDC_MINT}</code></div>
-        <div class="audit-row"><span>Latest persisted intent</span><code>${state.intent?.id ?? state.persistedLatestIntentId ?? "—"}</code></div>
+        <div class="audit-row"><span>Latest persisted intent</span><code>${escapeHtml(state.intent?.id ?? state.persistedLatestIntentId ?? "—")}</code></div>
         <div class="audit-row"><span>Decision</span><strong>${decision ?? "—"}</strong></div>
         <div class="audit-row"><span>Execution state</span><strong class="execution-state-cell ${executionState.toLowerCase()}">${executionState}</strong></div>
-        <div class="audit-row"><span>Execution attempt</span><code>${executionAttempt?.id ?? "—"}</code></div>
-        <div class="audit-row"><span>Transaction signature</span><code>${signature || "—"}</code></div>
-        <div class="audit-row"><span>Last reconciled transaction</span><code>${state.lastReconciledTxSignature || "—"}</code></div>
+        <div class="audit-row"><span>Execution attempt</span><code>${escapeHtml(executionAttempt?.id ?? "—")}</code></div>
+        <div class="audit-row"><span>Transaction signature</span><code>${escapeHtml(signature || "—")}</code></div>
+        <div class="audit-row"><span>Last reconciled transaction</span><code>${escapeHtml(state.lastReconciledTxSignature || "—")}</code></div>
         <div class="audit-row"><span>Reconciliation</span><strong class="recon ${reconciliation?.status?.toLowerCase() ?? "idle"}">${reconciliation?.status ?? "—"}</strong></div>
-        <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ") : "—"}</code></div>
+        <div class="audit-row"><span>Audit events</span><code>${auditEvents.length ? escapeHtml(auditEvents.map((event) => `${event.type}:${event.payloadRef ?? ""}`).join(" · ")) : "—"}</code></div>
         <div class="card-title recent-title">Recent persisted events</div>
         <div class="recent-events">
-          ${auditStore.list(10).slice().reverse().map((event) => `<div class="recent-event"><strong>${event.type}</strong><span>${event.intentId}</span><code>${event.payloadRef ?? ""}</code></div>`).join("") || `<div class="muted">No persisted audit events yet.</div>`}
+          ${auditStore.list(10).slice().reverse().map((event) => `<div class="recent-event"><strong>${escapeHtml(event.type)}</strong><span>${escapeHtml(event.intentId)}</span><code>${escapeHtml(event.payloadRef ?? "")}</code></div>`).join("") || `<div class="muted">No persisted audit events yet.</div>`}
         </div>
       </section>
 
@@ -419,11 +389,34 @@ function render() {
     document.querySelector<HTMLButtonElement>("#block-mode")?.click();
     document.querySelector<HTMLInputElement>("#recipient")?.focus();
   });
-  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
-  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#approve-mode")?.addEventListener("click", () => { state.mode = "APPROVE"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "APPROVE"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#block-mode")?.addEventListener("click", () => { state.mode = "BLOCK"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "BLOCK"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+  document.querySelector("#unknown-mode")?.addEventListener("click", () => { state.mode = "UNKNOWN"; state.evaluationDirty = false; localStorage.setItem("vaeriq:demo:mode:v1", "UNKNOWN"); state.intent = null; state.result = null; state.txSignature = ""; state.auditEvents = []; state.reconciliation = null; state.executionAttempt = null; state.decision = null; state.persistedLatestIntentId = ""; state.lastReconciledTxSignature = ""; state.error = ""; render(); });
+
+  // Keep payment inputs bound to the evaluated PaymentIntent.
+  // Editing an approved payment must require a fresh evaluation.
+  for (const fieldId of ["recipient", "amount", "invoice"]) {
+    document.querySelector<HTMLInputElement>(`#${fieldId}`)?.addEventListener("input", () => {
+      if (!state.intent || !state.result) return;
+      state.evaluationDirty = true;
+      const executeButton = document.querySelector<HTMLButtonElement>("#execute");
+      if (executeButton) executeButton.disabled = true;
+      const decisionLabel = document.querySelector<HTMLElement>(".pipeline .decision");
+      if (decisionLabel) {
+        decisionLabel.className = "decision idle";
+        decisionLabel.textContent = "RE-EVALUATE";
+      }
+      const reasonBox = document.querySelector<HTMLElement>(".reason-box");
+      if (reasonBox) reasonBox.textContent = "Payment fields changed. Evaluate again before execution.";
+    });
+  }
 
   document.querySelector<HTMLButtonElement>("#evaluate")?.addEventListener("click", () => {
+    // Invalidate the previous evaluation before parsing new input.
+    // A malformed new request must never leave an old APPROVE executable.
+    state.evaluationDirty = false;
+    state.intent = null;
+    state.result = null;
     state.error = "";
     localStorage.setItem("vaeriq:demo:mode:v1", state.mode);
     state.txSignature = "";
@@ -434,7 +427,7 @@ function render() {
     try {
       const intent = buildIntent();
       state.intent = intent;
-      state.result = evaluatePayment({ intent, policy: policyFor(state.mode, intent.recipient), context: contextFor(state.mode) });
+      state.result = evaluatePayment({ intent, policy: createDemoPolicy(), context: createDemoContext(intent) });
       state.decision = state.result.result.decision;
       state.auditEvents = state.result.auditEvents;
       auditStore.append(state.result.auditEvents);
@@ -453,6 +446,7 @@ function render() {
 
     try {
       if (!state.result || !state.intent) throw new Error("EVALUATE_FIRST");
+      if (state.evaluationDirty) throw new Error("PAYMENT_FIELDS_CHANGED_REEVALUATE");
       if (state.result.result.decision !== "APPROVE") throw new Error(`EXECUTION_NOT_AUTHORIZED:${state.result.result.decision}`);
       if (state.executionAttempt && !canStartExecution(state.executionAttempt)) {
         throw new Error(`EXECUTION_NOT_AUTHORIZED:EXECUTION_ATTEMPT_NOT_RETRYABLE:${state.executionAttempt.state}`);
